@@ -1,10 +1,456 @@
+"use client";
+import { useState, useRef } from "react";
+
 export default function Copy() {
+  const [producto, setProducto] = useState("");
+  const [caracteristicas, setCaracteristicas] = useState("");
+  const [problema, setProblema] = useState("");
+  const [beneficio, setBeneficio] = useState("");
+  const [precioOferta, setPrecioOferta] = useState("");
+  const [precioAnterior, setPrecioAnterior] = useState("");
+  const [clientes, setClientes] = useState("");
+  const [competidor, setCompetidor] = useState("");
+  const [pais, setPais] = useState("Colombia");
+  const [tono, setTono] = useState("Urgente");
+  const [categoria, setCategoria] = useState("Salud y bienestar");
+  const [imagen, setImagen] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [progreso, setProgreso] = useState(0);
+  const [resultado, setResultado] = useState<any>(null);
+  const [tabActivo, setTabActivo] = useState("landing");
+  const [guardados, setGuardados] = useState<any[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const paises = [
+    { nombre: "Colombia", flag: "🇨🇴" },
+    { nombre: "México", flag: "🇲🇽" },
+    { nombre: "Venezuela", flag: "🇻🇪" },
+    { nombre: "Costa Rica", flag: "🇨🇷" },
+    { nombre: "Ecuador", flag: "🇪🇨" },
+    { nombre: "General", flag: "🌎" },
+  ];
+
+  const tonos = [
+    { nombre: "Urgente", color: "orange" },
+    { nombre: "Emocional", color: "pink" },
+    { nombre: "Racional", color: "cyan" },
+    { nombre: "Casual", color: "white" },
+    { nombre: "Confianza", color: "green" },
+    { nombre: "Premium", color: "purple" },
+  ];
+
+  function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const canvas = document.createElement("canvas");
+    const img = new Image();
+    img.onload = () => {
+      const max = 800;
+      let w = img.width, h = img.height;
+      if (w > max) { h = (h * max) / w; w = max; }
+      if (h > max) { w = (w * max) / h; h = max; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      setImagen(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  function guardar(texto: string, tipo: string) {
+    setGuardados(prev => [{ texto, tipo, hora: new Date().toLocaleTimeString() }, ...prev]);
+  }
+
+  async function generar(conImagen = false) {
+    if (!producto) return;
+    setLoading(true);
+    setProgreso(0);
+    setResultado(null);
+    const pasos = [10, 25, 40, 55, 70, 85, 95, 100];
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < pasos.length) { setProgreso(pasos[i]); i++; }
+      else clearInterval(interval);
+    }, 800);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producto, caracteristicas, problema, beneficio,
+          precioOferta, precioAnterior, clientes, competidor,
+          pais, tono, categoria,
+          imagen: conImagen ? imagen : null,
+        }),
+      });
+      const data = await res.json();
+      clearInterval(interval);
+      setProgreso(100);
+      setResultado(data);
+    } catch {
+      clearInterval(interval);
+    }
+    setLoading(false);
+  }
+const tonoColor: any = {
+    orange: "border-orange-500 bg-orange-500/10 text-orange-500",
+    pink: "border-pink-500 bg-pink-500/10 text-pink-500",
+    cyan: "border-cyan-400 bg-cyan-400/10 text-cyan-400",
+    white: "border-zinc-600 bg-zinc-800 text-zinc-300",
+    green: "border-green-400 bg-green-400/10 text-green-400",
+    purple: "border-purple-500 bg-purple-500/10 text-purple-500",
+  };
+
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-orange-500 text-6xl mb-6">✍️</div>
-        <h1 className="text-4xl font-bold text-white mb-4">Generador de Copy</h1>
-        <p className="text-zinc-400 text-xl">Módulo en construcción. Próximamente disponible.</p>
+    <div className="min-h-screen bg-[#050505] text-white">
+      <div className="max-w-[1400px] mx-auto px-6 pt-24 pb-20">
+
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+            IA generativa · copy profesional
+          </div>
+          <h1 className="text-4xl font-black text-white mb-2">
+            Crea copy que <span className="text-orange-500">vende</span>,{" "}
+            <span className="text-cyan-400">conecta</span> y{" "}
+            <span className="text-green-400">convierte</span>
+          </h1>
+          <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, WhatsApp, Meta Ads, redes y campaña de 7 días en segundos</p>
+        </div>
+
+     <div className="grid grid-cols-[380px_1fr] gap-6">
+     {/* FORMULARIO */}
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-5 pb-3 border-b border-[#151515]">
+              <span className="text-orange-500 text-lg">📦</span>
+              <span className="text-white font-bold text-sm">Datos del producto</span>
+            </div>
+
+            {/* Imagen */}
+            <div className="mb-4">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 mb-1.5">Imagen del producto</label>
+              <div onClick={() => fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors">
+                {imagen ? (
+                  <img src={imagen} className="h-20 mx-auto rounded-lg object-contain" />
+                ) : (
+                  <>
+                    <div className="text-orange-500 text-xl mb-1">📷</div>
+                    <div className="text-[#f0ead6] text-xs">Arrastra o selecciona · JPG PNG WEBP</div>
+                    <div className="text-orange-500 text-[10px] font-bold mt-1">GPT-4o Vision analiza colores, forma y tipo de producto</div>
+                  </>
+                )}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
+            </div>
+
+            {/* Nombre */}
+            <div className="mb-3">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Nombre del producto *</label>
+              <input value={producto} onChange={e => setProducto(e.target.value)} placeholder="Ej: Rodillax" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+            </div>
+
+            {/* Características */}
+            <div className="mb-3">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Características — Amazon · MeLi · tu tienda</label>
+              <textarea value={caracteristicas} onChange={e => setCaracteristicas(e.target.value)} placeholder="Pega aquí · la IA convierte cada característica en beneficio emocional..." className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs outline-none placeholder-[#999] resize-none h-16 focus:border-orange-500" />
+              <p className="text-orange-500 text-[10px] mt-1 font-medium">La IA detecta el formato y lo procesa automáticamente</p>
+            </div>
+
+            {/* Problema + Beneficio */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Problema</label>
+                <input value={problema} onChange={e => setProblema(e.target.value)} placeholder="Dolor de rodilla" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              </div>
+              <div>
+                <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Beneficio principal</label>
+                <input value={beneficio} onChange={e => setBeneficio(e.target.value)} placeholder="Alivio en 10 min" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              </div>
+            </div>
+
+            {/* Precios */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Precio oferta</label>
+                <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} placeholder="$49.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              </div>
+              <div>
+                <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Precio anterior</label>
+                <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} placeholder="$89.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              </div>
+            </div>
+
+            {/* Clientes */}
+            <div className="mb-3">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Clientes actuales (aprox.)</label>
+              <input value={clientes} onChange={e => setClientes(e.target.value)} placeholder="Ej: 17.000+ clientes satisfechos" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+            </div>
+
+            {/* Competidor */}
+            <div className="mb-3">
+              <label className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Analizar competidor</label>
+              <div className="flex gap-2">
+                <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-cyan-400" />
+                <button className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap">Analizar</button>
+              </div>
+              <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
+            </div>
+
+            <hr className="border-[#111] my-4" />
+            {/* País */}
+            <div className="mb-3">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">País objetivo</label>
+              <div className="flex flex-wrap gap-1.5">
+                {paises.map(p => (
+                  <button key={p.nombre} onClick={() => setPais(p.nombre)} className={`flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all ${pais === p.nombre ? "bg-orange-500/10 border-orange-500/40 text-orange-500" : "bg-[#080808] border-[#222] text-[#f0ead6]"}`}>
+                    <span>{p.flag}</span>{p.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tono */}
+            <div className="mb-3">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Tono de comunicación</label>
+              <div className="flex flex-wrap gap-1.5">
+                {tonos.map(t => (
+                  <button key={t.nombre} onClick={() => setTono(t.nombre)} className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all ${tono === t.nombre ? tonoColor[t.color] : "bg-[#080808] border-[#222] text-[#f0ead6]"}`}>
+                    {t.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Categoría */}
+            <div className="mb-4">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Categoría</label>
+              <select value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none">
+                {["Salud y bienestar","Hogar","Tecnología","Belleza","Deporte","Cocina","Moda","Mascotas","Otro"].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <hr className="border-[#111] my-4" />
+
+            {/* Qué generar */}
+            <div className="mb-4">
+              <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-2 block">Qué generar</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {["Landing page","WhatsApp x3","Meta Ads","Redes sociales","Campaña 7 días","Email seguimiento","Objeciones","SEO + extras"].map(item => (
+                  <div key={item} className="flex items-center gap-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2">
+                    <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></div>
+                    <span className="text-[#f0ead6] text-[11px]">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Botones */}
+            <button onClick={() => generar(false)} disabled={!producto || loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-black py-3 rounded-xl text-sm mb-2 transition-colors flex items-center justify-center gap-2">
+              ⚡ Generar todo ahora
+            </button>
+            <button onClick={() => generar(true)} disabled={!producto || !imagen || loading} className="w-full bg-[#050505] border border-cyan-400/35 text-cyan-400 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-40">
+              👁️ Generar con análisis de imagen · GPT-4o Vision
+            </button>
+
+          </div>
+          {/* PANEL RESULTADOS */}
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+
+            {/* Banner tiempo/ahorro */}
+            {resultado && (
+              <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-orange-500 text-lg">⚡</span>
+                  <div className="text-xs text-zinc-400 leading-5">
+                    Generaste en <span className="text-white font-bold">87 segundos</span> lo que un copywriter haría en <span className="text-white font-bold">2-3 días</span><br/>
+                    Ahorraste aprox. <span className="text-orange-500 font-bold">$350 USD</span> en servicios de marketing
+                  </div>
+                </div>
+                <div className="flex gap-4 text-right">
+                  <div><div className="text-orange-500 text-xl font-black">87s</div><div className="text-zinc-500 text-[10px]">Tiempo</div></div>
+                  <div><div className="text-green-400 text-xl font-black">$350</div><div className="text-zinc-500 text-[10px]">Ahorrado</div></div>
+                </div>
+              </div>
+            )}
+
+            {/* Métricas */}
+            {resultado && (
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
+                  <div className="text-orange-500 text-xl font-black">{resultado.palabras || 0}</div>
+                  <div className="text-zinc-500 text-[10px]">Palabras</div>
+                </div>
+                <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
+                  <div className="text-cyan-400 text-xl font-black">{resultado.caracteres || 0}</div>
+                  <div className="text-zinc-500 text-[10px]">Caracteres</div>
+                </div>
+                <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
+                  <div className="text-green-400 text-xl font-black">{resultado.piezas || 0}</div>
+                  <div className="text-zinc-500 text-[10px]">Piezas</div>
+                </div>
+                <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
+                  <div className="text-purple-400 text-xl font-black">{pais.slice(0,3).toUpperCase()}</div>
+                  <div className="text-zinc-500 text-[10px]">País</div>
+                </div>
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
+              {[
+                {id:"landing",label:"Landing",color:"bg-orange-500"},
+                {id:"whatsapp",label:"WhatsApp",color:"bg-cyan-400"},
+                {id:"campana",label:"Campaña",color:"bg-green-400"},
+                {id:"prompts",label:"Prompts IA",color:"bg-purple-500"},
+                {id:"metaads",label:"Meta Ads",color:"bg-pink-500"},
+                {id:"extras",label:"Extras",color:"bg-zinc-600"},
+              ].map(t => (
+                <button key={t.id} onClick={() => setTabActivo(t.id)} className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-bold transition-all ${tabActivo === t.id ? `${t.color} text-white` : "text-zinc-500"}`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Copiar todo */}
+            <button className="w-full bg-[#0d0d0d] border border-[#1e1e1e] text-[#f0ead6] rounded-lg py-2 text-xs mb-4 flex items-center justify-center gap-2">
+              📋 Copiar todo el contenido generado
+            </button>
+            {/* Barra de progreso */}
+            {loading && (
+              <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4">
+                <div className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-3">⚙️ Generando contenido · {progreso}%</div>
+                {[
+                  {icon:"🧠",texto:"Analizando producto y mercado",limite:25,color:"bg-orange-500"},
+                  {icon:"🎯",texto:"Identificando puntos de dolor",limite:50,color:"bg-cyan-400"},
+                  {icon:"✍️",texto:"Escribiendo copy persuasivo",limite:75,color:"bg-purple-500"},
+                  {icon:"🚀",texto:"Optimizando campaña de 7 días",limite:100,color:"bg-green-400"},
+                ].map((p,i) => (
+                  <div key={i} className="flex items-center gap-2 mb-2">
+                    <span className="text-sm w-5">{p.icon}</span>
+                    <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
+                    <div className="flex-1 h-[3px] bg-[#111] rounded-full">
+                      <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{width: `${Math.min(100, Math.max(0, (progreso - (i*25)) * 4))}%`}}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Estado vacío */}
+            {!loading && !resultado && (
+              <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
+                Completa los datos y presiona Generar
+              </div>
+            )}
+
+            {/* RESULTADOS */}
+            {resultado && (
+              <div className="space-y-4">
+
+                {/* LANDING */}
+                {tabActivo === "landing" && (
+                  <>
+                    {[
+                      {key:"hero",titulo:"Hero — titular",color:"orange"},
+                      {key:"problema",titulo:"El problema",color:"orange"},
+                      {key:"solucion",titulo:"La solución",color:"orange"},
+                      {key:"beneficios",titulo:"Beneficios reales",color:"orange"},
+                      {key:"testimonios",titulo:"Testimonios",color:"orange"},
+                      {key:"cta",titulo:"CTA final",color:"orange"},
+                    ].map(s => resultado[s.key] && (
+                      <div key={s.key} className="border border-orange-500 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
+                          <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">{s.titulo}</span>
+                          <div className="flex gap-1.5">
+                            <button className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md">↻ Regenerar</button>
+                            <button className="bg-cyan-400/08 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
+                            <button onClick={() => navigator.clipboard.writeText(resultado[s.key])} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                            <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado[s.key]}</div>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* WHATSAPP */}
+                {tabActivo === "whatsapp" && resultado.whatsapp && (
+                  <div className="border border-cyan-400 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
+                      <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => navigator.clipboard.writeText(resultado.whatsapp)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar todas</button>
+                        <button onClick={() => guardar(resultado.whatsapp, "WhatsApp x3")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.whatsapp}</div>
+                  </div>
+                )}
+
+                {/* CAMPAÑA */}
+                {tabActivo === "campana" && resultado.campana && (
+                  <div className="border border-green-400 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
+                      <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">Campaña de lanzamiento · 7 días</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => navigator.clipboard.writeText(resultado.campana)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar todo</button>
+                        <button onClick={() => guardar(resultado.campana, "Campaña 7 días")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.campana}</div>
+                  </div>
+                )}
+
+                {/* META ADS */}
+                {tabActivo === "metaads" && resultado.metaads && (
+                  <div className="border border-pink-500 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
+                      <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => navigator.clipboard.writeText(resultado.metaads)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => guardar(resultado.metaads, "Meta Ads")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.metaads}</div>
+                  </div>
+                )}
+
+                {/* EXTRAS */}
+                {tabActivo === "extras" && resultado.extras && (
+                  <div className="border border-zinc-600 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                      <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">Extras · SEO · Objeciones · Email</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => navigator.clipboard.writeText(resultado.extras)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => guardar(resultado.extras, "Extras")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.extras}</div>
+                  </div>
+                )}
+
+                {/* COPYS GUARDADOS */}
+                {guardados.length > 0 && (
+                  <div className="border border-orange-500 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
+                      <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">❤ Mis copys guardados</span>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3">
+                      {guardados.map((g, i) => (
+                        <div key={i} className="flex items-center gap-2 py-2 border-b border-[#111] last:border-none">
+                          <div className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></div>
+                          <span className="text-[#f0ead6] text-xs flex-1 truncate">{g.tipo} — "{g.texto.slice(0,50)}..."</span>
+                          <span className="text-zinc-600 text-[10px]">{g.hora}</span>
+                          <button onClick={() => navigator.clipboard.writeText(g.texto)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">Copiar</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+          </div>
+        </div>
       </div>
     </div>
   );
