@@ -16,10 +16,15 @@ export default function Copy() {
   const [imagen, setImagen] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progreso, setProgreso] = useState(0);
+  const [tiempoInicio, setTiempoInicio] = useState(0);
+const tiempoInicioRef = useRef(0);
+  const [tiempoReal, setTiempoReal] = useState(0);
   const [resultado, setResultado] = useState<any>(null);
   const [tabActivo, setTabActivo] = useState("landing");
   const [guardados, setGuardados] = useState<any[]>([]);
+  const [queGenerar, setQueGenerar] = useState<string[]>(["Landing page","WhatsApp x3","Meta Ads","Redes sociales","Campaña 7 días","Email seguimiento","Objeciones","SEO + extras"]);
   const fileRef = useRef<HTMLInputElement>(null);
+
   const paises = [
     { nombre: "Colombia", flag: "🇨🇴" },
     { nombre: "México", flag: "🇲🇽" },
@@ -38,6 +43,15 @@ export default function Copy() {
     { nombre: "Premium", color: "purple" },
   ];
 
+  const tonoColor: any = {
+    orange: "border-orange-500 bg-orange-500/10 text-orange-500",
+    pink: "border-pink-500 bg-pink-500/10 text-pink-500",
+    cyan: "border-cyan-400 bg-cyan-400/10 text-cyan-400",
+    white: "border-zinc-600 bg-zinc-800 text-zinc-300",
+    green: "border-green-400 bg-green-400/10 text-green-400",
+    purple: "border-purple-500 bg-purple-500/10 text-purple-500",
+  };
+
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -55,13 +69,42 @@ export default function Copy() {
     img.src = URL.createObjectURL(file);
   }
 
+  function quitarImagen(e: React.MouseEvent) {
+    e.stopPropagation();
+    setImagen(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
   function guardar(texto: string, tipo: string) {
     setGuardados(prev => [{ texto, tipo, hora: new Date().toLocaleTimeString() }, ...prev]);
+  }
+
+  async function regenerar(seccion: string) {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, categoria, seccion }),
+    });
+    const data = await res.json();
+    setResultado((prev: any) => ({ ...prev, [seccion]: data[seccion] || prev[seccion] }));
+  }
+
+  async function mejorar(seccion: string) {
+    const textoActual = resultado[seccion];
+    const res = await fetch("/api/mejorar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto: textoActual, producto, pais, tono }),
+    });
+    const data = await res.json();
+    setResultado((prev: any) => ({ ...prev, [seccion]: data.texto || prev[seccion] }));
   }
 
   async function generar(conImagen = false) {
     if (!producto) return;
     setLoading(true);
+    setTiempoInicio(Date.now());
+tiempoInicioRef.current = Date.now();
     setProgreso(0);
     setResultado(null);
     const pasos = [10, 25, 40, 55, 70, 85, 95, 100];
@@ -74,30 +117,18 @@ export default function Copy() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          producto, caracteristicas, problema, beneficio,
-          precioOferta, precioAnterior, clientes, competidor,
-          pais, tono, categoria,
-          imagen: conImagen ? imagen : null,
-        }),
+        body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen: conImagen ? imagen : null }),
       });
       const data = await res.json();
       clearInterval(interval);
       setProgreso(100);
       setResultado(data);
+      setTiempoReal(Math.round((Date.now() - tiempoInicioRef.current) / 1000));
     } catch {
       clearInterval(interval);
     }
     setLoading(false);
   }
-const tonoColor: any = {
-    orange: "border-orange-500 bg-orange-500/10 text-orange-500",
-    pink: "border-pink-500 bg-pink-500/10 text-pink-500",
-    cyan: "border-cyan-400 bg-cyan-400/10 text-cyan-400",
-    white: "border-zinc-600 bg-zinc-800 text-zinc-300",
-    green: "border-green-400 bg-green-400/10 text-green-400",
-    purple: "border-purple-500 bg-purple-500/10 text-purple-500",
-  };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -115,20 +146,22 @@ const tonoColor: any = {
           <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, WhatsApp, Meta Ads, redes y campaña de 7 días en segundos</p>
         </div>
 
-     <div className="grid grid-cols-[380px_1fr] gap-6">
-     {/* FORMULARIO */}
+        <div className="grid grid-cols-[380px_1fr] gap-6">
+
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-[#151515]">
               <span className="text-orange-500 text-lg">📦</span>
               <span className="text-white font-bold text-sm">Datos del producto</span>
             </div>
 
-            {/* Imagen */}
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 mb-1.5">Imagen del producto</label>
-              <div onClick={() => fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors">
+              <div onClick={() => !imagen && fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors relative">
                 {imagen ? (
-                  <img src={imagen} className="h-20 mx-auto rounded-lg object-contain" />
+                  <div className="relative inline-block">
+                    <img src={imagen} className="h-20 mx-auto rounded-lg object-contain" alt="producto" />
+                    <button onClick={quitarImagen} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">✕</button>
+                  </div>
                 ) : (
                   <>
                     <div className="text-orange-500 text-xl mb-1">📷</div>
@@ -140,61 +173,55 @@ const tonoColor: any = {
               <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
             </div>
 
-            {/* Nombre */}
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Nombre del producto *</label>
-              <input value={producto} onChange={e => setProducto(e.target.value)} placeholder="Ej: Rodillax" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              <input value={producto} onChange={e => setProducto(e.target.value)} placeholder="Ej: Rodillax" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
             </div>
 
-            {/* Características */}
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Características — Amazon · MeLi · tu tienda</label>
-              <textarea value={caracteristicas} onChange={e => setCaracteristicas(e.target.value)} placeholder="Pega aquí · la IA convierte cada característica en beneficio emocional..." className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs outline-none placeholder-[#999] resize-none h-16 focus:border-orange-500" />
+              <textarea value={caracteristicas} onChange={e => setCaracteristicas(e.target.value)} placeholder="Pega aquí · la IA convierte cada característica en beneficio emocional..." className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs outline-none placeholder-[#999] resize-none h-16" />
               <p className="text-orange-500 text-[10px] mt-1 font-medium">La IA detecta el formato y lo procesa automáticamente</p>
             </div>
 
-            {/* Problema + Beneficio */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Problema</label>
-                <input value={problema} onChange={e => setProblema(e.target.value)} placeholder="Dolor de rodilla" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+                <input value={problema} onChange={e => setProblema(e.target.value)} placeholder="Dolor de rodilla" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Beneficio principal</label>
-                <input value={beneficio} onChange={e => setBeneficio(e.target.value)} placeholder="Alivio en 10 min" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+                <input value={beneficio} onChange={e => setBeneficio(e.target.value)} placeholder="Alivio en 10 min" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
             </div>
 
-            {/* Precios */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Precio oferta</label>
-                <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} placeholder="$49.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+                <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} placeholder="$49.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Precio anterior</label>
-                <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} placeholder="$89.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+                <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} placeholder="$89.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
             </div>
 
-            {/* Clientes */}
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Clientes actuales (aprox.)</label>
-              <input value={clientes} onChange={e => setClientes(e.target.value)} placeholder="Ej: 17.000+ clientes satisfechos" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-orange-500" />
+              <input value={clientes} onChange={e => setClientes(e.target.value)} placeholder="Ej: 17.000+ clientes satisfechos" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
             </div>
 
-            {/* Competidor */}
             <div className="mb-3">
               <label className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Analizar competidor</label>
               <div className="flex gap-2">
-                <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999] focus:border-cyan-400" />
+                <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
                 <button className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap">Analizar</button>
               </div>
               <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
             </div>
 
             <hr className="border-[#111] my-4" />
-            {/* País */}
+
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">País objetivo</label>
               <div className="flex flex-wrap gap-1.5">
@@ -206,7 +233,6 @@ const tonoColor: any = {
               </div>
             </div>
 
-            {/* Tono */}
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Tono de comunicación</label>
               <div className="flex flex-wrap gap-1.5">
@@ -218,7 +244,6 @@ const tonoColor: any = {
               </div>
             </div>
 
-            {/* Categoría */}
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Categoría</label>
               <select value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none">
@@ -228,49 +253,44 @@ const tonoColor: any = {
 
             <hr className="border-[#111] my-4" />
 
-            {/* Qué generar */}
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-2 block">Qué generar</label>
               <div className="grid grid-cols-2 gap-1.5">
                 {["Landing page","WhatsApp x3","Meta Ads","Redes sociales","Campaña 7 días","Email seguimiento","Objeciones","SEO + extras"].map(item => (
-                  <div key={item} className="flex items-center gap-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></div>
-                    <span className="text-[#f0ead6] text-[11px]">{item}</span>
+                  <div key={item} onClick={() => setQueGenerar(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item])} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer border transition-all ${queGenerar.includes(item) ? "bg-orange-500/10 border-orange-500/30" : "bg-[#0d0d0d] border-[#1a1a1a]"}`}>
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${queGenerar.includes(item) ? "bg-orange-500" : "bg-[#333]"}`}></div>
+                    <span className={`text-[11px] ${queGenerar.includes(item) ? "text-orange-400" : "text-[#f0ead6]"}`}>{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Botones */}
             <button onClick={() => generar(false)} disabled={!producto || loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-black py-3 rounded-xl text-sm mb-2 transition-colors flex items-center justify-center gap-2">
               ⚡ Generar todo ahora
             </button>
             <button onClick={() => generar(true)} disabled={!producto || !imagen || loading} className="w-full bg-[#050505] border border-cyan-400/35 text-cyan-400 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-40">
               👁️ Generar con análisis de imagen · GPT-4o Vision
             </button>
-
           </div>
-          {/* PANEL RESULTADOS */}
+
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
 
-            {/* Banner tiempo/ahorro */}
             {resultado && (
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-orange-500 text-lg">⚡</span>
                   <div className="text-xs text-zinc-400 leading-5">
-                    Generaste en <span className="text-white font-bold">87 segundos</span> lo que un copywriter haría en <span className="text-white font-bold">2-3 días</span><br/>
+                    Generaste en <span className="text-white font-bold">{tiempoReal} segundos</span> lo que un copywriter haría en <span className="text-white font-bold">2-3 días</span><br/>
                     Ahorraste aprox. <span className="text-orange-500 font-bold">$350 USD</span> en servicios de marketing
                   </div>
                 </div>
                 <div className="flex gap-4 text-right">
-                  <div><div className="text-orange-500 text-xl font-black">87s</div><div className="text-zinc-500 text-[10px]">Tiempo</div></div>
+                  <div><div className="text-orange-500 text-xl font-black">{tiempoReal}s</div><div className="text-zinc-500 text-[10px]">Tiempo</div></div>
                   <div><div className="text-green-400 text-xl font-black">$350</div><div className="text-zinc-500 text-[10px]">Ahorrado</div></div>
                 </div>
               </div>
             )}
 
-            {/* Métricas */}
             {resultado && (
               <div className="grid grid-cols-4 gap-2 mb-4">
                 <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
@@ -292,7 +312,6 @@ const tonoColor: any = {
               </div>
             )}
 
-            {/* Tabs */}
             <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
               {[
                 {id:"landing",label:"Landing",color:"bg-orange-500"},
@@ -308,61 +327,57 @@ const tonoColor: any = {
               ))}
             </div>
 
-            {/* Copiar todo */}
-            <button className="w-full bg-[#0d0d0d] border border-[#1e1e1e] text-[#f0ead6] rounded-lg py-2 text-xs mb-4 flex items-center justify-center gap-2">
+            <button onClick={() => resultado && navigator.clipboard.writeText(Object.values(resultado).join("\n\n"))} className="w-full bg-[#0d0d0d] border border-[#1e1e1e] text-[#f0ead6] rounded-lg py-2 text-xs mb-4 flex items-center justify-center gap-2">
               📋 Copiar todo el contenido generado
             </button>
-            {/* Barra de progreso */}
+
             {loading && (
               <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4">
                 <div className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-3">⚙️ Generando contenido · {progreso}%</div>
                 {[
-                  {icon:"🧠",texto:"Analizando producto y mercado",limite:25,color:"bg-orange-500"},
-                  {icon:"🎯",texto:"Identificando puntos de dolor",limite:50,color:"bg-cyan-400"},
-                  {icon:"✍️",texto:"Escribiendo copy persuasivo",limite:75,color:"bg-purple-500"},
-                  {icon:"🚀",texto:"Optimizando campaña de 7 días",limite:100,color:"bg-green-400"},
+                  {icon:"🧠",texto:"Analizando producto y mercado",color:"bg-orange-500"},
+                  {icon:"🎯",texto:"Identificando puntos de dolor",color:"bg-cyan-400"},
+                  {icon:"✍️",texto:"Escribiendo copy persuasivo",color:"bg-purple-500"},
+                  {icon:"🚀",texto:"Optimizando campaña de 7 días",color:"bg-green-400"},
                 ].map((p,i) => (
                   <div key={i} className="flex items-center gap-2 mb-2">
                     <span className="text-sm w-5">{p.icon}</span>
                     <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
                     <div className="flex-1 h-[3px] bg-[#111] rounded-full">
-                      <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{width: `${Math.min(100, Math.max(0, (progreso - (i*25)) * 4))}%`}}></div>
+                      <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{width:`${Math.min(100,Math.max(0,(progreso-(i*25))*4))}%`}}></div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Estado vacío */}
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
               </div>
             )}
 
-            {/* RESULTADOS */}
             {resultado && (
               <div className="space-y-4">
 
-                {/* LANDING */}
                 {tabActivo === "landing" && (
                   <>
                     {[
-                      {key:"hero",titulo:"Hero — titular",color:"orange"},
-                      {key:"problema",titulo:"El problema",color:"orange"},
-                      {key:"solucion",titulo:"La solución",color:"orange"},
-                      {key:"beneficios",titulo:"Beneficios reales",color:"orange"},
-                      {key:"testimonios",titulo:"Testimonios",color:"orange"},
-                      {key:"cta",titulo:"CTA final",color:"orange"},
+                      {key:"hero",titulo:"Hero — titular"},
+                      {key:"problema",titulo:"El problema"},
+                      {key:"solucion",titulo:"La solución"},
+                      {key:"beneficios",titulo:"Beneficios reales"},
+                      {key:"testimonios",titulo:"Testimonios"},
+                      {key:"cta",titulo:"CTA final"},
                     ].map(s => resultado[s.key] && (
                       <div key={s.key} className="border border-orange-500 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
                           <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">{s.titulo}</span>
                           <div className="flex gap-1.5">
-                            <button className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md">↻ Regenerar</button>
-                            <button className="bg-cyan-400/08 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
+                            <button onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md">↻ Regenerar</button>
+                            <button onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
                             <button onClick={() => navigator.clipboard.writeText(resultado[s.key])} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
-                            <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                            <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
                         </div>
                         <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado[s.key]}</div>
@@ -371,66 +386,81 @@ const tonoColor: any = {
                   </>
                 )}
 
-                {/* WHATSAPP */}
                 {tabActivo === "whatsapp" && resultado.whatsapp && (
                   <div className="border border-cyan-400 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
                       <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => navigator.clipboard.writeText(resultado.whatsapp)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar todas</button>
-                        <button onClick={() => guardar(resultado.whatsapp, "WhatsApp x3")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                        <button onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
+                        <button onClick={() => navigator.clipboard.writeText(resultado.whatsapp)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.whatsapp}</div>
                   </div>
                 )}
 
-                {/* CAMPAÑA */}
                 {tabActivo === "campana" && resultado.campana && (
                   <div className="border border-green-400 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
                       <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">Campaña de lanzamiento · 7 días</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => navigator.clipboard.writeText(resultado.campana)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar todo</button>
-                        <button onClick={() => guardar(resultado.campana, "Campaña 7 días")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                        <button onClick={() => navigator.clipboard.writeText(resultado.campana)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => guardar(resultado.campana,"Campaña 7 días")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.campana}</div>
                   </div>
                 )}
 
-                {/* META ADS */}
                 {tabActivo === "metaads" && resultado.metaads && (
                   <div className="border border-pink-500 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
                       <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
                       <div className="flex gap-1.5">
                         <button onClick={() => navigator.clipboard.writeText(resultado.metaads)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
-                        <button onClick={() => guardar(resultado.metaads, "Meta Ads")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                        <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.metaads}</div>
                   </div>
                 )}
 
-                {/* EXTRAS */}
+                {tabActivo === "prompts" && (
+                  <div className="border border-purple-500 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-500/20">
+                      <span className="text-purple-400 text-[10px] font-bold tracking-widest uppercase">Prompts para imágenes IA</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => resultado?.prompts && navigator.clipboard.writeText(resultado.prompts)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">
+                      {resultado?.prompts || "Los prompts profesionales se generan junto con el copy. Presiona Generar para obtenerlos."}
+                    </div>
+                    <div className="px-4 py-3 border-t border-purple-500/20">
+                      <button className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg py-2 text-xs font-bold">
+                        → Ir al módulo de imágenes con este producto
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {tabActivo === "extras" && resultado.extras && (
                   <div className="border border-zinc-600 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
                       <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">Extras · SEO · Objeciones · Email</span>
                       <div className="flex gap-1.5">
                         <button onClick={() => navigator.clipboard.writeText(resultado.extras)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
-                        <button onClick={() => guardar(resultado.extras, "Extras")} className="bg-green-400/08 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                        <button onClick={() => guardar(resultado.extras,"Extras")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.extras}</div>
                   </div>
                 )}
 
-                {/* COPYS GUARDADOS */}
                 {guardados.length > 0 && (
                   <div className="border border-orange-500 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
+                    <div className="px-4 py-2.5 border-b border-orange-500/20">
                       <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">❤ Mis copys guardados</span>
                     </div>
                     <div className="bg-[#070707] px-4 py-3">
@@ -448,7 +478,6 @@ const tonoColor: any = {
 
               </div>
             )}
-
           </div>
         </div>
       </div>
