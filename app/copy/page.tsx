@@ -166,7 +166,7 @@ export default function Copy() {
               <div onClick={() => !imagen && fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors relative">
                 {imagen ? (
                   <div className="relative inline-block">
-                    <img src={imagen} className="h-20 mx-auto rounded-lg object-contain" alt="producto" />
+                    <img src={imagen} className="h-40 mx-auto rounded-lg object-contain" alt="producto" />
                     <button onClick={quitarImagen} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">✕</button>
                   </div>
                 ) : (
