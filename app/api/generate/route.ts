@@ -31,7 +31,6 @@ Genera copy de ventas para este producto:
 ${competidor ? `- Superar a este competidor: ${competidor}` : ""}
 
 Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
-Incluye SOLO los campos que corresponden segun las instrucciones.
 
 {
   ${gl ? `"hero": "titular hero poderoso maximo 2 lineas",
@@ -40,10 +39,10 @@ Incluye SOLO los campos que corresponden segun las instrucciones.
   "beneficios": "beneficios separados por saltos de linea",
   "testimonios": "3 testimonios con nombre y ciudad separados por saltos de linea",
   "cta": "CTA final urgente con precio incluido",` : ""}
-  ${gw ? `"whatsapp": "Mensaje 1 - Primer contacto frio:\\n[texto del mensaje]\\n\\nMensaje 2 - Seguimiento:\\n[texto del mensaje]\\n\\nMensaje 3 - Cierre de venta:\\n[texto del mensaje]",` : ""}
-  ${gm ? `"metaads": "Anuncio 1:\\nTitulo: [maximo 30 caracteres]\\nDescripcion: [maximo 90 caracteres]\\n\\nAnuncio 2:\\nTitulo: [maximo 30 caracteres]\\nDescripcion: [maximo 90 caracteres]\\n\\nAnuncio 3:\\nTitulo: [maximo 30 caracteres]\\nDescripcion: [maximo 90 caracteres]",` : ""}
-  ${gc ? `"campana": "Dia 1: [contenido completo]\\nDia 2: [contenido completo]\\nDia 3: [contenido completo]\\nDia 4: [contenido completo]\\nDia 5: [contenido completo]\\nDia 6: [contenido completo]\\nDia 7: [contenido completo]",` : ""}
-  "extras": "${ge ? "SEO keywords separadas por comas, principales objeciones y como manejarlas, email de seguimiento completo" : ""}"
+  ${gw ? `"whatsapp": "Mensaje 1 - Primer contacto frio:\\n[texto]\\n\\nMensaje 2 - Seguimiento:\\n[texto]\\n\\nMensaje 3 - Cierre:\\n[texto]",` : ""}
+  ${gm ? `"metaads": "Anuncio 1:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]\\n\\nAnuncio 2:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]",` : ""}
+  ${gc ? `"campana": "Dia 1: [contenido]\\nDia 2: [contenido]\\nDia 3: [contenido]\\nDia 4: [contenido]\\nDia 5: [contenido]\\nDia 6: [contenido]\\nDia 7: [contenido]",` : ""}
+  "extras": "${ge ? "SEO keywords, objeciones y como manejarlas, email de seguimiento" : ""}"
 }`;
 
     const messages: any[] = [];
@@ -77,19 +76,24 @@ Incluye SOLO los campos que corresponden segun las instrucciones.
       }),
     });
 
+    const data = await response.json();
+    console.log("OpenAI status:", response.status);
+    console.log("OpenAI response:", JSON.stringify(data).slice(0, 500));
+
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json({ error: JSON.stringify(errorData) }, { status: 500 });
+      console.error("OpenAI error:", JSON.stringify(data));
+      return NextResponse.json({ error: JSON.stringify(data) }, { status: 500 });
     }
 
-    const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "{}";
+    console.log("Content received:", content.slice(0, 200));
 
     let resultado: any = {};
     try {
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       resultado = JSON.parse(cleaned);
-    } catch {
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr);
       resultado = { hero: content };
     }
 
@@ -102,6 +106,7 @@ Incluye SOLO los campos que corresponden segun las instrucciones.
     return NextResponse.json(resultado);
 
   } catch (err: any) {
+    console.error("API error:", err.message, err.stack);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
