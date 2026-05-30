@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+const protectedRoutes = ["/copy", "/redes", "/landing"];
 
-  const publicPaths = ["/", "/login", "/precios"];
-  const isPublic = publicPaths.some(p => pathname === p) || pathname.startsWith("/api") || pathname.startsWith("/_next");
-
-  if (isPublic) return NextResponse.next();
-
-  const res = NextResponse.next();
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,26 +12,41 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         getAll() {
-          return req.cookies.getAll();
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => {
-            res.cookies.set(name, value, options);
+            response.cookies.set(name, value, options);
           });
         },
       },
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  const pathname = request.nextUrl.pathname;
+  const isProtected = protectedRoutes.some(r => pathname.startsWith(r));
+
+  if (isProtected && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
   }
 
-  return res;
+  if (pathname === "/login" && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/copy";
+    return NextResponse.redirect(url);
+  }
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

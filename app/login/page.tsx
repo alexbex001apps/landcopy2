@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const supabase = createClient();
+  const router = useRouter();
   const [modo, setModo] = useState<"login" | "registro">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   async function handleLogin() {
     if (!email || !password) return;
@@ -19,7 +20,8 @@ export default function Login() {
     if (error) {
       setError("Correo o contraseña incorrectos");
     } else {
-      router.push("/copy");
+      router.replace("/copy");
+      router.refresh();
     }
     setLoading(false);
   }
