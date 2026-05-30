@@ -1,7 +1,14 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Copy() {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = "/login";
+    });
+  }, []);
+
   const [producto, setProducto] = useState("");
   const [caracteristicas, setCaracteristicas] = useState("");
   const [problema, setProblema] = useState("");
@@ -17,7 +24,7 @@ export default function Copy() {
   const [loading, setLoading] = useState(false);
   const [progreso, setProgreso] = useState(0);
   const [tiempoInicio, setTiempoInicio] = useState(0);
-const tiempoInicioRef = useRef(0);
+  const tiempoInicioRef = useRef(0);
   const [tiempoReal, setTiempoReal] = useState(0);
   const [resultado, setResultado] = useState<any>(null);
   const [tabActivo, setTabActivo] = useState("landing");
@@ -104,7 +111,7 @@ const tiempoInicioRef = useRef(0);
     if (!producto) return;
     setLoading(true);
     setTiempoInicio(Date.now());
-tiempoInicioRef.current = Date.now();
+    tiempoInicioRef.current = Date.now();
     setProgreso(0);
     setResultado(null);
     const pasos = [10, 25, 40, 55, 70, 85, 95, 100];
@@ -117,7 +124,7 @@ tiempoInicioRef.current = Date.now();
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen: conImagen ? imagen : null }),
+        body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen: conImagen ? imagen : null, queGenerar }),
       });
       const data = await res.json();
       clearInterval(interval);
