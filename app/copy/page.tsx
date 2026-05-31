@@ -397,7 +397,7 @@ export default function Copy() {
                             <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
                         </div>
-                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado[s.key]}</div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado[s.key]}</div>
                       </div>
                     ))}
                   </>
@@ -415,7 +415,7 @@ export default function Copy() {
                         <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.whatsapp}</div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.whatsapp}</div>
                   </div>
                 )}
 
@@ -428,7 +428,7 @@ export default function Copy() {
                         <button onClick={() => guardar(resultado.campana,"Campaña 7 días")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.campana}</div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.campana}</div>
                   </div>
                 )}
 
@@ -441,7 +441,7 @@ export default function Copy() {
                         <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.metaads}</div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
                   </div>
                 )}
 
@@ -453,7 +453,7 @@ export default function Copy() {
                         <button onClick={() => resultado?.prompts && navigator.clipboard.writeText(resultado.prompts)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
                       </div>
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">
                       {resultado?.prompts || "Los prompts profesionales se generan junto con el copy. Presiona Generar para obtenerlos."}
                     </div>
                     <div className="px-4 py-3 border-t border-purple-500/20">
@@ -473,7 +473,7 @@ export default function Copy() {
                         <button onClick={() => guardar(resultado.extras,"Extras")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap">{resultado.extras}</div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.extras}</div>
                   </div>
                 )}
 
