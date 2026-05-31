@@ -27,7 +27,13 @@ export default function Copy() {
   const [tiempoInicio, setTiempoInicio] = useState(0);
   const tiempoInicioRef = useRef(0);
   const [tiempoReal, setTiempoReal] = useState(0);
-  const [resultado, setResultado] = useState<any>(null);
+  const [resultado, setResultado] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("landcopy_resultado");
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
   const [tabActivo, setTabActivo] = useState("landing");
   const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
@@ -186,6 +192,7 @@ export default function Copy() {
       clearInterval(interval);
       setProgreso(100);
       setResultado(data);
+      sessionStorage.setItem("landcopy_resultado", JSON.stringify(data));
       setTiempoReal(Math.round((Date.now() - tiempoInicioRef.current) / 1000));
     } catch {
       clearInterval(interval);
