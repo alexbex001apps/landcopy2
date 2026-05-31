@@ -32,6 +32,8 @@ export default function Copy() {
   const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState<string | null>(null);
+  const [toastGuardado, setToastGuardado] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const paises = [
