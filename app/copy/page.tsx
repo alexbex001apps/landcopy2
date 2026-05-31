@@ -521,7 +521,37 @@ export default function Copy() {
                 </div>
               </div>
             )}
- 
+                                                                  
+            <div className="mt-6 flex flex-col items-center justify-center gap-4 py-8">
+                  {[
+                    "Tu competencia no está haciendo esto ahora mismo...",
+                    "Construyendo copy que vende mientras esperas...",
+                    "La IA está analizando tu mercado objetivo...",
+                    "Generando 7 días de campaña completa...",
+                    `Optimizando para ${pais} y tono ${tono}...`,
+                    "Cada palabra está siendo diseñada para convertir...",
+                    "Esto tomaría 2-3 días a un copywriter profesional...",
+                  ].map((frase, i) => (
+                    <p
+                      key={i}
+                      className="text-[#f0ead6] text-xs font-medium text-center opacity-0"
+                      style={{
+                        animation: `fadePhrase 1.5s ease-in-out ${i * 1.8}s infinite`,
+                        maxWidth: "320px",
+                      }}
+                    >
+                      {frase}
+                    </p>
+                  ))}
+                </div>
+                <style>{`
+                  @keyframes fadePhrase {
+                    0% { opacity: 0; transform: translateY(6px); }
+                    20% { opacity: 1; transform: translateY(0); }
+                    80% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-6px); }
+                  }
+                `}</style>                                                      
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
