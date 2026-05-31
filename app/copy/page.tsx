@@ -87,7 +87,7 @@ export default function Copy() {
   }
 
  function guardar(texto: string, tipo: string) {
-    setGuardados(prev => [{ texto, tipo, hora: new Date().toLocaleTimeString() }, ...prev]);
+    setGuardados(prev => [{ texto, tipo, producto, hora: new Date().toLocaleTimeString() }, ...prev]);
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
   }
@@ -492,16 +492,28 @@ export default function Copy() {
 
                 {guardados.length > 0 && (
                   <div className="border border-orange-500 rounded-xl overflow-hidden">
-                    <div className="px-4 py-2.5 border-b border-orange-500/20">
-                      <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">❤ Mis copys guardados</span>
+                    <div className="px-4 py-2.5 border-b border-orange-500/20 flex items-center justify-between">
+                      <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">❤ Mis copys guardados ({guardados.length})</span>
+                      <button onClick={() => setGuardados([])} className="text-red-400 text-[10px] font-bold hover:text-red-300">Borrar todo</button>
                     </div>
                     <div className="bg-[#070707] px-4 py-3">
                       {guardados.map((g, i) => (
-                        <div key={i} className="flex items-center gap-2 py-2 border-b border-[#111] last:border-none">
-                          <div className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></div>
-                          <span className="text-[#f0ead6] text-xs flex-1 truncate">{g.tipo} — "{g.texto.slice(0,50)}..."</span>
-                          <span className="text-zinc-600 text-[10px]">{g.hora}</span>
-                          <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
+                        <div key={i} className="py-3 border-b border-[#111] last:border-none">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-orange-500 text-[10px] font-bold">{g.producto || "Producto"}</span>
+                              <span className="text-zinc-600 text-[10px]">·</span>
+                              <span className="text-cyan-400 text-[10px] font-bold">{g.tipo}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-zinc-600 text-[10px]">{g.hora}</span>
+                              <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">
+                                {copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}
+                              </button>
+                              <button onClick={() => setGuardados(prev => prev.filter((_, idx) => idx !== i))} className="text-red-400 text-[10px] font-bold px-1">✕</button>
+                            </div>
+                          </div>
+                          <p className="text-[#f0ead6] text-xs truncate">{g.texto.slice(0, 80)}...</p>
                         </div>
                       ))}
                     </div>
