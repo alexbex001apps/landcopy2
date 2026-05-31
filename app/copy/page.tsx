@@ -29,7 +29,7 @@ export default function Copy() {
   const [resultado, setResultado] = useState<any>(null);
   const [tabActivo, setTabActivo] = useState("landing");
   const [guardados, setGuardados] = useState<any[]>([]);
-  const [queGenerar, setQueGenerar] = useState<string[]>(["Landing page","WhatsApp x3","Meta Ads","Redes sociales","Campaña 7 días","Email seguimiento","Objeciones","SEO + extras"]);
+  const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const paises = [
