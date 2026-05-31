@@ -32,9 +32,9 @@ export default function Copy() {
   const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
-  const [expandido, setExpandido] = useState<number | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toastGuardado, setToastGuardado] = useState(false);
+  const [expandido, setExpandido] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const paises = [
@@ -87,7 +87,7 @@ export default function Copy() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
- function guardar(texto: string, tipo: string) {
+  function guardar(texto: string, tipo: string) {
     setGuardados(prev => [{ texto, tipo, producto, hora: new Date().toLocaleTimeString() }, ...prev]);
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
@@ -98,6 +98,7 @@ export default function Copy() {
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
   }
+
   async function regenerar(seccion: string) {
     setSeccionCargando(`regenerar-${seccion}`);
     const res = await fetch("/api/generate", {
@@ -298,6 +299,12 @@ export default function Copy() {
 
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
 
+            {toastGuardado && (
+              <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
+                ✓ Copy guardado
+              </div>
+            )}
+
             {resultado && (
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -373,11 +380,7 @@ export default function Copy() {
                 ))}
               </div>
             )}
-            {toastGuardado && (
-  <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
-    ✓ Copy guardado
-  </div>
-)}
+
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
@@ -422,6 +425,9 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
                       <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
                       <div className="flex gap-1.5">
+                        <button disabled={seccionCargando !== null} onClick={() => regenerar("whatsapp")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "regenerar-whatsapp" ? "⏳ Generando..." : "↻ Regenerar"}
+                        </button>
                         <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
                           {seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}
                         </button>
@@ -438,6 +444,12 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
                       <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">Campaña de lanzamiento · 7 días</span>
                       <div className="flex gap-1.5">
+                        <button disabled={seccionCargando !== null} onClick={() => regenerar("campana")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "regenerar-campana" ? "⏳ Generando..." : "↻ Regenerar"}
+                        </button>
+                        <button disabled={seccionCargando !== null} onClick={() => mejorar("campana")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "mejorar-campana" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                        </button>
                         <button onClick={() => copiar(resultado.campana, "campana")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "campana" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.campana,"Campaña 7 días")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
@@ -446,25 +458,12 @@ export default function Copy() {
                   </div>
                 )}
 
-                {tabActivo === "metaads" && resultado.metaads && (
-                  <div className="border border-pink-500 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
-                      <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
-                      <div className="flex gap-1.5">
-                       <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
-                        <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-                      </div>
-                    </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
-                  </div>
-                )}
-
                 {tabActivo === "prompts" && (
                   <div className="border border-purple-500 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-500/20">
                       <span className="text-purple-400 text-[10px] font-bold tracking-widest uppercase">Prompts para imágenes IA</span>
                       <div className="flex gap-1.5">
-                       <button onClick={() => resultado?.prompts && copiar(resultado.prompts, "prompts")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "prompts" ? "✓ Copiado" : "Copiar"}</button>
+                        <button onClick={() => resultado?.prompts && copiar(resultado.prompts, "prompts")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "prompts" ? "✓ Copiado" : "Copiar"}</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">
@@ -478,55 +477,83 @@ export default function Copy() {
                   </div>
                 )}
 
+                {tabActivo === "metaads" && resultado.metaads && (
+                  <div className="border border-pink-500 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
+                      <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
+                      <div className="flex gap-1.5">
+                        <button disabled={seccionCargando !== null} onClick={() => regenerar("metaads")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "regenerar-metaads" ? "⏳ Generando..." : "↻ Regenerar"}
+                        </button>
+                        <button disabled={seccionCargando !== null} onClick={() => mejorar("metaads")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "mejorar-metaads" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                        </button>
+                        <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
+                        <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                      </div>
+                    </div>
+                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
+                  </div>
+                )}
+
                 {tabActivo === "extras" && (
-  <div className="space-y-4">
-    {resultado.seo && (
-      <div className="border border-zinc-600 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
-          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">🔍 SEO Keywords</span>
-          <div className="flex gap-1.5">
-            <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-              {seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}
-            </button>
-            <button onClick={() => copiar(resultado.seo, "seo")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "seo" ? "✓ Copiado" : "Copiar"}</button>
-            <button onClick={() => guardar(resultado.seo, "SEO Keywords")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-          </div>
-        </div>
-        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed select-text cursor-text">{resultado.seo}</div>
-      </div>
-    )}
-    {resultado.objeciones && (
-      <div className="border border-zinc-600 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
-          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">💬 Objeciones y Respuestas</span>
-          <div className="flex gap-1.5">
-            <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-              {seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}
-            </button>
-            <button onClick={() => copiar(resultado.objeciones, "objeciones")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "objeciones" ? "✓ Copiado" : "Copiar"}</button>
-            <button onClick={() => guardar(resultado.objeciones, "Objeciones")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-          </div>
-        </div>
-        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.objeciones}</div>
-      </div>
-    )}
-    {resultado.email && (
-      <div className="border border-zinc-600 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
-          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">📧 Email de seguimiento</span>
-          <div className="flex gap-1.5">
-            <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-              {seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}
-            </button>
-            <button onClick={() => copiar(resultado.email, "email")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "email" ? "✓ Copiado" : "Copiar"}</button>
-            <button onClick={() => guardar(resultado.email, "Email")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-          </div>
-        </div>
-        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.email}</div>
-      </div>
-    )}
-  </div>
-)}
+                  <div className="space-y-4">
+                    {resultado.seo && (
+                      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">🔍 SEO Keywords</span>
+                          <div className="flex gap-1.5">
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("seo")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "regenerar-seo" ? "⏳ Generando..." : "↻ Regenerar"}
+                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                            </button>
+                            <button onClick={() => copiar(resultado.seo, "seo")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "seo" ? "✓ Copiado" : "Copiar"}</button>
+                            <button onClick={() => guardar(resultado.seo, "SEO Keywords")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed select-text cursor-text">{resultado.seo}</div>
+                      </div>
+                    )}
+                    {resultado.objeciones && (
+                      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">💬 Objeciones y Respuestas</span>
+                          <div className="flex gap-1.5">
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("objeciones")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "regenerar-objeciones" ? "⏳ Generando..." : "↻ Regenerar"}
+                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                            </button>
+                            <button onClick={() => copiar(resultado.objeciones, "objeciones")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "objeciones" ? "✓ Copiado" : "Copiar"}</button>
+                            <button onClick={() => guardar(resultado.objeciones, "Objeciones")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.objeciones}</div>
+                      </div>
+                    )}
+                    {resultado.email && (
+                      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">📧 Email de seguimiento</span>
+                          <div className="flex gap-1.5">
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("email")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "regenerar-email" ? "⏳ Generando..." : "↻ Regenerar"}
+                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                            </button>
+                            <button onClick={() => copiar(resultado.email, "email")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "email" ? "✓ Copiado" : "Copiar"}</button>
+                            <button onClick={() => guardar(resultado.email, "Email")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.email}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {guardados.length > 0 && (
                   <div className="border border-orange-500 rounded-xl overflow-hidden">
@@ -552,9 +579,9 @@ export default function Copy() {
                             </div>
                           </div>
                           <p onClick={() => setExpandido(expandido === i ? null : i)} className="text-[#f0ead6] text-xs cursor-pointer hover:text-white transition-colors whitespace-pre-wrap">
-  {expandido === i ? g.texto : `${g.texto.slice(0, 80)}...`}
-  <span className="text-zinc-500 ml-1">{expandido === i ? "▲ ver menos" : "▼ ver más"}</span>
-</p>
+                            {expandido === i ? g.texto : `${g.texto.slice(0, 80)}...`}
+                            <span className="text-zinc-500 ml-1">{expandido === i ? "▲ ver menos" : "▼ ver más"}</span>
+                          </p>
                         </div>
                       ))}
                     </div>
