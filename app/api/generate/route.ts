@@ -30,6 +30,22 @@ Genera copy de ventas para este producto:
 - Clientes actuales: ${clientes || "no especificado"}
 ${competidor ? `- Superar a este competidor: ${competidor}` : ""}
 
+INSTRUCCIONES DE PAÍS Y JERGA:
+- Si el país es Colombia: usa expresiones como "parce", "bacano", "qué nota", "chévere", precios en pesos colombianos, referencias culturales colombianas.
+- Si el país es México: usa expresiones como "órale", "chido", "qué onda", "cuate", precios en pesos mexicanos, referencias culturales mexicanas.
+- Si el país es Venezuela: usa expresiones como "chamo", "pana", "chevere", "arrecho", referencias culturales venezolanas.
+- Si el país es Costa Rica: usa expresiones como "mae", "tuanis", "qué chiva", referencias ticas.
+- Si el país es Ecuador: usa expresiones como "bacán", "chiro", referencias ecuatorianas.
+- Si el país es General: usa español neutro latinoamericano sin regionalismos.
+
+INSTRUCCIONES DE TONO:
+- Urgente: escasez, tiempo limitado, pérdida si no actúa ya, números concretos.
+- Emocional: historia, dolor profundo, transformación, lágrimas a sonrisas.
+- Racional: datos, comparaciones, lógica, ROI, evidencia.
+- Casual: amigo hablando, relajado, sin presión, conversacional.
+- Confianza: autoridad, trayectoria, garantías, testimonios verificables.
+- Premium: exclusividad, lujo, selecto, no para todos.
+
 Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
 
 {
