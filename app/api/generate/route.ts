@@ -58,9 +58,10 @@ Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
   ${gw ? `"whatsapp": "Mensaje 1 - Primer contacto frio:\\n[texto]\\n\\nMensaje 2 - Seguimiento:\\n[texto]\\n\\nMensaje 3 - Cierre:\\n[texto]",` : ""}
   ${gm ? `"metaads": "Anuncio 1:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]\\n\\nAnuncio 2:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]",` : ""}
   ${gc ? `"campana": "Dia 1: [contenido]\\nDia 2: [contenido]\\nDia 3: [contenido]\\nDia 4: [contenido]\\nDia 5: [contenido]\\nDia 6: [contenido]\\nDia 7: [contenido]",` : ""}
-  "extras": "${ge ? "SEO keywords, objeciones y como manejarlas, email de seguimiento" : ""}"
+ ${ge ? `"seo": "5 keywords SEO separadas por comas para posicionar este producto",
+  "objeciones": "Objecion 1: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 2: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 3: [objecion]\\nRespuesta: [respuesta]",
+  "email": "Asunto: [asunto del email]\\n\\nCuerpo: [cuerpo completo del email de seguimiento]",` : ""}
 }`;
-
     const messages: any[] = [];
     if (imagen) {
       messages.push({

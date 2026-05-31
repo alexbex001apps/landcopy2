@@ -478,18 +478,55 @@ export default function Copy() {
                   </div>
                 )}
 
-                {tabActivo === "extras" && resultado.extras && (
-                  <div className="border border-zinc-600 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
-                      <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">Extras · SEO · Objeciones · Email</span>
-                      <div className="flex gap-1.5">
-                        <button onClick={() => copiar(resultado.extras, "extras")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "extras" ? "✓ Copiado" : "Copiar"}</button>
-                        <button onClick={() => guardar(resultado.extras,"Extras")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-                      </div>
-                    </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.extras}</div>
-                  </div>
-                )}
+                {tabActivo === "extras" && (
+  <div className="space-y-4">
+    {resultado.seo && (
+      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">🔍 SEO Keywords</span>
+          <div className="flex gap-1.5">
+            <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+              {seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}
+            </button>
+            <button onClick={() => copiar(resultado.seo, "seo")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "seo" ? "✓ Copiado" : "Copiar"}</button>
+            <button onClick={() => guardar(resultado.seo, "SEO Keywords")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+          </div>
+        </div>
+        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed select-text cursor-text">{resultado.seo}</div>
+      </div>
+    )}
+    {resultado.objeciones && (
+      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">💬 Objeciones y Respuestas</span>
+          <div className="flex gap-1.5">
+            <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+              {seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}
+            </button>
+            <button onClick={() => copiar(resultado.objeciones, "objeciones")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "objeciones" ? "✓ Copiado" : "Copiar"}</button>
+            <button onClick={() => guardar(resultado.objeciones, "Objeciones")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+          </div>
+        </div>
+        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.objeciones}</div>
+      </div>
+    )}
+    {resultado.email && (
+      <div className="border border-zinc-600 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+          <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">📧 Email de seguimiento</span>
+          <div className="flex gap-1.5">
+            <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+              {seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}
+            </button>
+            <button onClick={() => copiar(resultado.email, "email")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "email" ? "✓ Copiado" : "Copiar"}</button>
+            <button onClick={() => guardar(resultado.email, "Email")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+          </div>
+        </div>
+        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.email}</div>
+      </div>
+    )}
+  </div>
+)}
 
                 {guardados.length > 0 && (
                   <div className="border border-orange-500 rounded-xl overflow-hidden">
