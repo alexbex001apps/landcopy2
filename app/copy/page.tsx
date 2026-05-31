@@ -10,18 +10,19 @@ export default function Copy() {
     });
   }, []);
  
-  const [producto, setProducto] = useState("");
-  const [caracteristicas, setCaracteristicas] = useState("");
-  const [problema, setProblema] = useState("");
-  const [beneficio, setBeneficio] = useState("");
-  const [precioOferta, setPrecioOferta] = useState("");
-  const [precioAnterior, setPrecioAnterior] = useState("");
-  const [clientes, setClientes] = useState("");
-  const [competidor, setCompetidor] = useState("");
-  const [pais, setPais] = useState("Colombia");
-  const [tono, setTono] = useState("Urgente");
-  const [categoria, setCategoria] = useState("Salud y bienestar");
-  const [imagen, setImagen] = useState<string | null>(null);
+  const ss = typeof window !== "undefined" ? sessionStorage : null;
+  const [producto, setProducto] = useState(() => ss?.getItem("lc_producto") || "");
+  const [caracteristicas, setCaracteristicas] = useState(() => ss?.getItem("lc_caracteristicas") || "");
+  const [problema, setProblema] = useState(() => ss?.getItem("lc_problema") || "");
+  const [beneficio, setBeneficio] = useState(() => ss?.getItem("lc_beneficio") || "");
+  const [precioOferta, setPrecioOferta] = useState(() => ss?.getItem("lc_precioOferta") || "");
+  const [precioAnterior, setPrecioAnterior] = useState(() => ss?.getItem("lc_precioAnterior") || "");
+  const [clientes, setClientes] = useState(() => ss?.getItem("lc_clientes") || "");
+  const [competidor, setCompetidor] = useState(() => ss?.getItem("lc_competidor") || "");
+  const [pais, setPais] = useState(() => ss?.getItem("lc_pais") || "Colombia");
+  const [tono, setTono] = useState(() => ss?.getItem("lc_tono") || "Urgente");
+  const [categoria, setCategoria] = useState(() => ss?.getItem("lc_categoria") || "Salud y bienestar");
+  const [imagen, setImagen] = useState<string | null>(() => ss?.getItem("lc_imagen") || null);
   const [loading, setLoading] = useState(false);
   const [progreso, setProgreso] = useState(0);
   const [tiempoInicio, setTiempoInicio] = useState(0);
@@ -46,7 +47,21 @@ export default function Copy() {
   const [analizando, setAnalizando] = useState(false);
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
- 
+ useEffect(() => {
+    sessionStorage.setItem("lc_producto", producto);
+    sessionStorage.setItem("lc_caracteristicas", caracteristicas);
+    sessionStorage.setItem("lc_problema", problema);
+    sessionStorage.setItem("lc_beneficio", beneficio);
+    sessionStorage.setItem("lc_precioOferta", precioOferta);
+    sessionStorage.setItem("lc_precioAnterior", precioAnterior);
+    sessionStorage.setItem("lc_clientes", clientes);
+    sessionStorage.setItem("lc_competidor", competidor);
+    sessionStorage.setItem("lc_pais", pais);
+    sessionStorage.setItem("lc_tono", tono);
+    sessionStorage.setItem("lc_categoria", categoria);
+    if (imagen) sessionStorage.setItem("lc_imagen", imagen);
+    else sessionStorage.removeItem("lc_imagen");
+  }, [producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen]);
   const paises = [
     { nombre: "Colombia", flag: "🇨🇴" },
     { nombre: "México", flag: "🇲🇽" },
@@ -420,7 +435,13 @@ export default function Copy() {
                 ))}
               </div>
             </div>
- 
+            <button onClick={() => {
+              ["lc_producto","lc_caracteristicas","lc_problema","lc_beneficio","lc_precioOferta","lc_precioAnterior","lc_clientes","lc_competidor","lc_pais","lc_tono","lc_categoria","lc_imagen","landcopy_resultado"].forEach(k => sessionStorage.removeItem(k));
+              setProducto(""); setCaracteristicas(""); setProblema(""); setBeneficio(""); setPrecioOferta(""); setPrecioAnterior(""); setClientes(""); setCompetidor(""); setPais("Colombia"); setTono("Urgente"); setCategoria("Salud y bienestar"); setImagen(null); setResultado(null); setQueGenerar([]);
+              if (fileRef.current) fileRef.current.value = "";
+            }} className="w-full bg-[#0d0d0d] border border-red-500/30 text-red-400 font-bold py-2 rounded-xl text-xs mb-2 transition-colors flex items-center justify-center gap-2">
+              🗑️ Limpiar todo y empezar de nuevo
+            </button>
             <button onClick={() => generar(false)} disabled={!producto || loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-black py-3 rounded-xl text-sm mb-2 transition-colors flex items-center justify-center gap-2">
               ⚡ Generar todo ahora
             </button>
