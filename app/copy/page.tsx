@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Copy() {
   useEffect(() => {
+    const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = "/login";
     });
@@ -30,6 +31,7 @@ export default function Copy() {
   const [tabActivo, setTabActivo] = useState("landing");
   const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
+  const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const paises = [
@@ -87,6 +89,7 @@ export default function Copy() {
   }
 
   async function regenerar(seccion: string) {
+    setSeccionCargando(`regenerar-${seccion}`);
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -94,9 +97,11 @@ export default function Copy() {
     });
     const data = await res.json();
     setResultado((prev: any) => ({ ...prev, [seccion]: data[seccion] || prev[seccion] }));
+    setSeccionCargando(null);
   }
 
   async function mejorar(seccion: string) {
+    setSeccionCargando(`mejorar-${seccion}`);
     const textoActual = resultado[seccion];
     const res = await fetch("/api/mejorar", {
       method: "POST",
@@ -105,6 +110,7 @@ export default function Copy() {
     });
     const data = await res.json();
     setResultado((prev: any) => ({ ...prev, [seccion]: data.texto || prev[seccion] }));
+    setSeccionCargando(null);
   }
 
   async function generar(conImagen = false) {
@@ -381,8 +387,12 @@ export default function Copy() {
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
                           <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">{s.titulo}</span>
                           <div className="flex gap-1.5">
-                            <button onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md">↻ Regenerar</button>
-                            <button onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === `regenerar-${s.key}` ? "⏳ Generando..." : "↻ Regenerar"}
+                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                              {seccionCargando === `mejorar-${s.key}` ? "⏳ Mejorando..." : "↑ Mejorar"}
+                            </button>
                             <button onClick={() => navigator.clipboard.writeText(resultado[s.key])} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
                             <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
@@ -398,7 +408,9 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
                       <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md">↑ Mejorar</button>
+                        <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
+                          {seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}
+                        </button>
                         <button onClick={() => navigator.clipboard.writeText(resultado.whatsapp)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
                         <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
