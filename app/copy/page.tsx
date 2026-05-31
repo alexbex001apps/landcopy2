@@ -270,20 +270,24 @@ async function analizarCompetidor() {
               <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
               {analizando && (
                 <div className="mt-3 bg-[#0d0d0d] border border-[#1e2a3a] rounded-xl p-4 flex flex-col gap-3">
-                  <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">🔍 Analizando competidor...</div>
+                  <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1">🔍 Analizando competidor...</div>
                   {[
-                    { icon: "🌐", texto: "Leyendo página del competidor", color: "bg-cyan-400", w: "100%" },
-                    { icon: "🧠", texto: "Analizando su copy y propuesta", color: "bg-orange-500", w: "60%" },
-                    { icon: "⚡", texto: "Generando versión que lo supera", color: "bg-green-400", w: "20%" },
+                    { icon: "🌐", texto: "Leyendo página del competidor", color: "bg-cyan-400", w: "100%", pts: null },
+                    { icon: "📝", texto: "TITULAR — beneficio claro, urgencia, voz del cliente", color: "bg-orange-500", w: "75%", pts: "25 pts" },
+                    { icon: "💡", texto: "PROPUESTA — diferenciación, dolor, credibilidad", color: "bg-purple-500", w: "55%", pts: "25 pts" },
+                    { icon: "⭐", texto: "PRUEBA SOCIAL — testimonios, números, resultados", color: "bg-yellow-400", w: "35%", pts: "25 pts" },
+                    { icon: "⚡", texto: "URGENCIA Y CTA — escasez, acción, razón para hoy", color: "bg-green-400", w: "15%", pts: "25 pts" },
                   ].map((p, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="text-sm w-5">{p.icon}</span>
                       <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
-                      <div className="flex-1 h-[3px] bg-[#111] rounded-full">
+                      {p.pts && <span className="text-cyan-400 text-[10px] font-bold whitespace-nowrap">{p.pts}</span>}
+                      <div className="w-16 h-[3px] bg-[#111] rounded-full">
                         <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{ width: p.w }}></div>
                       </div>
                     </div>
                   ))}
+                  <div className="text-[#f0ead6] text-[10px] font-bold mt-1 text-right">Total: 100 pts</div>
                 </div>
               )}
 
