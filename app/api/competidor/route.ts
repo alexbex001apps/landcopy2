@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
 
       const html = await res.text();
 
-      // Extraer texto limpio del HTML
       textoPagina = html
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -53,12 +52,48 @@ TONO: ${tono || "Urgente"}
 COPY DEL COMPETIDOR (extraído de su página):
 ${textoPagina}
 
-Analiza 4 puntos clave y para cada uno muestra qué dice el competidor y cómo lo superamos nosotros.
+INSTRUCCIONES DE SCORING — APLICA ESTOS CRITERIOS CON RIGOR, SIN FAVORECER A NADIE:
+
+Evalúa al competidor Y a nosotros usando exactamente estos 4 criterios (25 puntos cada uno, total 100):
+
+CRITERIO 1 — TITULAR (25 pts):
+- ¿Tiene un beneficio claro en menos de 10 palabras? (0-10 pts)
+- ¿Genera curiosidad o urgencia inmediata? (0-8 pts)
+- ¿Habla del cliente, no del producto? (0-7 pts)
+
+CRITERIO 2 — PROPUESTA DE VALOR (25 pts):
+- ¿Diferencia real vs competencia? (0-10 pts)
+- ¿Conecta emocionalmente con un dolor específico? (0-8 pts)
+- ¿Es creíble y verificable? (0-7 pts)
+
+CRITERIO 3 — PRUEBA SOCIAL (25 pts):
+- ¿Tiene testimonios con nombre y ciudad real? (0-10 pts)
+- ¿Tiene número concreto de clientes o ventas? (0-8 pts)
+- ¿Los testimonios mencionan resultados específicos? (0-7 pts)
+
+CRITERIO 4 — URGENCIA Y CTA (25 pts):
+- ¿Tiene escasez real (stock, tiempo)? (0-10 pts)
+- ¿El CTA dice exactamente qué hacer y qué pasa después? (0-8 pts)
+- ¿Hay una razón concreta para actuar HOY? (0-7 pts)
+
+IMPORTANTE: Si el competidor es una marca grande con prueba social masiva (millones de usuarios, premios, certificaciones), su score de prueba social debe ser alto. Sé honesto. Nuestro score solo puede ser mayor si realmente tenemos ventaja en ese criterio para el mercado latinoamericano específico de ${pais || "Colombia"}.
 
 Responde ÚNICAMENTE con JSON válido sin markdown:
 {
-  "score_ellos": 65,
-  "score_nuestro": 88,
+  "score_ellos": 0,
+  "score_nuestro": 0,
+  "desglose_ellos": {
+    "titular": 0,
+    "propuesta": 0,
+    "prueba_social": 0,
+    "urgencia": 0
+  },
+  "desglose_nuestro": {
+    "titular": 0,
+    "propuesta": 0,
+    "prueba_social": 0,
+    "urgencia": 0
+  },
   "url_analizada": "${url}",
   "puntos": [
     {
@@ -96,8 +131,8 @@ Responde ÚNICAMENTE con JSON válido sin markdown:
           { role: "system", content: "Eres un experto en copywriting. Responde SIEMPRE con JSON válido únicamente, sin markdown ni texto adicional." },
           { role: "user", content: prompt }
         ],
-        max_tokens: 1000,
-        temperature: 0.7,
+        max_tokens: 1200,
+        temperature: 0.3,
       }),
     });
 
