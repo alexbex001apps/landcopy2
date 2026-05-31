@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+ 
 export default function Copy() {
   useEffect(() => {
     const supabase = createClient();
@@ -9,7 +9,7 @@ export default function Copy() {
       if (!session) window.location.href = "/login";
     });
   }, []);
-
+ 
   const [producto, setProducto] = useState("");
   const [caracteristicas, setCaracteristicas] = useState("");
   const [problema, setProblema] = useState("");
@@ -36,11 +36,11 @@ export default function Copy() {
   const [toastGuardado, setToastGuardado] = useState(false);
   const [expandido, setExpandido] = useState<number | null>(null);
   const [analisisCompetidor, setAnalisisCompetidor] = useState<any>(null);
-const [analisisActivo, setAnalisisActivo] = useState(false);
-const [analizando, setAnalizando] = useState(false);
-const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
+  const [analisisActivo, setAnalisisActivo] = useState(false);
+  const [analizando, setAnalizando] = useState(false);
+  const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
+ 
   const paises = [
     { nombre: "Colombia", flag: "🇨🇴" },
     { nombre: "México", flag: "🇲🇽" },
@@ -49,7 +49,7 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     { nombre: "Ecuador", flag: "🇪🇨" },
     { nombre: "General", flag: "🌎" },
   ];
-
+ 
   const tonos = [
     { nombre: "Urgente", color: "orange" },
     { nombre: "Emocional", color: "pink" },
@@ -58,7 +58,7 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     { nombre: "Confianza", color: "green" },
     { nombre: "Premium", color: "purple" },
   ];
-
+ 
   const tonoColor: any = {
     orange: "border-orange-500 bg-orange-500/10 text-orange-500",
     pink: "border-pink-500 bg-pink-500/10 text-pink-500",
@@ -67,7 +67,9 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     green: "border-green-400 bg-green-400/10 text-green-400",
     purple: "border-purple-500 bg-purple-500/10 text-purple-500",
   };
-
+ 
+  const productosLluvia = ["📦","🛍️","💊","💻","🏋️","🍳","💄","⚡","🧴","🎮","🌿","🔋","🥘","💅","🪴","🩺","📱","🧬","🏅","🧘"];
+ 
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -84,25 +86,25 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     };
     img.src = URL.createObjectURL(file);
   }
-
+ 
   function quitarImagen(e: React.MouseEvent) {
     e.stopPropagation();
     setImagen(null);
     if (fileRef.current) fileRef.current.value = "";
   }
-
+ 
   function guardar(texto: string, tipo: string) {
     setGuardados(prev => [{ texto, tipo, producto, hora: new Date().toLocaleTimeString() }, ...prev]);
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
   }
-
+ 
   function copiar(texto: string, id: string) {
     navigator.clipboard.writeText(texto);
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
   }
-
+ 
   async function regenerar(seccion: string) {
     setSeccionCargando(`regenerar-${seccion}`);
     const res = await fetch("/api/generate", {
@@ -114,7 +116,7 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     setResultado((prev: any) => ({ ...prev, [seccion]: data[seccion] || prev[seccion] }));
     setSeccionCargando(null);
   }
-
+ 
   async function mejorar(seccion: string) {
     setSeccionCargando(`mejorar-${seccion}`);
     const textoActual = resultado[seccion];
@@ -127,7 +129,8 @@ const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
     setResultado((prev: any) => ({ ...prev, [seccion]: data.texto || prev[seccion] }));
     setSeccionCargando(null);
   }
-async function analizarCompetidor() {
+ 
+  async function analizarCompetidor() {
     if (!competidor) return;
     setAnalizando(true);
     setErrorAnalisis(null);
@@ -150,6 +153,7 @@ async function analizarCompetidor() {
     }
     setAnalizando(false);
   }
+ 
   async function generar(conImagen = false) {
     if (!producto) return;
     setLoading(true);
@@ -179,11 +183,11 @@ async function analizarCompetidor() {
     }
     setLoading(false);
   }
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       <div className="max-w-[1400px] mx-auto px-6 pt-24 pb-20">
-
+ 
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
             IA generativa · copy profesional
@@ -195,15 +199,15 @@ async function analizarCompetidor() {
           </h1>
           <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, WhatsApp, Meta Ads, redes y campaña de 7 días en segundos</p>
         </div>
-
+ 
         <div className="grid grid-cols-[380px_1fr] gap-6">
-
+ 
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-[#151515]">
               <span className="text-orange-500 text-lg">📦</span>
               <span className="text-white font-bold text-sm">Datos del producto</span>
             </div>
-
+ 
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 mb-1.5">Imagen del producto</label>
               <div onClick={() => !imagen && fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors relative">
@@ -222,18 +226,18 @@ async function analizarCompetidor() {
               </div>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
             </div>
-
+ 
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Nombre del producto *</label>
               <input value={producto} onChange={e => setProducto(e.target.value)} placeholder="Ej: Rodillax" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
             </div>
-
+ 
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Características — Amazon · MeLi · tu tienda</label>
               <textarea value={caracteristicas} onChange={e => setCaracteristicas(e.target.value)} placeholder="Pega aquí · la IA convierte cada característica en beneficio emocional..." className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs outline-none placeholder-[#999] resize-none h-16" />
               <p className="text-orange-500 text-[10px] mt-1 font-medium">La IA detecta el formato y lo procesa automáticamente</p>
             </div>
-
+ 
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Problema</label>
@@ -244,7 +248,7 @@ async function analizarCompetidor() {
                 <input value={beneficio} onChange={e => setBeneficio(e.target.value)} placeholder="Alivio en 10 min" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
             </div>
-
+ 
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
                 <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block h-[18px]">Precio oferta</label>
@@ -255,12 +259,12 @@ async function analizarCompetidor() {
                 <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} placeholder="$89.900" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
               </div>
             </div>
-
+ 
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Clientes actuales (aprox.)</label>
               <input value={clientes} onChange={e => setClientes(e.target.value)} placeholder="Ej: 17.000+ clientes satisfechos" className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
             </div>
-
+ 
             <div className="mb-3">
               <label className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Analizar competidor</label>
               <div className="flex gap-2">
@@ -268,6 +272,7 @@ async function analizarCompetidor() {
                 <button onClick={analizarCompetidor} disabled={!competidor || analizando} className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap disabled:opacity-40">{analizando ? "Analizando..." : "Analizar"}</button>
               </div>
               <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
+ 
               {analizando && (
                 <div className="mt-3 bg-[#0d0d0d] border border-[#1e2a3a] rounded-xl p-4 flex flex-col gap-3">
                   <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1">🔍 Analizando competidor...</div>
@@ -290,7 +295,7 @@ async function analizarCompetidor() {
                   <div className="text-[#f0ead6] text-[10px] font-bold mt-1 text-right">Total: 100 pts</div>
                 </div>
               )}
-
+ 
               {errorAnalisis && !analizando && (
                 <div className="mt-3 bg-[#130808] border border-[#7f1d1d] rounded-xl p-4 flex gap-3">
                   <span className="text-red-400 text-lg mt-0.5">⚠</span>
@@ -301,7 +306,7 @@ async function analizarCompetidor() {
                   </div>
                 </div>
               )}
-
+ 
               {analisisCompetidor && !analizando && (
                 <div className="mt-3 bg-[#0d0d0d] border border-[#1e3a2e] rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1a1a1a]">
@@ -340,7 +345,7 @@ async function analizarCompetidor() {
                   </div>
                 </div>
               )}
-
+ 
               {analisisActivo && !analisisCompetidor && (
                 <div className="mt-3 bg-[#081308] border border-[#166534] rounded-lg px-3 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -354,9 +359,9 @@ async function analizarCompetidor() {
                 </div>
               )}
             </div>
-
+ 
             <hr className="border-[#111] my-4" />
-
+ 
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">País objetivo</label>
               <div className="flex flex-wrap gap-1.5">
@@ -367,7 +372,7 @@ async function analizarCompetidor() {
                 ))}
               </div>
             </div>
-
+ 
             <div className="mb-3">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Tono de comunicación</label>
               <div className="flex flex-wrap gap-1.5">
@@ -378,16 +383,16 @@ async function analizarCompetidor() {
                 ))}
               </div>
             </div>
-
+ 
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Categoría</label>
               <select value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none">
                 {["Salud y bienestar","Hogar","Tecnología","Belleza","Deporte","Cocina","Moda","Mascotas","Otro"].map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
-
+ 
             <hr className="border-[#111] my-4" />
-
+ 
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-2 block">Qué generar</label>
               <div className="grid grid-cols-2 gap-1.5">
@@ -399,7 +404,7 @@ async function analizarCompetidor() {
                 ))}
               </div>
             </div>
-
+ 
             <button onClick={() => generar(false)} disabled={!producto || loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-black py-3 rounded-xl text-sm mb-2 transition-colors flex items-center justify-center gap-2">
               ⚡ Generar todo ahora
             </button>
@@ -407,15 +412,15 @@ async function analizarCompetidor() {
               👁️ Generar con análisis de imagen · GPT-4o Vision
             </button>
           </div>
-
+ 
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-
+ 
             {toastGuardado && (
               <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
                 ✓ Copy guardado
               </div>
             )}
-
+ 
             {resultado && (
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -431,7 +436,7 @@ async function analizarCompetidor() {
                 </div>
               </div>
             )}
-
+ 
             {resultado && (
               <div className="grid grid-cols-4 gap-2 mb-4">
                 <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
@@ -452,7 +457,7 @@ async function analizarCompetidor() {
                 </div>
               </div>
             )}
-
+ 
             <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
               {[
                 {id:"landing",label:"Landing",color:"bg-orange-500"},
@@ -467,40 +472,65 @@ async function analizarCompetidor() {
                 </button>
               ))}
             </div>
-
+ 
             <button onClick={() => resultado && navigator.clipboard.writeText(Object.values(resultado).join("\n\n"))} className="w-full bg-[#0d0d0d] border border-[#1e1e1e] text-[#f0ead6] rounded-lg py-2 text-xs mb-4 flex items-center justify-center gap-2">
               📋 Copiar todo el contenido generado
             </button>
-
+ 
             {loading && (
-              <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4">
-                <div className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-3">⚙️ Generando contenido · {progreso}%</div>
-                {[
-                  {icon:"🧠",texto:"Analizando producto y mercado",color:"bg-orange-500"},
-                  {icon:"🎯",texto:"Identificando puntos de dolor",color:"bg-cyan-400"},
-                  {icon:"✍️",texto:"Escribiendo copy persuasivo",color:"bg-purple-500"},
-                  {icon:"🚀",texto:"Optimizando campaña de 7 días",color:"bg-green-400"},
-                ].map((p,i) => (
-                  <div key={i} className="flex items-center gap-2 mb-2">
-                    <span className="text-sm w-5">{p.icon}</span>
-                    <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
-                    <div className="flex-1 h-[3px] bg-[#111] rounded-full">
-                      <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{width:`${Math.min(100,Math.max(0,(progreso-(i*25))*4))}%`}}></div>
+              <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  {productosLluvia.map((emoji, i) => (
+                    <span
+                      key={i}
+                      className="absolute select-none"
+                      style={{
+                        left: `${(i * 17 + 3) % 95}%`,
+                        top: "-40px",
+                        opacity: 0.12,
+                        fontSize: `${16 + (i % 4) * 6}px`,
+                        animation: `lluviaProd ${2.5 + (i % 5) * 0.7}s linear ${(i * 0.3) % 3}s infinite`,
+                      }}
+                    >
+                      {emoji}
+                    </span>
+                  ))}
+                </div>
+                <style>{`
+                  @keyframes lluviaProd {
+                    0% { transform: translateY(-40px) rotate(0deg); }
+                    100% { transform: translateY(220px) rotate(20deg); }
+                  }
+                `}</style>
+                <div className="relative z-10">
+                  <div className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-3">⚙️ Generando contenido · {progreso}%</div>
+                  {[
+                    {icon:"🧠",texto:"Analizando producto y mercado",color:"bg-orange-500"},
+                    {icon:"🎯",texto:"Identificando puntos de dolor",color:"bg-cyan-400"},
+                    {icon:"✍️",texto:"Escribiendo copy persuasivo",color:"bg-purple-500"},
+                    {icon:"🚀",texto:"Optimizando campaña de 7 días",color:"bg-green-400"},
+                  ].map((p,i) => (
+                    <div key={i} className="flex items-center gap-2 mb-2">
+                      <span className="text-sm w-5">{p.icon}</span>
+                      <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
+                      <div className="flex-1 h-[3px] bg-[#111] rounded-full">
+                        <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{width:`${Math.min(100,Math.max(0,(progreso-(i*25))*4))}%`}}></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
-
+ 
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
               </div>
             )}
-
+ 
             {resultado && (
               <div className="space-y-4">
-
+ 
                 {tabActivo === "landing" && (
                   <>
                     {[
@@ -530,7 +560,7 @@ async function analizarCompetidor() {
                     ))}
                   </>
                 )}
-
+ 
                 {tabActivo === "whatsapp" && resultado.whatsapp && (
                   <div className="border border-cyan-400 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
@@ -549,7 +579,7 @@ async function analizarCompetidor() {
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.whatsapp}</div>
                   </div>
                 )}
-
+ 
                 {tabActivo === "campana" && resultado.campana && (() => {
                   const parsearDias = (texto: string) => {
                     const dias: { titulo: string; texto: string }[] = [];
@@ -644,7 +674,7 @@ async function analizarCompetidor() {
                     </div>
                   );
                 })()}
-
+ 
                 {tabActivo === "prompts" && (
                   <div className="border border-purple-500 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-500/20">
@@ -663,7 +693,7 @@ async function analizarCompetidor() {
                     </div>
                   </div>
                 )}
-
+ 
                 {tabActivo === "metaads" && resultado.metaads && (
                   <div className="border border-pink-500 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
@@ -682,7 +712,7 @@ async function analizarCompetidor() {
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
                   </div>
                 )}
-
+ 
                 {tabActivo === "extras" && (
                   <div className="space-y-4">
                     {resultado.seo && (
@@ -741,7 +771,7 @@ async function analizarCompetidor() {
                     )}
                   </div>
                 )}
-
+ 
                 {guardados.length > 0 && (
                   <div className="border border-orange-500 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 border-b border-orange-500/20 flex items-center justify-between">
@@ -774,7 +804,7 @@ async function analizarCompetidor() {
                     </div>
                   </div>
                 )}
-
+ 
               </div>
             )}
           </div>
