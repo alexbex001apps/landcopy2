@@ -442,7 +442,7 @@ export default function Copy() {
                 {tabActivo === "campana" && resultado.campana && (() => {
                   const parsearDias = (texto: string) => {
                     const dias: { titulo: string; texto: string }[] = [];
-                    const partes = texto.split(/\n\n(?=\*?\*?D[íi]a\s*\d)/i);
+                    const partes = texto.split(/\n(?=D[íi]a\s*\d)/i);
                     partes.forEach((parte, i) => {
                       const lineas = parte.trim().split("\n");
                       const primeraLinea = lineas[0]
