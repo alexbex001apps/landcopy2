@@ -32,6 +32,7 @@ export default function Copy() {
   const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
+  const [expandido, setExpandido] = useState<number | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toastGuardado, setToastGuardado] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -513,7 +514,10 @@ export default function Copy() {
                               <button onClick={() => setGuardados(prev => prev.filter((_, idx) => idx !== i))} className="text-red-400 text-[10px] font-bold px-1">✕</button>
                             </div>
                           </div>
-                          <p className="text-[#f0ead6] text-xs truncate">{g.texto.slice(0, 80)}...</p>
+                          <p onClick={() => setExpandido(expandido === i ? null : i)} className="text-[#f0ead6] text-xs cursor-pointer hover:text-white transition-colors whitespace-pre-wrap">
+  {expandido === i ? g.texto : `${g.texto.slice(0, 80)}...`}
+  <span className="text-zinc-500 ml-1">{expandido === i ? "▲ ver menos" : "▼ ver más"}</span>
+</p>
                         </div>
                       ))}
                     </div>
