@@ -35,6 +35,10 @@ export default function Copy() {
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toastGuardado, setToastGuardado] = useState(false);
   const [expandido, setExpandido] = useState<number | null>(null);
+  const [analisisCompetidor, setAnalisisCompetidor] = useState<any>(null);
+const [analisisActivo, setAnalisisActivo] = useState(false);
+const [analizando, setAnalizando] = useState(false);
+const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const paises = [
@@ -123,7 +127,29 @@ export default function Copy() {
     setResultado((prev: any) => ({ ...prev, [seccion]: data.texto || prev[seccion] }));
     setSeccionCargando(null);
   }
-
+async function analizarCompetidor() {
+    if (!competidor) return;
+    setAnalizando(true);
+    setErrorAnalisis(null);
+    setAnalisisCompetidor(null);
+    setAnalisisActivo(false);
+    try {
+      const res = await fetch("/api/competidor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: competidor, producto, pais, tono }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setErrorAnalisis(data.error || "No pudimos analizar esa página.");
+      } else {
+        setAnalisisCompetidor(data);
+      }
+    } catch {
+      setErrorAnalisis("No pudimos conectar con esa página. Verifica la URL.");
+    }
+    setAnalizando(false);
+  }
   async function generar(conImagen = false) {
     if (!producto) return;
     setLoading(true);
@@ -239,9 +265,90 @@ export default function Copy() {
               <label className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Analizar competidor</label>
               <div className="flex gap-2">
                 <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
-                <button className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap">Analizar</button>
+                <button onClick={analizarCompetidor} disabled={!competidor || analizando} className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap disabled:opacity-40">{analizando ? "Analizando..." : "Analizar"}</button>
               </div>
               <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
+              {analizando && (
+                <div className="mt-3 bg-[#0d0d0d] border border-[#1e2a3a] rounded-xl p-4 flex flex-col gap-3">
+                  <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">🔍 Analizando competidor...</div>
+                  {[
+                    { icon: "🌐", texto: "Leyendo página del competidor", color: "bg-cyan-400", w: "100%" },
+                    { icon: "🧠", texto: "Analizando su copy y propuesta", color: "bg-orange-500", w: "60%" },
+                    { icon: "⚡", texto: "Generando versión que lo supera", color: "bg-green-400", w: "20%" },
+                  ].map((p, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-sm w-5">{p.icon}</span>
+                      <span className="text-[#f0ead6] text-[11px] flex-1">{p.texto}</span>
+                      <div className="flex-1 h-[3px] bg-[#111] rounded-full">
+                        <div className={`h-[3px] rounded-full ${p.color} transition-all duration-500`} style={{ width: p.w }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {errorAnalisis && !analizando && (
+                <div className="mt-3 bg-[#130808] border border-[#7f1d1d] rounded-xl p-4 flex gap-3">
+                  <span className="text-red-400 text-lg mt-0.5">⚠</span>
+                  <div>
+                    <div className="text-red-400 text-[11px] font-bold mb-1">No pudimos analizar esa página</div>
+                    <div className="text-[#f0ead6] text-[11px] leading-relaxed">{errorAnalisis}</div>
+                    <button onClick={() => setErrorAnalisis(null)} className="mt-2 text-cyan-400 border border-cyan-400 rounded-md px-3 py-1 text-[10px] font-bold">↻ Intentar con otra URL</button>
+                  </div>
+                </div>
+              )}
+
+              {analisisCompetidor && !analizando && (
+                <div className="mt-3 bg-[#0d0d0d] border border-[#1e3a2e] rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1a1a1a]">
+                    <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">ANÁLISIS DEL COMPETIDOR</span>
+                    <span className="bg-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">{new URL(competidor).hostname}</span>
+                  </div>
+                  <div className="flex gap-2 px-4 py-2 border-b border-[#111]">
+                    <div className="flex-1 bg-[#111] rounded-lg p-2 text-center border border-[#222]">
+                      <div className="text-red-400 text-lg font-black">{analisisCompetidor.score_ellos}</div>
+                      <div className="text-[#f0ead6] text-[10px] font-bold mt-0.5">Score ellos</div>
+                    </div>
+                    <div className="flex-1 bg-[#111] rounded-lg p-2 text-center border border-[#222]">
+                      <div className="text-green-400 text-lg font-black">{analisisCompetidor.score_nuestro}</div>
+                      <div className="text-[#f0ead6] text-[10px] font-bold mt-0.5">Score tuyo</div>
+                    </div>
+                    <div className="flex-1 bg-[#111] rounded-lg p-2 text-center border border-[#222]">
+                      <div className="text-cyan-400 text-lg font-black">+{analisisCompetidor.score_nuestro - analisisCompetidor.score_ellos}</div>
+                      <div className="text-[#f0ead6] text-[10px] font-bold mt-0.5">Tu ventaja</div>
+                    </div>
+                  </div>
+                  {analisisCompetidor.puntos?.map((p: any, i: number) => (
+                    <div key={i} className="grid grid-cols-2 border-b border-[#111] last:border-none">
+                      <div className="p-3 bg-[#130808] border-r border-[#1a1a1a]">
+                        <div className="text-red-400 text-[10px] font-black mb-1">✕ {p.categoria}</div>
+                        <div className="text-[#f0ead6] text-[11px] leading-relaxed">{p.ellos}</div>
+                      </div>
+                      <div className="p-3 bg-[#081308]">
+                        <div className="text-green-400 text-[10px] font-black mb-1">✓ {p.categoria}</div>
+                        <div className="text-[#f0ead6] text-[11px] leading-relaxed font-semibold">{p.nosotros}</div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex gap-2 px-4 py-3 border-t border-[#1a1a1a]">
+                    <button onClick={() => setAnalisisActivo(true)} className="flex-1 bg-orange-500 text-white font-bold py-2 rounded-lg text-xs">⚡ Usar este análisis al generar</button>
+                    <button onClick={() => { setAnalisisCompetidor(null); setAnalisisActivo(false); }} className="text-[#f0ead6] border border-[#555] rounded-lg px-4 py-2 text-xs font-bold">Ignorar</button>
+                  </div>
+                </div>
+              )}
+
+              {analisisActivo && !analisisCompetidor && (
+                <div className="mt-3 bg-[#081308] border border-[#166534] rounded-lg px-3 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div>
+                      <div className="text-green-400 text-[11px] font-bold">Análisis del competidor activo</div>
+                      <div className="text-[#f0ead6] text-[10px]">{competidor}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setAnalisisActivo(false)} className="text-red-400 border border-red-400 rounded-md px-2 py-1 text-[10px] font-bold">✕ Quitar</button>
+                </div>
+              )}
             </div>
 
             <hr className="border-[#111] my-4" />
