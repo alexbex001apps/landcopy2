@@ -86,10 +86,17 @@ export default function Copy() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  function guardar(texto: string, tipo: string) {
+ function guardar(texto: string, tipo: string) {
     setGuardados(prev => [{ texto, tipo, hora: new Date().toLocaleTimeString() }, ...prev]);
+    setToastGuardado(true);
+    setTimeout(() => setToastGuardado(false), 2000);
   }
 
+  function copiar(texto: string, id: string) {
+    navigator.clipboard.writeText(texto);
+    setCopiado(id);
+    setTimeout(() => setCopiado(null), 2000);
+  }
   async function regenerar(seccion: string) {
     setSeccionCargando(`regenerar-${seccion}`);
     const res = await fetch("/api/generate", {
@@ -365,7 +372,11 @@ export default function Copy() {
                 ))}
               </div>
             )}
-
+            {toastGuardado && (
+  <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
+    ✓ Copy guardado
+  </div>
+)}
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
@@ -395,7 +406,7 @@ export default function Copy() {
                             <button disabled={seccionCargando !== null} onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
                               {seccionCargando === `mejorar-${s.key}` ? "⏳ Mejorando..." : "↑ Mejorar"}
                             </button>
-                            <button onClick={() => navigator.clipboard.writeText(resultado[s.key])} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                            <button onClick={() => copiar(resultado[s.key], s.key)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === s.key ? "✓ Copiado" : "Copiar"}</button>
                             <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
                         </div>
@@ -413,7 +424,7 @@ export default function Copy() {
                         <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
                           {seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}
                         </button>
-                        <button onClick={() => navigator.clipboard.writeText(resultado.whatsapp)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => copiar(resultado.whatsapp, "whatsapp")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "whatsapp" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
@@ -426,7 +437,7 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
                       <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">Campaña de lanzamiento · 7 días</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => navigator.clipboard.writeText(resultado.campana)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => copiar(resultado.campana, "campana")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "campana" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.campana,"Campaña 7 días")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
@@ -439,7 +450,7 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
                       <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => navigator.clipboard.writeText(resultado.metaads)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                       <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
@@ -452,7 +463,7 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-500/20">
                       <span className="text-purple-400 text-[10px] font-bold tracking-widest uppercase">Prompts para imágenes IA</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => resultado?.prompts && navigator.clipboard.writeText(resultado.prompts)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                       <button onClick={() => resultado?.prompts && copiar(resultado.prompts, "prompts")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "prompts" ? "✓ Copiado" : "Copiar"}</button>
                       </div>
                     </div>
                     <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">
@@ -471,7 +482,7 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
                       <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">Extras · SEO · Objeciones · Email</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => navigator.clipboard.writeText(resultado.extras)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">Copiar</button>
+                        <button onClick={() => copiar(resultado.extras, "extras")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "extras" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.extras,"Extras")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
                     </div>
@@ -490,7 +501,7 @@ export default function Copy() {
                           <div className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></div>
                           <span className="text-[#f0ead6] text-xs flex-1 truncate">{g.tipo} — "{g.texto.slice(0,50)}..."</span>
                           <span className="text-zinc-600 text-[10px]">{g.hora}</span>
-                          <button onClick={() => navigator.clipboard.writeText(g.texto)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">Copiar</button>
+                          <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
                         </div>
                       ))}
                     </div>
