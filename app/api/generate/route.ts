@@ -3,11 +3,76 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen, queGenerar } = body;
+    const { producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen, queGenerar, seccion } = body;
 
     if (!producto) {
       return NextResponse.json({ error: "Producto requerido" }, { status: 400 });
     }
+
+    // ── NUEVO: regenerar un día específico de la campaña ──────────────────
+    if (seccion && seccion.startsWith("campana-dia-")) {
+      const numeroDia = seccion.replace("campana-dia-", "");
+      const promptDia = `Eres un experto en copywriting para negocios latinoamericanos.
+
+Genera ÚNICAMENTE el contenido del Día ${numeroDia} de una campaña de lanzamiento de 7 días para este producto:
+- Producto: ${producto}
+- País: ${pais || "Colombia"}
+- Tono: ${tono || "Urgente"}
+- Categoría: ${categoria || "Salud y bienestar"}
+- Características: ${caracteristicas || "ninguna"}
+- Problema que resuelve: ${problema || "ninguno"}
+- Beneficio principal: ${beneficio || "ninguno"}
+- Precio oferta: ${precioOferta || "no especificado"}
+- Clientes actuales: ${clientes || "no especificado"}
+
+INSTRUCCIONES DE TONO:
+- Urgente: escasez, tiempo limitado, pérdida si no actúa ya, números concretos.
+- Emocional: historia, dolor profundo, transformación, lágrimas a sonrisas.
+- Racional: datos, comparaciones, lógica, ROI, evidencia.
+- Casual: amigo hablando, relajado, sin presión, conversacional.
+- Confianza: autoridad, trayectoria, garantías, testimonios verificables.
+- Premium: exclusividad, lujo, selecto, no para todos.
+
+Responde ÚNICAMENTE con JSON válido sin markdown ni texto adicional:
+{
+  "titulo": "título corto del día ${numeroDia} (máximo 10 palabras)",
+  "texto": "contenido completo del día ${numeroDia} (2-3 párrafos persuasivos)"
+}`;
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "Eres un experto en copywriting. Responde SIEMPRE con JSON válido únicamente, sin markdown ni texto adicional." },
+            { role: "user", content: promptDia }
+          ],
+          max_tokens: 800,
+          temperature: 0.7,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return NextResponse.json({ error: JSON.stringify(data) }, { status: 500 });
+      }
+
+      const content = data.choices?.[0]?.message?.content || "{}";
+      let resultado: any = {};
+      try {
+        const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        resultado = JSON.parse(cleaned);
+      } catch {
+        resultado = { titulo: `Día ${numeroDia}`, texto: content };
+      }
+
+      return NextResponse.json({ campana_dia: resultado });
+    }
+    // ── FIN NUEVO ─────────────────────────────────────────────────────────
 
     const gl = !queGenerar || queGenerar.includes("Landing page");
     const gw = !queGenerar || queGenerar.includes("WhatsApp x3");
@@ -62,6 +127,7 @@ Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
   "objeciones": "Objecion 1: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 2: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 3: [objecion]\\nRespuesta: [respuesta]",
   "email": "Asunto: [asunto del email]\\n\\nCuerpo: [cuerpo completo del email de seguimiento]",` : ""}
 }`;
+
     const messages: any[] = [];
     if (imagen) {
       messages.push({
