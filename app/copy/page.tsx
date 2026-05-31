@@ -439,24 +439,100 @@ export default function Copy() {
                   </div>
                 )}
 
-                {tabActivo === "campana" && resultado.campana && (
-                  <div className="border border-green-400 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
-                      <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">Campaña de lanzamiento · 7 días</span>
-                      <div className="flex gap-1.5">
-                        <button disabled={seccionCargando !== null} onClick={() => regenerar("campana")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "regenerar-campana" ? "⏳ Generando..." : "↻ Regenerar"}
-                        </button>
-                        <button disabled={seccionCargando !== null} onClick={() => mejorar("campana")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "mejorar-campana" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                        </button>
-                        <button onClick={() => copiar(resultado.campana, "campana")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "campana" ? "✓ Copiado" : "Copiar"}</button>
-                        <button onClick={() => guardar(resultado.campana,"Campaña 7 días")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-                      </div>
+                {tabActivo === "campana" && resultado.campana && (() => {
+                  const parsearDias = (texto: string) => {
+                    const dias: { titulo: string; texto: string }[] = [];
+                    const partes = texto.split(/\n\n(?=\*?\*?D[íi]a\s*\d)/i);
+                    partes.forEach((parte, i) => {
+                      const lineas = parte.trim().split("\n");
+                      const primeraLinea = lineas[0]
+                        .replace(/^\*\*/g, "").replace(/\*\*$/g, "")
+                        .replace(/^D[íi]a\s*\d+[:\-]?\s*/i, "").trim();
+                      const resto = lineas.slice(1).join("\n").trim();
+                      dias.push({
+                        titulo: primeraLinea || `Día ${i + 1}`,
+                        texto: resto || primeraLinea
+                      });
+                    });
+                    return dias;
+                  };
+                  const dias = parsearDias(resultado.campana);
+                  return (
+                    <div className="space-y-3">
+                      {dias.map((dia, i) => (
+                        <div key={i} className="border border-green-400 rounded-xl overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-2.5 border-b border-green-400/20">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md">DÍA {i + 1}</span>
+                              <span className="text-green-400 text-[11px] font-bold">{dia.titulo}</span>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button
+                                disabled={seccionCargando !== null}
+                                onClick={async () => {
+                                  setSeccionCargando(`regenerar-campana-dia-${i + 1}`);
+                                  const res = await fetch("/api/generate", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, categoria, seccion: `campana-dia-${i + 1}` }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.campana_dia) {
+                                    const nuevosDias = [...dias];
+                                    nuevosDias[i] = data.campana_dia;
+                                    const nuevaCampana = nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n");
+                                    setResultado((prev: any) => ({ ...prev, campana: nuevaCampana }));
+                                  }
+                                  setSeccionCargando(null);
+                                }}
+                                className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50"
+                              >
+                                {seccionCargando === `regenerar-campana-dia-${i + 1}` ? "⏳ Generando..." : "↻ Regenerar"}
+                              </button>
+                              <button
+                                disabled={seccionCargando !== null}
+                                onClick={async () => {
+                                  setSeccionCargando(`mejorar-campana-dia-${i + 1}`);
+                                  const res = await fetch("/api/mejorar", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ texto: `${dia.titulo}\n${dia.texto}`, producto, pais, tono }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.texto) {
+                                    const nuevosDias = [...dias];
+                                    nuevosDias[i] = { titulo: dia.titulo, texto: data.texto };
+                                    const nuevaCampana = nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n");
+                                    setResultado((prev: any) => ({ ...prev, campana: nuevaCampana }));
+                                  }
+                                  setSeccionCargando(null);
+                                }}
+                                className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50"
+                              >
+                                {seccionCargando === `mejorar-campana-dia-${i + 1}` ? "⏳ Mejorando..." : "↑ Mejorar"}
+                              </button>
+                              <button
+                                onClick={() => copiar(`${dia.titulo}\n${dia.texto}`, `campana-dia-${i + 1}`)}
+                                className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md"
+                              >
+                                {copiado === `campana-dia-${i + 1}` ? "✓ Copiado" : "Copiar"}
+                              </button>
+                              <button
+                                onClick={() => guardar(`${dia.titulo}\n${dia.texto}`, `Campaña Día ${i + 1}`)}
+                                className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md"
+                              >
+                                ❤ Guardar
+                              </button>
+                            </div>
+                          </div>
+                          <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">
+                            {dia.texto}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.campana}</div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {tabActivo === "prompts" && (
                   <div className="border border-purple-500 rounded-xl overflow-hidden">
