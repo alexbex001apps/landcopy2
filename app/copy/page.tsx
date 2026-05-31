@@ -70,6 +70,15 @@ export default function Copy() {
  
   const productosLluvia = ["📦","🛍️","💊","💻","🏋️","🍳","💄","⚡","🧴","🎮","🌿","🔋","🥘","💅","🪴","🩺","📱","🧬","🏅","🧘"];
  
+  const frasesGenerando = [
+    "Tu competencia no está haciendo esto ahora mismo...",
+    "Construyendo copy que vende mientras esperas...",
+    "La IA está analizando tu mercado objetivo...",
+    "Generando 7 días de campaña completa...",
+    "Cada palabra está siendo diseñada para convertir...",
+    "Esto tomaría 2-3 días a un copywriter profesional...",
+  ];
+ 
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -210,7 +219,7 @@ export default function Copy() {
  
             <div className="mb-4">
               <label className="text-orange-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 mb-1.5">Imagen del producto</label>
-              <div onClick={() => !imagen && fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-4 text-center cursor-pointer hover:border-orange-500 transition-colors relative">
+              <div onClick={() => !imagen && fileRef.current?.click()} className="border border-dashed border-[#222] rounded-xl p-6 text-center cursor-pointer hover:border-orange-500 transition-colors relative">
                 {imagen ? (
                   <div className="relative inline-block">
                     <img src={imagen} className="h-40 mx-auto rounded-lg object-contain" alt="producto" />
@@ -218,9 +227,9 @@ export default function Copy() {
                   </div>
                 ) : (
                   <>
-                    <div className="text-orange-500 text-xl mb-1">📷</div>
-                    <div className="text-[#f0ead6] text-xs">Arrastra o selecciona · JPG PNG WEBP</div>
-                    <div className="text-orange-500 text-[10px] font-bold mt-1">GPT-4o Vision analiza colores, forma y tipo de producto</div>
+                    <div className="text-orange-500 text-5xl mb-3">📷</div>
+                    <div className="text-[#f0ead6] text-xs font-semibold mb-1">Arrastra o selecciona · JPG PNG WEBP</div>
+                    <div className="text-orange-500 text-[10px] font-bold">GPT-4o Vision analiza colores, forma y tipo de producto</div>
                   </>
                 )}
               </div>
@@ -478,7 +487,7 @@ export default function Copy() {
             </button>
  
             {loading && (
-              <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4 relative overflow-hidden">
+              <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4 relative overflow-hidden" style={{minHeight: "300px"}}>
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
                   {productosLluvia.map((emoji, i) => (
                     <span
@@ -499,7 +508,13 @@ export default function Copy() {
                 <style>{`
                   @keyframes lluviaProd {
                     0% { transform: translateY(-40px) rotate(0deg); }
-                    100% { transform: translateY(220px) rotate(20deg); }
+                    100% { transform: translateY(400px) rotate(20deg); }
+                  }
+                  @keyframes fadePhrase {
+                    0% { opacity: 0; transform: translateY(8px); }
+                    15% { opacity: 1; transform: translateY(0); }
+                    85% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-8px); }
                   }
                 `}</style>
                 <div className="relative z-10">
@@ -518,40 +533,25 @@ export default function Copy() {
                       </div>
                     </div>
                   ))}
+                  <div className="mt-10 flex flex-col items-center gap-3">
+                    {frasesGenerando.map((frase, i) => (
+                      <p
+                        key={i}
+                        className="text-[#f0ead6] text-xs font-medium text-center"
+                        style={{
+                          opacity: 0,
+                          animation: `fadePhrase 2s ease-in-out ${i * 2}s infinite`,
+                          maxWidth: "340px",
+                        }}
+                      >
+                        {frase}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
-                                                                  
-            <div className="mt-6 flex flex-col items-center justify-center gap-4 py-8">
-                  {[
-                    "Tu competencia no está haciendo esto ahora mismo...",
-                    "Construyendo copy que vende mientras esperas...",
-                    "La IA está analizando tu mercado objetivo...",
-                    "Generando 7 días de campaña completa...",
-                    `Optimizando para ${pais} y tono ${tono}...`,
-                    "Cada palabra está siendo diseñada para convertir...",
-                    "Esto tomaría 2-3 días a un copywriter profesional...",
-                  ].map((frase, i) => (
-                    <p
-                      key={i}
-                      className="text-[#f0ead6] text-xs font-medium text-center opacity-0"
-                      style={{
-                        animation: `fadePhrase 1.5s ease-in-out ${i * 1.8}s infinite`,
-                        maxWidth: "320px",
-                      }}
-                    >
-                      {frase}
-                    </p>
-                  ))}
-                </div>
-                <style>{`
-                  @keyframes fadePhrase {
-                    0% { opacity: 0; transform: translateY(6px); }
-                    20% { opacity: 1; transform: translateY(0); }
-                    80% { opacity: 1; transform: translateY(0); }
-                    100% { opacity: 0; transform: translateY(-6px); }
-                  }
-                `}</style>                                                      
+ 
             {!loading && !resultado && (
               <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
                 Completa los datos y presiona Generar
