@@ -4,14 +4,14 @@ import { notFound } from "next/navigation";
 export default async function SharePage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
 
-  const { data: copy } = await supabase
+  const { data: copy, error } = await supabase
     .from("copys_guardados")
     .select("*")
     .eq("id", params.id)
     .eq("compartible", true)
     .single();
 
-  if (!copy) return notFound();
+  if (!copy || error) return notFound();
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-6 py-20">
