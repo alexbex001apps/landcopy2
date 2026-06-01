@@ -36,7 +36,13 @@ export default function Copy() {
     return null;
   });
   const [tabActivo, setTabActivo] = useState("landing");
-  const [guardados, setGuardados] = useState<any[]>([]);
+  const [guardados, setGuardados] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("landcopy_guardados");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
@@ -48,6 +54,9 @@ export default function Copy() {
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
  useEffect(() => {
+    useEffect(() => {
+    localStorage.setItem("landcopy_guardados", JSON.stringify(guardados));
+  }, [guardados]);
     sessionStorage.setItem("lc_producto", producto);
     sessionStorage.setItem("lc_caracteristicas", caracteristicas);
     sessionStorage.setItem("lc_problema", problema);
@@ -123,8 +132,19 @@ export default function Copy() {
     if (fileRef.current) fileRef.current.value = "";
   }
  
-  function guardar(texto: string, tipo: string) {
-    setGuardados(prev => [{ texto, tipo, producto, hora: new Date().toLocaleTimeString() }, ...prev]);
+  async function guardar(texto: string, tipo: string) {
+    const hora = new Date().toLocaleTimeString();
+    const nuevoGuardado = { texto, tipo, producto, hora, id: Date.now().toString() };
+    try {
+      const res = await fetch("/api/copys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto, tipo, producto, hora }),
+      });
+      const data = await res.json();
+      if (data.id) nuevoGuardado.id = data.id;
+    } catch {}
+    setGuardados(prev => [nuevoGuardado, ...prev]);
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
   }
@@ -850,7 +870,8 @@ export default function Copy() {
                               <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">
                                 {copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}
                               </button>
-                              <button onClick={() => setGuardados(prev => prev.filter((_, idx) => idx !== i))} className="text-red-400 text-[10px] font-bold px-1">✕</button>
+                              <button onClick={async () => { if (g.id) { await fetch("/api/copys", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: g.id }) }); } setGuardados(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-400 text-[10px] font-bold px-1">✕</button>
+                              {g.id && <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/share/${g.id}`); setCopiado(`share-${i}`); setTimeout(() => setCopiado(null), 2000); }} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === `share-${i}` ? "✓ Link copiado" : "🔗 Compartir"}</button>}
                             </div>
                           </div>
                           <p onClick={() => setExpandido(expandido === i ? null : i)} className="text-[#f0ead6] text-xs cursor-pointer hover:text-white transition-colors whitespace-pre-wrap">
