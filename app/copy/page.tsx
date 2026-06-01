@@ -796,7 +796,6 @@ export default function Copy() {
                               <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
                               <button onClick={async () => { if (g.id) { await fetch("/api/copys", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: g.id }) }); } setGuardados(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-400 text-[10px] font-bold px-1">✕</button>
                               {g.id && <button onClick={() => setModalCompartir(window.location.origin + '/share/' + g.id)} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">🔗 Compartir</button>}
-                              {g.id && <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/share/${g.id}`); setCopiado(`share-${i}`); setTimeout(() => setCopiado(null), 2000); }} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === `share-${i}` ? "✓ Link copiado" : "🔗 Compartir"}</button>}
                             </div>
                           </div>
                           <p onClick={() => setExpandido(expandido === i ? null : i)} className="text-[#f0ead6] text-xs cursor-pointer hover:text-white transition-colors whitespace-pre-wrap">
