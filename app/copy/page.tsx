@@ -3,46 +3,25 @@ import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
  
 export default function Copy() {
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = "/login";
-    });
-  }, []);
- 
-  const ss = typeof window !== "undefined" ? sessionStorage : null;
-  const [producto, setProducto] = useState(() => ss?.getItem("lc_producto") || "");
-  const [caracteristicas, setCaracteristicas] = useState(() => ss?.getItem("lc_caracteristicas") || "");
-  const [problema, setProblema] = useState(() => ss?.getItem("lc_problema") || "");
-  const [beneficio, setBeneficio] = useState(() => ss?.getItem("lc_beneficio") || "");
-  const [precioOferta, setPrecioOferta] = useState(() => ss?.getItem("lc_precioOferta") || "");
-  const [precioAnterior, setPrecioAnterior] = useState(() => ss?.getItem("lc_precioAnterior") || "");
-  const [clientes, setClientes] = useState(() => ss?.getItem("lc_clientes") || "");
-  const [competidor, setCompetidor] = useState(() => ss?.getItem("lc_competidor") || "");
-  const [pais, setPais] = useState(() => ss?.getItem("lc_pais") || "Colombia");
-  const [tono, setTono] = useState(() => ss?.getItem("lc_tono") || "Urgente");
-  const [categoria, setCategoria] = useState(() => ss?.getItem("lc_categoria") || "Salud y bienestar");
-  const [imagen, setImagen] = useState<string | null>(() => ss?.getItem("lc_imagen") || null);
+  const [producto, setProducto] = useState("");
+  const [caracteristicas, setCaracteristicas] = useState("");
+  const [problema, setProblema] = useState("");
+  const [beneficio, setBeneficio] = useState("");
+  const [precioOferta, setPrecioOferta] = useState("");
+  const [precioAnterior, setPrecioAnterior] = useState("");
+  const [clientes, setClientes] = useState("");
+  const [competidor, setCompetidor] = useState("");
+  const [pais, setPais] = useState("Colombia");
+  const [tono, setTono] = useState("Urgente");
+  const [categoria, setCategoria] = useState("Salud y bienestar");
+  const [imagen, setImagen] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progreso, setProgreso] = useState(0);
-  const [tiempoInicio, setTiempoInicio] = useState(0);
   const tiempoInicioRef = useRef(0);
   const [tiempoReal, setTiempoReal] = useState(0);
-  const [resultado, setResultado] = useState<any>(() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("landcopy_resultado");
-      return saved ? JSON.parse(saved) : null;
-    }
-    return null;
-  });
+  const [resultado, setResultado] = useState<any>(null);
   const [tabActivo, setTabActivo] = useState("landing");
-  const [guardados, setGuardados] = useState<any[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("landcopy_guardados");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [guardados, setGuardados] = useState<any[]>([]);
   const [queGenerar, setQueGenerar] = useState<string[]>([]);
   const [seccionCargando, setSeccionCargando] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
@@ -52,11 +31,44 @@ export default function Copy() {
   const [analisisActivo, setAnalisisActivo] = useState(false);
   const [analizando, setAnalizando] = useState(false);
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
- useEffect(() => {
-    useEffect(() => {
-    localStorage.setItem("landcopy_guardados", JSON.stringify(guardados));
-  }, [guardados]);
+ 
+  // Auth check
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = "/login";
+    });
+  }, []);
+ 
+  // Cargar desde storage al montar (solo cliente)
+  useEffect(() => {
+    const ss = sessionStorage;
+    const ls = localStorage;
+    setProducto(ss.getItem("lc_producto") || "");
+    setCaracteristicas(ss.getItem("lc_caracteristicas") || "");
+    setProblema(ss.getItem("lc_problema") || "");
+    setBeneficio(ss.getItem("lc_beneficio") || "");
+    setPrecioOferta(ss.getItem("lc_precioOferta") || "");
+    setPrecioAnterior(ss.getItem("lc_precioAnterior") || "");
+    setClientes(ss.getItem("lc_clientes") || "");
+    setCompetidor(ss.getItem("lc_competidor") || "");
+    setPais(ss.getItem("lc_pais") || "Colombia");
+    setTono(ss.getItem("lc_tono") || "Urgente");
+    setCategoria(ss.getItem("lc_categoria") || "Salud y bienestar");
+    const img = ss.getItem("lc_imagen");
+    if (img) setImagen(img);
+    const res = ss.getItem("landcopy_resultado");
+    if (res) setResultado(JSON.parse(res));
+    const guard = ls.getItem("landcopy_guardados");
+    if (guard) setGuardados(JSON.parse(guard));
+    setHydrated(true);
+  }, []);
+ 
+  // Guardar formulario en sessionStorage
+  useEffect(() => {
+    if (!hydrated) return;
     sessionStorage.setItem("lc_producto", producto);
     sessionStorage.setItem("lc_caracteristicas", caracteristicas);
     sessionStorage.setItem("lc_problema", problema);
@@ -70,7 +82,14 @@ export default function Copy() {
     sessionStorage.setItem("lc_categoria", categoria);
     if (imagen) sessionStorage.setItem("lc_imagen", imagen);
     else sessionStorage.removeItem("lc_imagen");
-  }, [producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen]);
+  }, [hydrated, producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen]);
+ 
+  // Guardar guardados en localStorage
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem("landcopy_guardados", JSON.stringify(guardados));
+  }, [hydrated, guardados]);
+ 
   const paises = [
     { nombre: "Colombia", flag: "🇨🇴" },
     { nombre: "México", flag: "🇲🇽" },
@@ -134,7 +153,7 @@ export default function Copy() {
  
   async function guardar(texto: string, tipo: string) {
     const hora = new Date().toLocaleTimeString();
-    const nuevoGuardado = { texto, tipo, producto, hora, id: Date.now().toString() };
+    const nuevoGuardado: any = { texto, tipo, producto, hora, id: Date.now().toString() };
     try {
       const res = await fetch("/api/copys", {
         method: "POST",
@@ -153,6 +172,15 @@ export default function Copy() {
     navigator.clipboard.writeText(texto);
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
+  }
+ 
+  function limpiarTodo() {
+    ["lc_producto","lc_caracteristicas","lc_problema","lc_beneficio","lc_precioOferta","lc_precioAnterior","lc_clientes","lc_competidor","lc_pais","lc_tono","lc_categoria","lc_imagen","landcopy_resultado"].forEach(k => sessionStorage.removeItem(k));
+    setProducto(""); setCaracteristicas(""); setProblema(""); setBeneficio("");
+    setPrecioOferta(""); setPrecioAnterior(""); setClientes(""); setCompetidor("");
+    setPais("Colombia"); setTono("Urgente"); setCategoria("Salud y bienestar");
+    setImagen(null); setResultado(null); setQueGenerar([]);
+    if (fileRef.current) fileRef.current.value = "";
   }
  
   async function regenerar(seccion: string) {
@@ -207,7 +235,6 @@ export default function Copy() {
   async function generar(conImagen = false) {
     if (!producto) return;
     setLoading(true);
-    setTiempoInicio(Date.now());
     tiempoInicioRef.current = Date.now();
     setProgreso(0);
     setResultado(null);
@@ -455,11 +482,8 @@ export default function Copy() {
                 ))}
               </div>
             </div>
-            <button onClick={() => {
-              ["lc_producto","lc_caracteristicas","lc_problema","lc_beneficio","lc_precioOferta","lc_precioAnterior","lc_clientes","lc_competidor","lc_pais","lc_tono","lc_categoria","lc_imagen","landcopy_resultado"].forEach(k => sessionStorage.removeItem(k));
-              setProducto(""); setCaracteristicas(""); setProblema(""); setBeneficio(""); setPrecioOferta(""); setPrecioAnterior(""); setClientes(""); setCompetidor(""); setPais("Colombia"); setTono("Urgente"); setCategoria("Salud y bienestar"); setImagen(null); setResultado(null); setQueGenerar([]);
-              if (fileRef.current) fileRef.current.value = "";
-            }} className="w-full bg-[#0d0d0d] border border-red-500/30 text-red-400 font-bold py-2 rounded-xl text-xs mb-2 transition-colors flex items-center justify-center gap-2">
+ 
+            <button onClick={limpiarTodo} className="w-full bg-[#0d0d0d] border border-red-500/30 text-red-400 font-bold py-2 rounded-xl text-xs mb-2 transition-colors flex items-center justify-center gap-2">
               🗑️ Limpiar todo y empezar de nuevo
             </button>
             <button onClick={() => generar(false)} disabled={!producto || loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-black py-3 rounded-xl text-sm mb-2 transition-colors flex items-center justify-center gap-2">
@@ -538,32 +562,14 @@ export default function Copy() {
               <div className="bg-[#070707] border border-[#111] rounded-xl p-4 mb-4 relative overflow-hidden" style={{minHeight: "300px"}}>
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
                   {productosLluvia.map((emoji, i) => (
-                    <span
-                      key={i}
-                      className="absolute select-none"
-                      style={{
-                        left: `${(i * 17 + 3) % 95}%`,
-                        top: "-40px",
-                        opacity: 0.12,
-                        fontSize: `${16 + (i % 4) * 6}px`,
-                        animation: `lluviaProd ${2.5 + (i % 5) * 0.7}s linear ${(i * 0.3) % 3}s infinite`,
-                      }}
-                    >
+                    <span key={i} className="absolute select-none" style={{ left: `${(i * 17 + 3) % 95}%`, top: "-40px", opacity: 0.12, fontSize: `${16 + (i % 4) * 6}px`, animation: `lluviaProd ${2.5 + (i % 5) * 0.7}s linear ${(i * 0.3) % 3}s infinite` }}>
                       {emoji}
                     </span>
                   ))}
                 </div>
                 <style>{`
-                  @keyframes lluviaProd {
-                    0% { transform: translateY(-40px) rotate(0deg); }
-                    100% { transform: translateY(400px) rotate(20deg); }
-                  }
-                  @keyframes fadePhrase {
-                    0% { opacity: 0; transform: translateY(8px); }
-                    15% { opacity: 1; transform: translateY(0); }
-                    85% { opacity: 1; transform: translateY(0); }
-                    100% { opacity: 0; transform: translateY(-8px); }
-                  }
+                  @keyframes lluviaProd { 0%{transform:translateY(-40px) rotate(0deg);} 100%{transform:translateY(400px) rotate(20deg);} }
+                  @keyframes fadePhrase { 0%{opacity:0;transform:translateY(8px);} 15%{opacity:1;transform:translateY(0);} 85%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-8px);} }
                 `}</style>
                 <div className="relative z-10">
                   <div className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-3">⚙️ Generando contenido · {progreso}%</div>
@@ -583,15 +589,7 @@ export default function Copy() {
                   ))}
                   <div className="mt-10 flex flex-col items-center gap-3">
                     {frasesGenerando.map((frase, i) => (
-                      <p
-                        key={i}
-                        className="text-[#f0ead6] text-xs font-medium text-center"
-                        style={{
-                          opacity: 0,
-                          animation: `fadePhrase 2s ease-in-out ${i * 2}s infinite`,
-                          maxWidth: "340px",
-                        }}
-                      >
+                      <p key={i} className="text-[#f0ead6] text-xs font-medium text-center" style={{ opacity: 0, animation: `fadePhrase 2s ease-in-out ${i * 2}s infinite`, maxWidth: "340px" }}>
                         {frase}
                       </p>
                     ))}
@@ -623,12 +621,8 @@ export default function Copy() {
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
                           <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">{s.titulo}</span>
                           <div className="flex gap-1.5">
-                            <button disabled={seccionCargando !== null} onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === `regenerar-${s.key}` ? "⏳ Generando..." : "↻ Regenerar"}
-                            </button>
-                            <button disabled={seccionCargando !== null} onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === `mejorar-${s.key}` ? "⏳ Mejorando..." : "↑ Mejorar"}
-                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `regenerar-${s.key}` ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `mejorar-${s.key}` ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado[s.key], s.key)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === s.key ? "✓ Copiado" : "Copiar"}</button>
                             <button onClick={() => guardar(resultado[s.key], s.titulo)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
@@ -644,12 +638,8 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
                       <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
                       <div className="flex gap-1.5">
-                        <button disabled={seccionCargando !== null} onClick={() => regenerar("whatsapp")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "regenerar-whatsapp" ? "⏳ Generando..." : "↻ Regenerar"}
-                        </button>
-                        <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                        </button>
+                        <button disabled={seccionCargando !== null} onClick={() => regenerar("whatsapp")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-whatsapp" ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                        <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                         <button onClick={() => copiar(resultado.whatsapp, "whatsapp")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "whatsapp" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
@@ -664,14 +654,9 @@ export default function Copy() {
                     const partes = texto.split(/\n(?=D[íi]a\s*\d)/i);
                     partes.forEach((parte, i) => {
                       const lineas = parte.trim().split("\n");
-                      const primeraLinea = lineas[0]
-                        .replace(/^\*\*/g, "").replace(/\*\*$/g, "")
-                        .replace(/^D[íi]a\s*\d+[:\-]?\s*/i, "").trim();
+                      const primeraLinea = lineas[0].replace(/^\*\*/g, "").replace(/\*\*$/g, "").replace(/^D[íi]a\s*\d+[:\-]?\s*/i, "").trim();
                       const resto = lineas.slice(1).join("\n").trim();
-                      dias.push({
-                        titulo: primeraLinea || `Día ${i + 1}`,
-                        texto: resto || primeraLinea
-                      });
+                      dias.push({ titulo: primeraLinea || `Día ${i + 1}`, texto: resto || primeraLinea });
                     });
                     return dias;
                   };
@@ -686,67 +671,25 @@ export default function Copy() {
                               <span className="text-green-400 text-[11px] font-bold">{dia.titulo}</span>
                             </div>
                             <div className="flex gap-1.5">
-                              <button
-                                disabled={seccionCargando !== null}
-                                onClick={async () => {
-                                  setSeccionCargando(`regenerar-campana-dia-${i + 1}`);
-                                  const res = await fetch("/api/generate", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, categoria, seccion: `campana-dia-${i + 1}` }),
-                                  });
-                                  const data = await res.json();
-                                  if (data.campana_dia) {
-                                    const nuevosDias = [...dias];
-                                    nuevosDias[i] = data.campana_dia;
-                                    const nuevaCampana = nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n");
-                                    setResultado((prev: any) => ({ ...prev, campana: nuevaCampana }));
-                                  }
-                                  setSeccionCargando(null);
-                                }}
-                                className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50"
-                              >
-                                {seccionCargando === `regenerar-campana-dia-${i + 1}` ? "⏳ Generando..." : "↻ Regenerar"}
-                              </button>
-                              <button
-                                disabled={seccionCargando !== null}
-                                onClick={async () => {
-                                  setSeccionCargando(`mejorar-campana-dia-${i + 1}`);
-                                  const res = await fetch("/api/mejorar", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ texto: `${dia.titulo}\n${dia.texto}`, producto, pais, tono }),
-                                  });
-                                  const data = await res.json();
-                                  if (data.texto) {
-                                    const nuevosDias = [...dias];
-                                    nuevosDias[i] = { titulo: dia.titulo, texto: data.texto };
-                                    const nuevaCampana = nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n");
-                                    setResultado((prev: any) => ({ ...prev, campana: nuevaCampana }));
-                                  }
-                                  setSeccionCargando(null);
-                                }}
-                                className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50"
-                              >
-                                {seccionCargando === `mejorar-campana-dia-${i + 1}` ? "⏳ Mejorando..." : "↑ Mejorar"}
-                              </button>
-                              <button
-                                onClick={() => copiar(`${dia.titulo}\n${dia.texto}`, `campana-dia-${i + 1}`)}
-                                className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md"
-                              >
-                                {copiado === `campana-dia-${i + 1}` ? "✓ Copiado" : "Copiar"}
-                              </button>
-                              <button
-                                onClick={() => guardar(`${dia.titulo}\n${dia.texto}`, `Campaña Día ${i + 1}`)}
-                                className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md"
-                              >
-                                ❤ Guardar
-                              </button>
+                              <button disabled={seccionCargando !== null} onClick={async () => {
+                                setSeccionCargando(`regenerar-campana-dia-${i + 1}`);
+                                const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, categoria, seccion: `campana-dia-${i + 1}` }) });
+                                const data = await res.json();
+                                if (data.campana_dia) { const nuevosDias = [...dias]; nuevosDias[i] = data.campana_dia; setResultado((prev: any) => ({ ...prev, campana: nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n") })); }
+                                setSeccionCargando(null);
+                              }} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `regenerar-campana-dia-${i + 1}` ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                              <button disabled={seccionCargando !== null} onClick={async () => {
+                                setSeccionCargando(`mejorar-campana-dia-${i + 1}`);
+                                const res = await fetch("/api/mejorar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texto: `${dia.titulo}\n${dia.texto}`, producto, pais, tono }) });
+                                const data = await res.json();
+                                if (data.texto) { const nuevosDias = [...dias]; nuevosDias[i] = { titulo: dia.titulo, texto: data.texto }; setResultado((prev: any) => ({ ...prev, campana: nuevosDias.map((d, idx) => `Día ${idx + 1}: ${d.titulo}\n${d.texto}`).join("\n") })); }
+                                setSeccionCargando(null);
+                              }} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `mejorar-campana-dia-${i + 1}` ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
+                              <button onClick={() => copiar(`${dia.titulo}\n${dia.texto}`, `campana-dia-${i + 1}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === `campana-dia-${i + 1}` ? "✓ Copiado" : "Copiar"}</button>
+                              <button onClick={() => guardar(`${dia.titulo}\n${dia.texto}`, `Campaña Día ${i + 1}`)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                             </div>
                           </div>
-                          <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">
-                            {dia.texto}
-                          </div>
+                          <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{dia.texto}</div>
                         </div>
                       ))}
                     </div>
@@ -765,9 +708,7 @@ export default function Copy() {
                       {resultado?.prompts || "Los prompts profesionales se generan junto con el copy. Presiona Generar para obtenerlos."}
                     </div>
                     <div className="px-4 py-3 border-t border-purple-500/20">
-                      <button className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg py-2 text-xs font-bold">
-                        → Ir al módulo de imágenes con este producto
-                      </button>
+                      <button className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg py-2 text-xs font-bold">→ Ir al módulo de imágenes con este producto</button>
                     </div>
                   </div>
                 )}
@@ -777,12 +718,8 @@ export default function Copy() {
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
                       <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
                       <div className="flex gap-1.5">
-                        <button disabled={seccionCargando !== null} onClick={() => regenerar("metaads")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "regenerar-metaads" ? "⏳ Generando..." : "↻ Regenerar"}
-                        </button>
-                        <button disabled={seccionCargando !== null} onClick={() => mejorar("metaads")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                          {seccionCargando === "mejorar-metaads" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                        </button>
+                        <button disabled={seccionCargando !== null} onClick={() => regenerar("metaads")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-metaads" ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                        <button disabled={seccionCargando !== null} onClick={() => mejorar("metaads")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-metaads" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                         <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
                         <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                       </div>
@@ -798,12 +735,8 @@ export default function Copy() {
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">🔍 SEO Keywords</span>
                           <div className="flex gap-1.5">
-                            <button disabled={seccionCargando !== null} onClick={() => regenerar("seo")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "regenerar-seo" ? "⏳ Generando..." : "↻ Regenerar"}
-                            </button>
-                            <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("seo")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-seo" ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.seo, "seo")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "seo" ? "✓ Copiado" : "Copiar"}</button>
                             <button onClick={() => guardar(resultado.seo, "SEO Keywords")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
@@ -816,12 +749,8 @@ export default function Copy() {
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">💬 Objeciones y Respuestas</span>
                           <div className="flex gap-1.5">
-                            <button disabled={seccionCargando !== null} onClick={() => regenerar("objeciones")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "regenerar-objeciones" ? "⏳ Generando..." : "↻ Regenerar"}
-                            </button>
-                            <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("objeciones")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-objeciones" ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.objeciones, "objeciones")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "objeciones" ? "✓ Copiado" : "Copiar"}</button>
                             <button onClick={() => guardar(resultado.objeciones, "Objeciones")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
@@ -834,12 +763,8 @@ export default function Copy() {
                         <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">📧 Email de seguimiento</span>
                           <div className="flex gap-1.5">
-                            <button disabled={seccionCargando !== null} onClick={() => regenerar("email")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "regenerar-email" ? "⏳ Generando..." : "↻ Regenerar"}
-                            </button>
-                            <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">
-                              {seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}
-                            </button>
+                            <button disabled={seccionCargando !== null} onClick={() => regenerar("email")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-email" ? "⏳ Generando..." : "↻ Regenerar"}</button>
+                            <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.email, "email")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "email" ? "✓ Copiado" : "Copiar"}</button>
                             <button onClick={() => guardar(resultado.email, "Email")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                           </div>
@@ -867,9 +792,7 @@ export default function Copy() {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-zinc-600 text-[10px]">{g.hora}</span>
-                              <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">
-                                {copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}
-                              </button>
+                              <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
                               <button onClick={async () => { if (g.id) { await fetch("/api/copys", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: g.id }) }); } setGuardados(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-400 text-[10px] font-bold px-1">✕</button>
                               {g.id && <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/share/${g.id}`); setCopiado(`share-${i}`); setTimeout(() => setCopiado(null), 2000); }} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === `share-${i}` ? "✓ Link copiado" : "🔗 Compartir"}</button>}
                             </div>
