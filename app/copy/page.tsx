@@ -154,7 +154,6 @@ export default function Copy() {
  
   async function guardar(texto: string, tipo: string) {
     const hora = new Date().toLocaleTimeString();
-    const nuevoGuardado: any = { texto, tipo, producto, hora, id: Date.now().toString() };
     try {
       const res = await fetch("/api/copys", {
         method: "POST",
@@ -162,9 +161,12 @@ export default function Copy() {
         body: JSON.stringify({ texto, tipo, producto, hora }),
       });
       const data = await res.json();
-      if (data.id) nuevoGuardado.id = data.id;
-    } catch {}
-    setGuardados(prev => [nuevoGuardado, ...prev]);
+      const nuevoGuardado: any = { texto, tipo, producto, hora, id: data.id || Date.now().toString() };
+      setGuardados(prev => [nuevoGuardado, ...prev]);
+    } catch {
+      const nuevoGuardado: any = { texto, tipo, producto, hora, id: Date.now().toString() };
+      setGuardados(prev => [nuevoGuardado, ...prev]);
+    }
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
   }
@@ -795,7 +797,7 @@ export default function Copy() {
                               <span className="text-zinc-600 text-[10px]">{g.hora}</span>
                               <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
                               <button onClick={async () => { if (g.id) { await fetch("/api/copys", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: g.id }) }); } setGuardados(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-400 text-[10px] font-bold px-1">✕</button>
-                              {g.id && <button onClick={() => setModalCompartir(window.location.origin + '/share/' + g.id)} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">🔗 Compartir</button>}
+                              {g.id && <button onClick={() => setModalCompartir(`${window.location.origin}/share/${g.id}`)} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-1 rounded-md">🔗 Compartir</button>}
                             </div>
                           </div>
                           <p onClick={() => setExpandido(expandido === i ? null : i)} className="text-[#f0ead6] text-xs cursor-pointer hover:text-white transition-colors whitespace-pre-wrap">
@@ -817,24 +819,24 @@ export default function Copy() {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalCompartir(null)}>
           <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <span className="text-white font-bold text-sm">Compartir copy</span>
-              <button onClick={() => setModalCompartir(null)} className="text-zinc-500 hover:text-white text-lg">X</button>
+              <span className="text-white font-bold text-sm">🔗 Compartir copy</span>
+              <button onClick={() => setModalCompartir(null)} className="text-zinc-500 hover:text-white text-lg">✕</button>
             </div>
             <div className="bg-[#111] border border-[#222] rounded-lg px-3 py-2 mb-4">
               <p className="text-zinc-400 text-[10px] truncate">{modalCompartir}</p>
             </div>
             <div className="flex flex-col gap-2">
-              <button onClick={() => { navigator.clipboard.writeText(modalCompartir); setCopiado("modal"); setTimeout(() => setCopiado(null), 2000); }} className="flex items-center gap-3 bg-[#111] border border-[#222] text-[#f0ead6] rounded-xl px-4 py-3 text-sm font-bold">
-                {copiado === "modal" ? "Link copiado" : "Copiar link"}
+              <button onClick={() => { navigator.clipboard.writeText(modalCompartir); setCopiado("modal"); setTimeout(() => setCopiado(null), 2000); }} className="flex items-center gap-3 bg-[#111] border border-[#222] hover:border-orange-500 text-[#f0ead6] rounded-xl px-4 py-3 text-sm font-bold transition-all">
+                <span className="text-xl">🔗</span> {copiado === "modal" ? "✓ Link copiado" : "Copiar link"}
               </button>
-              <button onClick={() => window.open("https://wa.me/?text=" + encodeURIComponent("Mira este copy: " + modalCompartir),"_blank")} className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl px-4 py-3 text-sm font-bold">
-                Compartir por WhatsApp
+              <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Mira este copy que generé con LandCopy: ${modalCompartir}`)}`,"_blank")} className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 hover:border-green-400 text-green-400 rounded-xl px-4 py-3 text-sm font-bold transition-all">
+                <span className="text-xl">💬</span> Compartir por WhatsApp
               </button>
-              <button onClick={() => window.open("https://t.me/share/url?url=" + encodeURIComponent(modalCompartir),"_blank")} className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-xl px-4 py-3 text-sm font-bold">
-                Compartir por Telegram
+              <button onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(modalCompartir)}&text=${encodeURIComponent("Mira este copy que generé con LandCopy")}`,"_blank")} className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/30 hover:border-blue-400 text-blue-400 rounded-xl px-4 py-3 text-sm font-bold transition-all">
+                <span className="text-xl">✈️</span> Compartir por Telegram
               </button>
-              <button onClick={() => window.open("mailto:?subject=Copy LandCopy&body=" + encodeURIComponent(modalCompartir),"_blank")} className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-xl px-4 py-3 text-sm font-bold">
-                Compartir por correo
+              <button onClick={() => window.open(`mailto:?subject=${encodeURIComponent("Copy generado con LandCopy")}&body=${encodeURIComponent(`Te comparto este copy:\n\n${modalCompartir}`)}`,"_blank")} className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 text-cyan-400 rounded-xl px-4 py-3 text-sm font-bold transition-all">
+                <span className="text-xl">📧</span> Compartir por correo
               </button>
             </div>
           </div>
