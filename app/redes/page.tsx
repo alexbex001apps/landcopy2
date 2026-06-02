@@ -401,7 +401,7 @@ export default function Redes() {
               </div>
             ) : (
               <>
-                <div className="text-[#FFD700] text-lg mb-1">📷</div>
+                <div className="text-[#FFD700] text-6xl mb-3">📷</div>
                 <div className="text-[#C8C3B7] text-sm">Arrastra o selecciona · JPG PNG WEBP</div>
                 <div className="text-[#FFD700] text-sm font-bold mt-0.5">GPT-4o Vision lo analiza</div>
               </>
