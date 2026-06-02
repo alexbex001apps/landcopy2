@@ -1,24 +1,24 @@
-﻿"use client";
+"use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const PAISES = [
-  { nombre: "Colombia", flag: "ðŸ‡¨ðŸ‡´" },
-  { nombre: "MÃ©xico", flag: "ðŸ‡²ðŸ‡½" },
-  { nombre: "Venezuela", flag: "ðŸ‡»ðŸ‡ª" },
-  { nombre: "Costa Rica", flag: "ðŸ‡¨ðŸ‡·" },
-  { nombre: "Ecuador", flag: "ðŸ‡ªðŸ‡¨" },
-  { nombre: "General", flag: "ðŸŒŽ" },
+  { nombre: "Colombia", flag: "🇨🇴" },
+  { nombre: "México", flag: "🇲🇽" },
+  { nombre: "Venezuela", flag: "🇻🇪" },
+  { nombre: "Costa Rica", flag: "🇨🇷" },
+  { nombre: "Ecuador", flag: "🇪🇨" },
+  { nombre: "General", flag: "🌎" },
 ];
 
 const TONOS = ["Urgente", "Emocional", "Racional", "Casual", "Confianza", "Premium"];
 
 const DESTINOS = [
-  { id: "instagram", nombre: "Instagram", ratio: "ver formatos", icon: "ðŸ“¸" },
-  { id: "tiktok", nombre: "TikTok", ratio: "9:16 Â· 1080Ã—1920", icon: "ðŸŽµ" },
-  { id: "facebook", nombre: "Facebook", ratio: "1:1 Â· 1080Ã—1080", icon: "ðŸ‘¥" },
-  { id: "whatsapp", nombre: "WhatsApp", ratio: "1:1 Â· 800Ã—800", icon: "ðŸ’¬" },
-  { id: "story", nombre: "Story", ratio: "9:16 Â· 1080Ã—1920", icon: "ðŸ“±" },
+  { id: "instagram", nombre: "Instagram", ratio: "ver formatos", icon: "📸" },
+  { id: "tiktok", nombre: "TikTok", ratio: "9:16 · 1080×1920", icon: "🎵" },
+  { id: "facebook", nombre: "Facebook", ratio: "1:1 · 1080×1080", icon: "👥" },
+  { id: "whatsapp", nombre: "WhatsApp", ratio: "1:1 · 800×800", icon: "💬" },
+  { id: "story", nombre: "Story", ratio: "9:16 · 1080×1920", icon: "📱" },
 ];
 
 const FORMATOS_IG = [
@@ -26,14 +26,14 @@ const FORMATOS_IG = [
   { id: "feed11", nombre: "Feed 1:1", width: 1080, height: 1080 },
   { id: "story916", nombre: "Story 9:16", width: 1080, height: 1920 },
   { id: "reels", nombre: "Reels portada", width: 1080, height: 1920 },
-  { id: "carrusel", nombre: "Carrusel Ã—5", width: 1080, height: 1350 },
+  { id: "carrusel", nombre: "Carrusel ×5", width: 1080, height: 1350 },
 ];
 
 const TIPOS = [
-  { id: "escena", nombre: "Producto en escena", desc: "El producto en ambiente real. Prompt tÃ©cnico automÃ¡tico.", icon: "ðŸ " },
-  { id: "texto", nombre: "Texto sobre fondo", desc: "Copy visual. Ideal para anuncios de oferta y quotes.", icon: "âœï¸" },
-  { id: "ugc", nombre: "UGC / Persona usando", desc: "Persona real en escena cotidiana. El mÃ¡s viral.", icon: "ðŸ¤³" },
-  { id: "antesdespues", nombre: "Antes / DespuÃ©s", desc: "Dos paneles. Problema y soluciÃ³n con el producto.", icon: "âš¡" },
+  { id: "escena", nombre: "Producto en escena", desc: "El producto en ambiente real. Prompt técnico automático.", icon: "🏠" },
+  { id: "texto", nombre: "Texto sobre fondo", desc: "Copy visual. Ideal para anuncios de oferta y quotes.", icon: "✍️" },
+  { id: "ugc", nombre: "UGC / Persona usando", desc: "Persona real en escena cotidiana. El más viral.", icon: "🤳" },
+  { id: "antesdespues", nombre: "Antes / Después", desc: "Dos paneles. Problema y solución con el producto.", icon: "⚡" },
 ];
 
 type Idea = {
@@ -71,7 +71,7 @@ export default function Redes() {
   const [tono, setTono] = useState("Urgente");
   const [desdeCopy, setDesdeCopy] = useState(false);
 
-  // ConfiguraciÃ³n
+  // Configuración
   const [destino, setDestino] = useState("instagram");
   const [formatoIg, setFormatoIg] = useState("feed45");
   const [tipo, setTipo] = useState("escena");
@@ -79,7 +79,7 @@ export default function Redes() {
   const [promptCustom, setPromptCustom] = useState("");
   const [modoAvanzado, setModoAvanzado] = useState(false);
 
-  // GeneraciÃ³n
+  // Generación
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [tabTexto, setTabTexto] = useState("instagram");
@@ -168,7 +168,7 @@ export default function Redes() {
         setIdeas(prev => prev.map(i => i.id === soloUna ? { ...data.idea, id: soloUna, favorita: i.favorita } : i));
       } else {
         setIdeas(data.ideas || []);
-        // Generar textos automÃ¡ticamente
+        // Generar textos automáticamente
         generarTextos();
       }
     } catch (err) {
@@ -246,7 +246,7 @@ export default function Redes() {
       });
       const data = await res.json();
       if (data.url) {
-        mostrarToast("âœ“ Imagen guardada");
+        mostrarToast("✓ Imagen guardada");
         setModalCompartir({ url: data.url, caption: textos[tabTexto]?.caption || "" });
       }
     } catch (err) {
@@ -285,24 +285,24 @@ export default function Redes() {
           <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 w-[360px]">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[#FFD700] text-xs font-black tracking-widest uppercase">Compartir imagen</span>
-              <button onClick={() => setModalCompartir(null)} className="text-[#7A7772] hover:text-white">âœ•</button>
+              <button onClick={() => setModalCompartir(null)} className="text-[#7A7772] hover:text-white">✕</button>
             </div>
             <div className="space-y-2">
-              <button onClick={() => { navigator.clipboard.writeText(modalCompartir.url); mostrarToast("âœ“ Link copiado"); }}
+              <button onClick={() => { navigator.clipboard.writeText(modalCompartir.url); mostrarToast("✓ Link copiado"); }}
                 className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2.5 text-xs font-bold text-[#F5F0E8] flex items-center justify-center gap-2">
-                ðŸ”— Copiar link
+                🔗 Copiar link
               </button>
               <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(modalCompartir.caption + "\n" + modalCompartir.url)}`, "_blank")}
                 className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2.5 text-xs font-bold text-[#F5F0E8] flex items-center justify-center gap-2">
-                ðŸ“± WhatsApp
+                📱 WhatsApp
               </button>
               <button onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(modalCompartir.url)}&text=${encodeURIComponent(modalCompartir.caption)}`, "_blank")}
                 className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2.5 text-xs font-bold text-[#F5F0E8] flex items-center justify-center gap-2">
-                âœˆï¸ Telegram
+                ✈️ Telegram
               </button>
               <button onClick={() => descargarImagen(modalCompartir.url, `${producto}-imagen.png`)}
                 className="w-full bg-[#FFD700] rounded-lg py-2.5 text-xs font-black text-[#0d0d0d] flex items-center justify-center gap-2">
-                â†“ Descargar
+                ↓ Descargar
               </button>
             </div>
           </div>
@@ -312,25 +312,25 @@ export default function Redes() {
       {/* Header */}
       <div className="bg-[#161616] border-b-2 border-[#FFD700] px-5 py-3 text-center">
         <div className="inline-flex items-center gap-2 bg-[rgba(255,215,0,0.1)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] text-sm font-bold px-3 py-1 rounded-sm tracking-widest uppercase mb-2">
-          IA generativa Â· imÃ¡genes para redes
+          IA generativa · imágenes para redes
         </div>
         <h1 className="text-xl font-black text-white mb-1">
-          ImÃ¡genes que <span className="text-[#FFD700]">venden</span> y <span className="text-[#86EFAC]">viralizan</span>
+          Imágenes que <span className="text-[#FFD700]">venden</span> y <span className="text-[#86EFAC]">viralizan</span>
         </h1>
-        <p className="text-[#7A7772] text-xs">Producto Â· destino Â· tipo Â· la IA genera imagen + texto + hashtags + guiÃ³n TikTok</p>
+        <p className="text-[#7A7772] text-xs">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
       </div>
 
       {/* Steps */}
       <div className="flex bg-[#1e1e1e] border-b border-[#2a2a2a]">
         {[
-          { n: 1, label: "Paso 1 â€” Producto", sub: producto || "Configura tu producto" },
-          { n: 2, label: "Paso 2 â€” Tipo", sub: tipo ? TIPOS.find(t => t.id === tipo)?.nombre : "Elige tipo de imagen" },
-          { n: 3, label: "Paso 3 â€” Resultado", sub: "GalerÃ­a + texto + descarga" },
+          { n: 1, label: "Paso 1 — Producto", sub: producto || "Configura tu producto" },
+          { n: 2, label: "Paso 2 — Tipo", sub: tipo ? TIPOS.find(t => t.id === tipo)?.nombre : "Elige tipo de imagen" },
+          { n: 3, label: "Paso 3 — Resultado", sub: "Galería + texto + descarga" },
         ].map((s) => (
           <div key={s.n} onClick={() => setPaso(s.n)}
             className={`flex-1 flex items-center gap-2 px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
             <div className={`w-5 h-5 rounded-sm flex items-center justify-center text-sm font-black flex-shrink-0 ${paso >= s.n ? "bg-[#FFD700] text-[#0d0d0d]" : "bg-[#2a2a2a] text-[#555]"}`}>
-              {paso > s.n ? "âœ“" : s.n}
+              {paso > s.n ? "✓" : s.n}
             </div>
             <div>
               <div className={`text-sm font-bold tracking-widest uppercase ${paso >= s.n ? "text-[#FFD700]" : "text-[#555]"}`}>{s.label}</div>
@@ -351,7 +351,7 @@ export default function Redes() {
             <div className="bg-[#1e1e1e] border border-[rgba(134,239,172,0.2)] rounded-md p-2.5 mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#86EFAC] flex-shrink-0" />
               <div className="text-sm text-[#EDE8DC] flex-1 leading-tight">
-                Desde <span className="text-[#86EFAC] font-bold">Copy</span> â€” {producto} Â· {pais} Â· {tono}
+                Desde <span className="text-[#86EFAC] font-bold">Copy</span> — {producto} · {pais} · {tono}
               </div>
               <button onClick={() => setDesdeCopy(false)} className="text-sm font-bold text-[#FFD700] border border-[rgba(255,215,0,0.25)] px-1.5 py-0.5 rounded-sm">
                 Cambiar
@@ -368,7 +368,7 @@ export default function Redes() {
               </div>
               <div className="flex-1">
                 <div className="text-xs font-bold text-white">{producto}</div>
-                <div className="text-sm text-[#7A7772]">${precioOferta} / ${precioAnterior} Â· {pais}</div>
+                <div className="text-sm text-[#7A7772]">${precioOferta} / ${precioAnterior} · {pais}</div>
               </div>
               <span className="text-sm font-bold text-[#0d0d0d] bg-[#FFD700] px-1.5 py-0.5 rounded-sm">Activo</span>
             </div>
@@ -397,20 +397,20 @@ export default function Redes() {
               <div className="relative inline-block">
                 <img src={imagen} className="h-16 mx-auto rounded-md object-contain" alt="producto" />
                 <button onClick={(e) => { e.stopPropagation(); setImagen(null); }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-sm font-bold w-4 h-4 rounded-full flex items-center justify-center">âœ•</button>
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-sm font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
               </div>
             ) : (
               <>
-                <div className="text-[#FFD700] text-lg mb-1">ðŸ“·</div>
-                <div className="text-[#C8C3B7] text-sm">Arrastra o selecciona Â· JPG PNG WEBP</div>
+                <div className="text-[#FFD700] text-lg mb-1">📷</div>
+                <div className="text-[#C8C3B7] text-sm">Arrastra o selecciona · JPG PNG WEBP</div>
                 <div className="text-[#FFD700] text-sm font-bold mt-0.5">GPT-4o Vision lo analiza</div>
               </>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
 
-          {/* PaÃ­s y Tono */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">PaÃ­s</span>
+          {/* País y Tono */}
+          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">País</span>
           <div className="flex flex-wrap gap-1 mb-3">
             {PAISES.map(p => (
               <button key={p.nombre} onClick={() => setPais(p.nombre)}
@@ -433,7 +433,7 @@ export default function Redes() {
           <div className="border-t border-[#1e1e1e] my-3" />
 
           {/* Destino */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Â¿Para quÃ© red?</span>
+          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">¿Para qué red?</span>
           <div className="grid grid-cols-2 gap-1 mb-2">
             {DESTINOS.map(d => (
               <button key={d.id} onClick={() => setDestino(d.id)}
@@ -448,7 +448,7 @@ export default function Redes() {
           </div>
 
           <button className="w-full bg-[rgba(255,215,0,0.08)] border border-[rgba(255,215,0,0.25)] rounded-md py-2 mb-2 text-sm font-bold text-[#FFD700] flex items-center justify-center gap-1.5">
-            âš¡ Generar para TODOS los formatos
+            ⚡ Generar para TODOS los formatos
           </button>
 
           {/* Formatos Instagram */}
@@ -502,11 +502,11 @@ export default function Redes() {
 
           <button onClick={() => generarIdeas()} disabled={!producto || loading}
             className="w-full bg-[#FFD700] border-none rounded-md py-2.5 text-[#0d0d0d] text-xs font-black cursor-pointer flex items-center justify-center gap-1.5 mb-1.5 disabled:opacity-40">
-            âš¡ Generar 4 ideas ahora
+            ⚡ Generar 4 ideas ahora
           </button>
           <button onClick={() => setModoAvanzado(!modoAvanzado)}
             className="w-full bg-transparent border border-[#333] rounded-md py-2 text-[#C8C3B7] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
-            âš™ï¸ {modoAvanzado ? "Ocultar" : "Prompt personalizado Â· modo avanzado"}
+            ⚙️ {modoAvanzado ? "Ocultar" : "Prompt personalizado · modo avanzado"}
           </button>
 
         </div>
@@ -514,10 +514,10 @@ export default function Redes() {
         {/* Panel derecho */}
         <div className="bg-[#0d0d0d] p-4">
 
-          {/* Estado vacÃ­o */}
+          {/* Estado vacío */}
           {!loading && ideas.length === 0 && (
             <div className="flex items-center justify-center h-64 text-[#555250] text-sm flex-col gap-2">
-              <span className="text-3xl">ðŸŽ¨</span>
+              <span className="text-3xl">🎨</span>
               <span>Configura el producto y presiona Generar</span>
             </div>
           )}
@@ -525,10 +525,10 @@ export default function Redes() {
           {/* Loading */}
           {loading && (
             <div className="bg-[#161616] border border-[#1e1e1e] rounded-xl p-5 mb-4">
-              <div className="text-[#FFD700] text-sm font-bold tracking-widest uppercase mb-3">âš™ï¸ Generando imÃ¡genes Â· gpt-image-2</div>
-              {["Analizando producto y mercado", "Construyendo prompts tÃ©cnicos", "Generando imÃ¡genes con IA", "Preparando texto y hashtags"].map((t, i) => (
+              <div className="text-[#FFD700] text-sm font-bold tracking-widest uppercase mb-3">⚙️ Generando imágenes · gpt-image-2</div>
+              {["Analizando producto y mercado", "Construyendo prompts técnicos", "Generando imágenes con IA", "Preparando texto y hashtags"].map((t, i) => (
                 <div key={i} className="flex items-center gap-2 mb-2">
-                  <span className="text-[#7A7772] text-xs">âŸ³</span>
+                  <span className="text-[#7A7772] text-xs">⟳</span>
                   <span className="text-[#EDE8DC] text-sm flex-1">{t}</span>
                   <div className="w-20 h-0.5 bg-[#1e1e1e] rounded-full">
                     <div className="h-0.5 rounded-full bg-[#FFD700] animate-pulse" style={{ width: "60%" }} />
@@ -538,14 +538,14 @@ export default function Redes() {
             </div>
           )}
 
-          {/* GalerÃ­a de ideas */}
+          {/* Galería de ideas */}
           {ideas.length > 0 && (
             <>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-bold text-[#FFD700] tracking-widest uppercase">
-                  4 ideas Â· {destinoActual?.nombre} Â· {TIPOS.find(t => t.id === tipo)?.nombre}
+                  4 ideas · {destinoActual?.nombre} · {TIPOS.find(t => t.id === tipo)?.nombre}
                 </span>
-                <span className="text-sm text-[#7A7772]">gpt-image-2 Â· automÃ¡tico</span>
+                <span className="text-sm text-[#7A7772]">gpt-image-2 · automático</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -555,14 +555,14 @@ export default function Redes() {
                       {idea.imageUrl ? (
                         <img src={idea.imageUrl} className="h-full w-full object-cover" alt={idea.desc} />
                       ) : (
-                        <span className="text-4xl opacity-30">ðŸ–¼ï¸</span>
+                        <span className="text-4xl opacity-30">🖼️</span>
                       )}
                       <span className={`absolute top-1.5 left-1.5 text-sm font-black px-1.5 py-0.5 rounded-sm ${idea.modo === "auto" ? "bg-[#FFD700] text-[#0d0d0d]" : idea.modo === "manual" ? "bg-[#86EFAC] text-black" : "bg-[#C084FC] text-white"}`}>
                         {idea.modo === "auto" ? "Auto" : idea.modo === "manual" ? "Manual" : "Prompt"}
                       </span>
                       <button onClick={() => toggleFavorita(idea.id)}
                         className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[rgba(0,0,0,0.6)] flex items-center justify-center text-sm border-none cursor-pointer ${idea.favorita ? "text-[#F472B6]" : "text-[#555]"}`}>
-                        â™¥
+                        ♥
                       </button>
                     </div>
                     <div className="p-2">
@@ -570,21 +570,21 @@ export default function Redes() {
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => generarIdeas(idea.id)} disabled={loading}
                           className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] disabled:opacity-40 cursor-pointer">
-                          â†» Regenerar
+                          ↻ Regenerar
                         </button>
                         <button onClick={() => mejorarIdea(idea.id)} disabled={cargandoTexto === `mejorar-${idea.id}`}
                           className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] disabled:opacity-40 cursor-pointer">
-                          {cargandoTexto === `mejorar-${idea.id}` ? "âŸ³" : "âœ¦ Mejorar"}
+                          {cargandoTexto === `mejorar-${idea.id}` ? "⟳" : "✦ Mejorar"}
                         </button>
                         {idea.imageUrl && (
                           <button onClick={() => descargarImagen(idea.imageUrl!, `${producto}-${idea.id}.png`)}
                             className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[#FFD700] text-[#0d0d0d] cursor-pointer">
-                            â†“
+                            ↓
                           </button>
                         )}
                         <button onClick={() => guardarImagen(idea)}
                           className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
-                          â™¥ Guardar
+                          ♥ Guardar
                         </button>
                       </div>
                     </div>
@@ -592,18 +592,18 @@ export default function Redes() {
                 ))}
               </div>
 
-              {/* Botones globales galerÃ­a */}
+              {/* Botones globales galería */}
               <div className="flex gap-2 mb-4">
                 <button onClick={() => generarIdeas()} disabled={loading}
                   className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40">
-                  â†» Regenerar todas
+                  ↻ Regenerar todas
                 </button>
                 <button className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
-                  âœ¦ Mejorar todas
+                  ✦ Mejorar todas
                 </button>
                 <button onClick={() => copiar(ideas.map(i => i.desc).join("\n\n"), "prompts")}
                   className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
-                  {copiado === "prompts" ? "âœ“ Copiado" : "âŽ˜ Copiar prompts"}
+                  {copiado === "prompts" ? "✓ Copiado" : "⎘ Copiar prompts"}
                 </button>
               </div>
 
@@ -620,7 +620,7 @@ export default function Redes() {
 
               {/* Caption */}
               <div className="bg-[#161616] border border-[#1e1e1e] rounded-lg p-3 mb-2">
-                <div className="text-sm font-bold text-[#FFD700] tracking-widest uppercase mb-2">Caption Â· {tabTexto}</div>
+                <div className="text-sm font-bold text-[#FFD700] tracking-widest uppercase mb-2">Caption · {tabTexto}</div>
                 {cargandoTexto === `texto-${tabTexto}` ? (
                   <div className="text-sm text-[#7A7772]">Generando caption...</div>
                 ) : textoActual ? (
@@ -629,51 +629,51 @@ export default function Redes() {
                     <div className="text-sm text-[#C8C3B7] leading-relaxed opacity-80">{textoActual.hashtags}</div>
                   </>
                 ) : (
-                  <div className="text-sm text-[#555]">Generando texto automÃ¡ticamente...</div>
+                  <div className="text-sm text-[#555]">Generando texto automáticamente...</div>
                 )}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <button onClick={() => generarTextos(tabTexto)}
                     className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
-                    â†» Regenerar
+                    ↻ Regenerar
                   </button>
                   <button onClick={() => mejorarTexto(tabTexto, "caption")} disabled={cargandoTexto === `mejorar-texto-${tabTexto}-caption`}
                     className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer disabled:opacity-40">
-                    {cargandoTexto === `mejorar-texto-${tabTexto}-caption` ? "âŸ³" : "âœ¦ Mejorar"}
+                    {cargandoTexto === `mejorar-texto-${tabTexto}-caption` ? "⟳" : "✦ Mejorar"}
                   </button>
                   <button onClick={() => textoActual && copiar(textoActual.caption, "caption")}
                     className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
-                    {copiado === "caption" ? "âœ“ Copiado" : "âŽ˜ Copiar texto"}
+                    {copiado === "caption" ? "✓ Copiado" : "⎘ Copiar texto"}
                   </button>
                   <button onClick={() => textoActual && copiar(textoActual.hashtags, "hashtags")}
                     className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
-                    {copiado === "hashtags" ? "âœ“ Copiado" : "# Hashtags"}
+                    {copiado === "hashtags" ? "✓ Copiado" : "# Hashtags"}
                   </button>
                   <button className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
-                    â™¥ Guardar
+                    ♥ Guardar
                   </button>
                 </div>
               </div>
 
-              {/* GuiÃ³n TikTok */}
+              {/* Guión TikTok */}
               {tabTexto === "tiktok" && textoActual?.guion && (
                 <div className="bg-[#161616] border border-[rgba(192,132,252,0.2)] rounded-lg p-3 mb-2">
-                  <div className="text-sm font-bold text-[#C084FC] tracking-widest uppercase mb-2">ðŸŽµ GuiÃ³n TikTok Â· 30 segundos</div>
+                  <div className="text-sm font-bold text-[#C084FC] tracking-widest uppercase mb-2">🎵 Guión TikTok · 30 segundos</div>
                   <div className="text-sm text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{textoActual.guion}</div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <button onClick={() => generarTextos("tiktok")}
                       className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
-                      â†» Regenerar
+                      ↻ Regenerar
                     </button>
                     <button onClick={() => mejorarTexto("tiktok", "guion")}
                       className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer">
-                      âœ¦ Mejorar hook
+                      ✦ Mejorar hook
                     </button>
                     <button onClick={() => textoActual.guion && copiar(textoActual.guion, "guion")}
                       className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
-                      {copiado === "guion" ? "âœ“ Copiado" : "âŽ˜ Copiar guiÃ³n"}
+                      {copiado === "guion" ? "✓ Copiado" : "⎘ Copiar guión"}
                     </button>
                     <button className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
-                      â™¥ Guardar
+                      ♥ Guardar
                     </button>
                   </div>
                 </div>
@@ -683,14 +683,14 @@ export default function Redes() {
               <div className="flex gap-2 mt-3">
                 <button onClick={() => ideas.filter(i => i.imageUrl).forEach((i, idx) => descargarImagen(i.imageUrl!, `${producto}-${idx + 1}.png`))}
                   className="flex-1 bg-[#FFD700] border-none rounded-md py-2 text-[#0d0d0d] text-sm font-black cursor-pointer flex items-center justify-center gap-1.5">
-                  â†“ Descargar todas
+                  ↓ Descargar todas
                 </button>
                 <button onClick={descargarFavoritas}
                   className="flex-1 bg-[rgba(244,114,182,0.1)] border border-[rgba(244,114,182,0.25)] rounded-md py-2 text-[#F472B6] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
-                  â™¥ Solo favoritas
+                  ♥ Solo favoritas
                 </button>
                 <button className="flex-1 bg-transparent border border-[#2a2a2a] rounded-md py-2 text-[#7A7772] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
-                  â¬‡ ZIP organizado
+                  ⬇ ZIP organizado
                 </button>
               </div>
             </>
@@ -700,4 +700,3 @@ export default function Redes() {
     </div>
   );
 }
-
