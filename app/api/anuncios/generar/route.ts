@@ -68,15 +68,6 @@ async function fetchImagenComoBase64(url: string): Promise<string> {
   return `data:image/jpeg;base64,${b64}`;
 }
 
-function escaparSvg(texto: string): string {
-  return texto
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/[^\x00-\x7F]/g, (char) => `&#${char.charCodeAt(0)};`);
-}
-
 async function dibujarTextoConSharp(
   imageBase64: string,
   texto: string,
@@ -85,8 +76,9 @@ async function dibujarTextoConSharp(
   tamanio: { width: number; height: number }
 ): Promise<string> {
   const imageBuffer = Buffer.from(imageBase64.split(",")[1], "base64");
-  const fontSize = Math.floor(tamanio.width * 0.045);
-  const charsPorLinea = Math.floor((tamanio.width - 80) / (fontSize * 0.55));
+  
+  const fontSize = Math.floor(tamanio.width * 0.042);
+  const charsPorLinea = Math.floor((tamanio.width - 100) / (fontSize * 0.6));
   const palabras = texto.split(" ");
   const lineas: string[] = [];
   let lineaActual = "";
@@ -101,28 +93,40 @@ async function dibujarTextoConSharp(
   }
   if (lineaActual) lineas.push(lineaActual.trim());
 
-  const lineHeight = fontSize * 1.4;
-  const totalTextHeight = lineas.length * lineHeight;
+  const lineHeight = fontSize * 1.5;
+  const totalTextHeight = lineas.length * lineHeight + 40;
   let yInicio: number;
 
-  if (posTexto === "top") yInicio = 40;
-  else if (posTexto === "bottom") yInicio = tamanio.height - totalTextHeight - 40;
+  if (posTexto === "top") yInicio = 20;
+  else if (posTexto === "bottom") yInicio = tamanio.height - totalTextHeight - 20;
   else yInicio = (tamanio.height - totalTextHeight) / 2;
+
+  // Fondo semitransparente detrás del texto
+  const rectAltura = totalTextHeight + 20;
+  const rectY = Math.max(0, yInicio - 10);
 
   const svgLineas = lineas.map((linea, i) => {
     const y = yInicio + i * lineHeight + fontSize;
-    const lineaEscapada = escaparSvg(linea);
+    // Convertir caracteres no-ASCII a entidades numéricas
+    const lineaEscapada = Array.from(linea).map(c => {
+      const code = c.charCodeAt(0);
+      return code > 127 ? `&#${code};` : c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c;
+    }).join('');
+    
     return `
-      <text x="${tamanio.width / 2}" y="${y + 3}"
-        font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
-        text-anchor="middle" fill="black" opacity="0.5">${lineaEscapada}</text>
+      <text x="${tamanio.width / 2}" y="${y + 2}"
+        font-size="${fontSize}" font-weight="bold" font-style="normal"
+        text-anchor="middle" fill="rgba(0,0,0,0.6)">${lineaEscapada}</text>
       <text x="${tamanio.width / 2}" y="${y}"
-        font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
+        font-size="${fontSize}" font-weight="bold"
         text-anchor="middle" fill="${colorTexto}">${lineaEscapada}</text>
     `;
   }).join("");
 
-  const svg = `<svg width="${tamanio.width}" height="${tamanio.height}" xmlns="http://www.w3.org/2000/svg">${svgLineas}</svg>`;
+  const svg = `<svg width="${tamanio.width}" height="${tamanio.height}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="${rectY}" width="${tamanio.width}" height="${rectAltura}" fill="rgba(0,0,0,0.25)" rx="0"/>
+    ${svgLineas}
+  </svg>`;
 
   const resultado = await sharp(imageBuffer)
     .resize(tamanio.width, tamanio.height)
