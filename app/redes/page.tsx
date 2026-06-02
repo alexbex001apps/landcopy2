@@ -551,9 +551,9 @@ export default function Redes() {
               <div className="grid grid-cols-2 gap-3 mb-3">
                 {ideas.map((idea) => (
                   <div key={idea.id} className={`bg-[#161616] border rounded-lg overflow-hidden ${idea.favorita ? "border-[#FFF500]" : "border-[#1e1e1e]"}`}>
-                    <div className="h-28 flex items-center justify-center relative bg-[#1a1500]">
+                    <div className="flex items-center justify-center relative bg-[#1a1500] overflow-hidden">
                       {idea.imageUrl ? (
-                        <img src={idea.imageUrl} className="h-full w-full object-cover" alt={idea.desc} />
+                        <img src={idea.imageUrl} className="w-full object-contain" alt={idea.desc} />
                       ) : (
                         <span className="text-4xl opacity-30">🖼️</span>
                       )}
