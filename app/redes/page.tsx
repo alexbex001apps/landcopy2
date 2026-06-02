@@ -395,7 +395,7 @@ export default function Redes() {
             className="bg-[#1e1e1e] border border-dashed border-[#333] rounded-md p-3 text-center mb-3 cursor-pointer hover:border-[#FFD700] transition-colors">
             {imagen ? (
               <div className="relative inline-block">
-                <img src={imagen} className="h-16 mx-auto rounded-md object-contain" alt="producto" />
+                <img src={imagen} className="h-40 mx-auto rounded-md object-contain" alt="producto" />
                 <button onClick={(e) => { e.stopPropagation(); setImagen(null); }}
                   className="absolute -top-1 -right-1 bg-red-500 text-white text-sm font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
               </div>
