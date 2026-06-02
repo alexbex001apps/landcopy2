@@ -545,10 +545,10 @@ export default function Copy() {
             <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
               {[
                 {id:"landing",label:"Landing",color:"bg-orange-500"},
-                {id:"whatsapp",label:"WhatsApp",color:"bg-cyan-400"},
+                // tab whatsapp oculto
                 {id:"campana",label:"Campaña",color:"bg-green-400"},
                 {id:"prompts",label:"Prompts IA",color:"bg-purple-500"},
-                {id:"metaads",label:"Meta Ads",color:"bg-pink-500"},
+                // tab metaads oculto
                 {id:"extras",label:"Extras",color:"bg-zinc-600"},
               ].map(t => (
                 <button key={t.id} onClick={() => setTabActivo(t.id)} className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-bold transition-all ${tabActivo === t.id ? `${t.color} text-white` : "text-zinc-500"}`}>
@@ -636,20 +636,20 @@ export default function Copy() {
                   </>
                 )}
  
-                {tabActivo === "whatsapp" && resultado.whatsapp && (
-                  <div className="border border-cyan-400 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-400/20">
-                      <span className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase">WhatsApp · 3 versiones</span>
-                      <div className="flex gap-1.5">
-                        <button disabled={seccionCargando !== null} onClick={() => regenerar("whatsapp")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-whatsapp" ? "⏳ Generando..." : "↻ Regenerar"}</button>
-                        <button disabled={seccionCargando !== null} onClick={() => mejorar("whatsapp")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-whatsapp" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
-                        <button onClick={() => copiar(resultado.whatsapp, "whatsapp")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "whatsapp" ? "✓ Copiado" : "Copiar"}</button>
-                        <button onClick={() => guardar(resultado.whatsapp,"WhatsApp x3")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-                      </div>
-                    </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.whatsapp}</div>
-                  </div>
-                )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
                 {tabActivo === "campana" && resultado.campana && (() => {
                   const parsearDias = (texto: string) => {
@@ -716,20 +716,20 @@ export default function Copy() {
                   </div>
                 )}
  
-                {tabActivo === "metaads" && resultado.metaads && (
-                  <div className="border border-pink-500 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-pink-500/20">
-                      <span className="text-pink-500 text-[10px] font-bold tracking-widest uppercase">Meta Ads · 5 anuncios</span>
-                      <div className="flex gap-1.5">
-                        <button disabled={seccionCargando !== null} onClick={() => regenerar("metaads")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-metaads" ? "⏳ Generando..." : "↻ Regenerar"}</button>
-                        <button disabled={seccionCargando !== null} onClick={() => mejorar("metaads")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-metaads" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
-                        <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
-                        <button onClick={() => guardar(resultado.metaads,"Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
-                      </div>
-                    </div>
-                    <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
-                  </div>
-                )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
                 {tabActivo === "extras" && (
                   <div className="space-y-4">
