@@ -122,7 +122,8 @@ Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
   "cta": "CTA final urgente con precio incluido",` : ""}
   ${gw ? `"whatsapp": "Mensaje 1 - Primer contacto frio:\\n[texto]\\n\\nMensaje 2 - Seguimiento:\\n[texto]\\n\\nMensaje 3 - Cierre:\\n[texto]",` : ""}
   ${gm ? `"metaads": "Anuncio 1:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]\\n\\nAnuncio 2:\\nTitulo: [max 30 chars]\\nDescripcion: [max 90 chars]",` : ""}
-  ${gc ? `"campana": "Dia 1: [título corto]\\n[2 párrafos persuasivos del día 1]\\nDia 2: [título corto]\\n[2 párrafos persuasivos del día 2]\\nDia 3: [título corto]\\n[2 párrafos persuasivos del día 3]\\nDia 4: [título corto]\\n[2 párrafos persuasivos del día 4]\\nDia 5: [título corto]\\n[2 párrafos persuasivos del día 5]\\nDia 6: [título corto]\\n[2 párrafos persuasivos del día 6]\\nDia 7: [título corto]\\n[2 párrafos persuasivos del día 7]",` : ""}
+  ${gc ? `"headlines": ["headline de anuncio 1 maximo 10 palabras", "headline 2", "headline 3", "headline 4", "headline 5", "headline 6"],
+  "campana": "Dia 1: [título corto]\\n[2 párrafos persuasivos del día 1]\\nDia 2: [título corto]\\n[2 párrafos persuasivos del día 2]\\nDia 3: [título corto]\\n[2 párrafos persuasivos del día 3]\\nDia 4: [título corto]\\n[2 párrafos persuasivos del día 4]\\nDia 5: [título corto]\\n[2 párrafos persuasivos del día 5]\\nDia 6: [título corto]\\n[2 párrafos persuasivos del día 6]\\nDia 7: [título corto]\\n[2 párrafos persuasivos del día 7]",` : ""}
  ${ge ? `"seo": "5 keywords SEO separadas por comas para posicionar este producto",
   "objeciones": "Objecion 1: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 2: [objecion]\\nRespuesta: [respuesta]\\n\\nObjecion 3: [objecion]\\nRespuesta: [respuesta]",
   "email": "Asunto: [asunto del email]\\n\\nCuerpo: [cuerpo completo del email de seguimiento]",` : ""}
@@ -180,7 +181,7 @@ Responde UNICAMENTE con JSON valido sin markdown ni texto adicional.
       resultado = { hero: content };
     }
 
-    const textoTotal = [resultado.hero, resultado.problema, resultado.solucion, resultado.beneficios, resultado.testimonios, resultado.cta, resultado.whatsapp, resultado.metaads, resultado.campana, resultado.extras].filter(Boolean).join(" ");
+    const textoTotal = [resultado.hero, resultado.problema, resultado.solucion, resultado.beneficios, resultado.testimonios, resultado.cta, resultado.whatsapp, resultado.metaads, resultado.campana, resultado.extras, (resultado.headlines || []).join(" ")].filter(Boolean).join(" ");
 
     resultado.palabras = textoTotal.split(/\s+/).length;
     resultado.caracteres = textoTotal.length;
