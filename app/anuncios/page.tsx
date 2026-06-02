@@ -1,35 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-
-const BANCO: Record<string, { id: string; nombre: string; descripcion: string; posTexto: string; colorFondo: string; colorTexto: string; maxChars: number }[]> = {
-  "Salud y bienestar": [
-    { id: "salud-1", nombre: "Fondo blanco limpio", descripcion: "Producto centrado, texto arriba en negro", posTexto: "top", colorFondo: "#ffffff", colorTexto: "#000000", maxChars: 80 },
-    { id: "salud-2", nombre: "Fondo verde suave", descripcion: "Texto abajo en blanco, ambiente natural", posTexto: "bottom", colorFondo: "#1a3a2a", colorTexto: "#ffffff", maxChars: 80 },
-    { id: "salud-3", nombre: "Urgencia roja", descripcion: "Fondo rojo, texto centrado en blanco", posTexto: "center", colorFondo: "#8b0000", colorTexto: "#ffffff", maxChars: 60 },
-    { id: "salud-4", nombre: "Minimalista gris", descripcion: "Fondo gris oscuro, texto arriba en naranja", posTexto: "top", colorFondo: "#1a1a1a", colorTexto: "#ff5000", maxChars: 80 },
-    { id: "salud-5", nombre: "Confianza azul", descripcion: "Fondo azul profundo, texto abajo en blanco", posTexto: "bottom", colorFondo: "#0a1628", colorTexto: "#ffffff", maxChars: 80 },
-  ],
-  "Tecnología": [
-    { id: "tech-1", nombre: "Dark tech", descripcion: "Fondo negro, texto en cyan neón", posTexto: "top", colorFondo: "#050505", colorTexto: "#00e5ff", maxChars: 80 },
-    { id: "tech-2", nombre: "Premium oscuro", descripcion: "Fondo carbón, texto en blanco", posTexto: "bottom", colorFondo: "#111111", colorTexto: "#ffffff", maxChars: 80 },
-    { id: "tech-3", nombre: "Azul eléctrico", descripcion: "Fondo azul, texto en blanco", posTexto: "center", colorFondo: "#0033cc", colorTexto: "#ffffff", maxChars: 60 },
-    { id: "tech-4", nombre: "Contraste máximo", descripcion: "Fondo blanco, texto en negro", posTexto: "top", colorFondo: "#ffffff", colorTexto: "#000000", maxChars: 80 },
-    { id: "tech-5", nombre: "Neón verde", descripcion: "Fondo negro, texto en verde", posTexto: "bottom", colorFondo: "#050505", colorTexto: "#00ff88", maxChars: 80 },
-  ],
-  "Urgencia y oferta": [
-    { id: "urg-1", nombre: "Oferta roja", descripcion: "Rojo intenso, texto blanco grande", posTexto: "center", colorFondo: "#cc0000", colorTexto: "#ffffff", maxChars: 50 },
-    { id: "urg-2", nombre: "Naranja urgente", descripcion: "Naranja brillante, texto negro", posTexto: "top", colorFondo: "#ff5000", colorTexto: "#000000", maxChars: 60 },
-    { id: "urg-3", nombre: "Negro y amarillo", descripcion: "Máximo contraste, atención inmediata", posTexto: "bottom", colorFondo: "#111111", colorTexto: "#ffdd00", maxChars: 70 },
-    { id: "urg-4", nombre: "Flash blanco", descripcion: "Blanco puro, texto rojo urgente", posTexto: "center", colorFondo: "#ffffff", colorTexto: "#cc0000", maxChars: 50 },
-    { id: "urg-5", nombre: "Oscuro premium", descripcion: "Fondo oscuro, texto dorado", posTexto: "top", colorFondo: "#0a0a0a", colorTexto: "#ffd700", maxChars: 70 },
-  ],
-};
+import BANCO from "./referencias.json";
 
 const CATEGORIAS = Object.keys(BANCO);
 const FORMATOS = [
-  { id: "facebook", nombre: "Facebook Ad", size: "1200×628px", ratio: "horizontal" },
-  { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px", ratio: "cuadrado" },
-  { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px", ratio: "vertical" },
+  { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
+  { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
+  { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px" },
 ];
 
 export default function Anuncios() {
@@ -73,6 +50,7 @@ export default function Anuncios() {
           posTexto: plantillaSeleccionada?.posTexto || "top",
           formato: formatoSeleccionado.id,
           imagen: imagenProducto,
+          referenciaUrl: plantillaSeleccionada?.referenciaUrl || "",
         }),
       });
       const data = await resp.json();
@@ -184,18 +162,22 @@ export default function Anuncios() {
               ))}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {BANCO[categoriaActiva].map(plantilla => (
+              {(BANCO as any)[categoriaActiva].map((plantilla: any) => (
                 <div key={plantilla.id} onClick={() => setPlantillaSeleccionada(plantilla)} className={`rounded-2xl border cursor-pointer overflow-hidden transition-all ${plantillaSeleccionada?.id === plantilla.id ? "border-orange-500 ring-1 ring-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
-                  <div className="h-40 flex flex-col items-center justify-center p-4 relative" style={{ backgroundColor: plantilla.colorFondo }}>
-                    <div className={`absolute w-full px-4 ${plantilla.posTexto === "top" ? "top-3" : plantilla.posTexto === "bottom" ? "bottom-3" : "top-1/2 -translate-y-1/2"}`}>
-                      <p className="text-center text-xs font-black leading-tight" style={{ color: plantilla.colorTexto }}>{copySeleccionado || "Tu copy aquí"}</p>
+                  <div className="h-40 flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: plantilla.colorFondo }}>
+                    {plantilla.referenciaUrl ? (
+                      <img src={plantilla.referenciaUrl} alt={plantilla.nombre} className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                    ) : null}
+                    <div className={`absolute w-full px-4 z-10 ${plantilla.posTexto === "top" ? "top-3" : plantilla.posTexto === "bottom" ? "bottom-3" : "top-1/2 -translate-y-1/2"}`}>
+                      <p className="text-center text-xs font-black leading-tight drop-shadow-lg" style={{ color: plantilla.colorTexto }}>{copySeleccionado || "Tu copy aquí"}</p>
                     </div>
-                    <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">📦</div>
+                    {!plantilla.referenciaUrl && <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">📦</div>}
                   </div>
                   <div className="bg-[#0a0a0a] p-3">
                     <p className="text-[#f0ead6] text-[11px] font-bold">{plantilla.nombre}</p>
                     <p className="text-zinc-600 text-[10px]">{plantilla.descripcion}</p>
                     <p className="text-zinc-700 text-[9px] mt-1">Máx. {plantilla.maxChars} caracteres</p>
+                    {plantilla.referenciaUrl && <span className="text-orange-500 text-[9px] font-bold">✓ Con imagen de referencia</span>}
                   </div>
                 </div>
               ))}
@@ -220,6 +202,7 @@ export default function Anuncios() {
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Copy:</span> {copySeleccionado}</p>
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
+                  {plantillaSeleccionada?.referenciaUrl && <p className="text-orange-500 text-[10px]">✓ Usando imagen de referencia</p>}
                 </div>
                 <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
                   ⚡ Generar imagen ahora

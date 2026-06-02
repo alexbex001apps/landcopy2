@@ -1,0 +1,23 @@
+{
+  "Salud y bienestar": [
+    { "id": "salud-1", "nombre": "Estilo femenino premium", "descripcion": "Fondo rosado, productos centrados, texto arriba", "posTexto": "top", "colorFondo": "#ffb6c1", "colorTexto": "#8b0000", "maxChars": 80, "referenciaUrl": "https://mrzkfethdxkfoostoaff.supabase.co/storage/v1/object/public/anuncios-referencias/salud-1.jpg" },
+    { "id": "salud-2", "nombre": "Fondo verde suave", "descripcion": "Texto abajo en blanco, ambiente natural", "posTexto": "bottom", "colorFondo": "#1a3a2a", "colorTexto": "#ffffff", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "salud-3", "nombre": "Urgencia roja", "descripcion": "Fondo rojo, texto centrado en blanco", "posTexto": "center", "colorFondo": "#8b0000", "colorTexto": "#ffffff", "maxChars": 60, "referenciaUrl": "" },
+    { "id": "salud-4", "nombre": "Minimalista gris", "descripcion": "Fondo gris oscuro, texto arriba en naranja", "posTexto": "top", "colorFondo": "#1a1a1a", "colorTexto": "#ff5000", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "salud-5", "nombre": "Confianza azul", "descripcion": "Fondo azul profundo, texto abajo en blanco", "posTexto": "bottom", "colorFondo": "#0a1628", "colorTexto": "#ffffff", "maxChars": 80, "referenciaUrl": "" }
+  ],
+  "Tecnología": [
+    { "id": "tech-1", "nombre": "Dark tech", "descripcion": "Fondo negro, texto en cyan neón", "posTexto": "top", "colorFondo": "#050505", "colorTexto": "#00e5ff", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "tech-2", "nombre": "Premium oscuro", "descripcion": "Fondo carbón, texto en blanco", "posTexto": "bottom", "colorFondo": "#111111", "colorTexto": "#ffffff", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "tech-3", "nombre": "Azul eléctrico", "descripcion": "Fondo azul, texto en blanco", "posTexto": "center", "colorFondo": "#0033cc", "colorTexto": "#ffffff", "maxChars": 60, "referenciaUrl": "" },
+    { "id": "tech-4", "nombre": "Contraste máximo", "descripcion": "Fondo blanco, texto en negro", "posTexto": "top", "colorFondo": "#ffffff", "colorTexto": "#000000", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "tech-5", "nombre": "Neón verde", "descripcion": "Fondo negro, texto en verde", "posTexto": "bottom", "colorFondo": "#050505", "colorTexto": "#00ff88", "maxChars": 80, "referenciaUrl": "" }
+  ],
+  "Urgencia y oferta": [
+    { "id": "urg-1", "nombre": "Oferta roja", "descripcion": "Rojo intenso, texto blanco grande", "posTexto": "center", "colorFondo": "#cc0000", "colorTexto": "#ffffff", "maxChars": 50, "referenciaUrl": "" },
+    { "id": "urg-2", "nombre": "Naranja urgente", "descripcion": "Naranja brillante, texto negro", "posTexto": "top", "colorFondo": "#ff5000", "colorTexto": "#000000", "maxChars": 60, "referenciaUrl": "" },
+    { "id": "urg-3", "nombre": "Negro y amarillo", "descripcion": "Máximo contraste, atención inmediata", "posTexto": "bottom", "colorFondo": "#111111", "colorTexto": "#ffdd00", "maxChars": 70, "referenciaUrl": "" },
+    { "id": "urg-4", "nombre": "Flash blanco", "descripcion": "Blanco puro, texto rojo urgente", "posTexto": "center", "colorFondo": "#ffffff", "colorTexto": "#cc0000", "maxChars": 50, "referenciaUrl": "" },
+    { "id": "urg-5", "nombre": "Oscuro premium", "descripcion": "Fondo oscuro, texto dorado", "posTexto": "top", "colorFondo": "#0a0a0a", "colorTexto": "#ffd700", "maxChars": 70, "referenciaUrl": "" }
+  ]
+}
