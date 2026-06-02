@@ -311,7 +311,7 @@ export default function Redes() {
 
       {/* Header */}
       <div className="bg-[#161616] border-b-2 border-[#FFD700] px-5 py-3 text-center">
-        <div className="inline-flex items-center gap-2 bg-[rgba(255,215,0,0.1)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] text-sm font-bold px-3 py-1 rounded-sm tracking-widest uppercase mb-2">
+        <div className="inline-flex items-center gap-2 bg-[rgba(255,215,0,0.1)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] text-[9px] font-bold px-3 py-1 rounded-sm tracking-widest uppercase mb-2">
           IA generativa · imágenes para redes
         </div>
         <h1 className="text-xl font-black text-white mb-1">
@@ -329,19 +329,19 @@ export default function Redes() {
         ].map((s) => (
           <div key={s.n} onClick={() => setPaso(s.n)}
             className={`flex-1 flex items-center gap-2 px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
-            <div className={`w-5 h-5 rounded-sm flex items-center justify-center text-sm font-black flex-shrink-0 ${paso >= s.n ? "bg-[#FFD700] text-[#0d0d0d]" : "bg-[#2a2a2a] text-[#555]"}`}>
+            <div className={`w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-black flex-shrink-0 ${paso >= s.n ? "bg-[#FFD700] text-[#0d0d0d]" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
             <div>
-              <div className={`text-sm font-bold tracking-widest uppercase ${paso >= s.n ? "text-[#FFD700]" : "text-[#555]"}`}>{s.label}</div>
-              <div className="text-sm text-[#555250] mt-0.5">{s.sub}</div>
+              <div className={`text-[9px] font-bold tracking-widest uppercase ${paso >= s.n ? "text-[#FFD700]" : "text-[#555]"}`}>{s.label}</div>
+              <div className="text-[8px] text-[#555250] mt-0.5">{s.sub}</div>
             </div>
             {paso === s.n && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFD700]" />}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-[380px_1fr]">
+      <div className="grid grid-cols-[280px_1fr]">
 
         {/* Panel izquierdo */}
         <div className="bg-[#161616] border-r border-[#1e1e1e] p-4">
@@ -350,17 +350,17 @@ export default function Redes() {
           {desdeCopy && (
             <div className="bg-[#1e1e1e] border border-[rgba(134,239,172,0.2)] rounded-md p-2.5 mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#86EFAC] flex-shrink-0" />
-              <div className="text-sm text-[#EDE8DC] flex-1 leading-tight">
+              <div className="text-[9px] text-[#EDE8DC] flex-1 leading-tight">
                 Desde <span className="text-[#86EFAC] font-bold">Copy</span> — {producto} · {pais} · {tono}
               </div>
-              <button onClick={() => setDesdeCopy(false)} className="text-sm font-bold text-[#FFD700] border border-[rgba(255,215,0,0.25)] px-1.5 py-0.5 rounded-sm">
+              <button onClick={() => setDesdeCopy(false)} className="text-[8px] font-bold text-[#FFD700] border border-[rgba(255,215,0,0.25)] px-1.5 py-0.5 rounded-sm">
                 Cambiar
               </button>
             </div>
           )}
 
           {/* Producto */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Producto</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Producto</span>
           {producto && desdeCopy ? (
             <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-2.5 mb-3 flex items-center gap-2">
               <div className="w-9 h-9 rounded-md bg-[#FFD700] flex items-center justify-center text-xs font-black text-[#0d0d0d] flex-shrink-0">
@@ -368,9 +368,9 @@ export default function Redes() {
               </div>
               <div className="flex-1">
                 <div className="text-xs font-bold text-white">{producto}</div>
-                <div className="text-sm text-[#7A7772]">${precioOferta} / ${precioAnterior} · {pais}</div>
+                <div className="text-[9px] text-[#7A7772]">${precioOferta} / ${precioAnterior} · {pais}</div>
               </div>
-              <span className="text-sm font-bold text-[#0d0d0d] bg-[#FFD700] px-1.5 py-0.5 rounded-sm">Activo</span>
+              <span className="text-[8px] font-bold text-[#0d0d0d] bg-[#FFD700] px-1.5 py-0.5 rounded-sm">Activo</span>
             </div>
           ) : (
             <div className="space-y-2 mb-3">
@@ -390,41 +390,41 @@ export default function Redes() {
           )}
 
           {/* Upload imagen */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Imagen del producto</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Imagen del producto</span>
           <div onClick={() => !imagen && fileRef.current?.click()}
             className="bg-[#1e1e1e] border border-dashed border-[#333] rounded-md p-3 text-center mb-3 cursor-pointer hover:border-[#FFD700] transition-colors">
             {imagen ? (
               <div className="relative inline-block">
-                <img src={imagen} className="h-40 mx-auto rounded-md object-contain" alt="producto" />
+                <img src={imagen} className="h-16 mx-auto rounded-md object-contain" alt="producto" />
                 <button onClick={(e) => { e.stopPropagation(); setImagen(null); }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-sm font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
               </div>
             ) : (
               <>
-                <div className="text-[#FFD700] text-6xl mb-3">📷</div>
-                <div className="text-[#C8C3B7] text-sm">Arrastra o selecciona · JPG PNG WEBP</div>
-                <div className="text-[#FFD700] text-sm font-bold mt-0.5">GPT-4o Vision lo analiza</div>
+                <div className="text-[#FFD700] text-lg mb-1">📷</div>
+                <div className="text-[#C8C3B7] text-[9px]">Arrastra o selecciona · JPG PNG WEBP</div>
+                <div className="text-[#FFD700] text-[8px] font-bold mt-0.5">GPT-4o Vision lo analiza</div>
               </>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
 
           {/* País y Tono */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">País</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">País</span>
           <div className="flex flex-wrap gap-1 mb-3">
             {PAISES.map(p => (
               <button key={p.nombre} onClick={() => setPais(p.nombre)}
-                className={`text-sm font-bold px-2 py-1 rounded-sm border transition-all ${pais === p.nombre ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
+                className={`text-[9px] font-bold px-2 py-1 rounded-sm border transition-all ${pais === p.nombre ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
                 {p.flag} {p.nombre}
               </button>
             ))}
           </div>
 
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Tono</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Tono</span>
           <div className="flex flex-wrap gap-1 mb-3">
             {TONOS.map(t => (
               <button key={t} onClick={() => setTono(t)}
-                className={`text-sm font-bold px-2 py-1 rounded-sm border transition-all ${tono === t ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
+                className={`text-[9px] font-bold px-2 py-1 rounded-sm border transition-all ${tono === t ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
                 {t}
               </button>
             ))}
@@ -433,32 +433,32 @@ export default function Redes() {
           <div className="border-t border-[#1e1e1e] my-3" />
 
           {/* Destino */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">¿Para qué red?</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">¿Para qué red?</span>
           <div className="grid grid-cols-2 gap-1 mb-2">
             {DESTINOS.map(d => (
               <button key={d.id} onClick={() => setDestino(d.id)}
                 className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 border text-left transition-all ${destino === d.id ? "border-[rgba(255,215,0,0.5)] bg-[rgba(255,215,0,0.07)]" : "bg-[#1e1e1e] border-[#2a2a2a]"}`}>
                 <span className="text-xs">{d.icon}</span>
                 <div>
-                  <div className={`text-sm font-bold ${destino === d.id ? "text-[#FFD700]" : "text-[#EDE8DC]"}`}>{d.nombre}</div>
-                  <div className="text-sm text-[#7A7772]">{d.ratio}</div>
+                  <div className={`text-[9px] font-bold ${destino === d.id ? "text-[#FFD700]" : "text-[#EDE8DC]"}`}>{d.nombre}</div>
+                  <div className="text-[8px] text-[#7A7772]">{d.ratio}</div>
                 </div>
               </button>
             ))}
           </div>
 
-          <button className="w-full bg-[rgba(255,215,0,0.08)] border border-[rgba(255,215,0,0.25)] rounded-md py-2 mb-2 text-sm font-bold text-[#FFD700] flex items-center justify-center gap-1.5">
+          <button className="w-full bg-[rgba(255,215,0,0.08)] border border-[rgba(255,215,0,0.25)] rounded-md py-2 mb-2 text-[9px] font-bold text-[#FFD700] flex items-center justify-center gap-1.5">
             ⚡ Generar para TODOS los formatos
           </button>
 
           {/* Formatos Instagram */}
           {destino === "instagram" && (
             <div className="bg-[#2a2a2a] rounded-md p-2 mb-2">
-              <div className="text-sm font-bold text-[#7A7772] tracking-widest uppercase mb-1.5">Formatos de Instagram</div>
+              <div className="text-[8px] font-bold text-[#7A7772] tracking-widest uppercase mb-1.5">Formatos de Instagram</div>
               <div className="grid grid-cols-2 gap-1">
                 {FORMATOS_IG.map(f => (
                   <button key={f.id} onClick={() => setFormatoIg(f.id)}
-                    className={`text-sm font-bold px-2 py-1 rounded-sm border flex items-center gap-1 ${formatoIg === f.id ? "border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "border-[#333] text-[#C8C3B7]"}`}>
+                    className={`text-[8px] font-bold px-2 py-1 rounded-sm border flex items-center gap-1 ${formatoIg === f.id ? "border-[rgba(255,215,0,0.4)] text-[#FFD700]" : "border-[#333] text-[#C8C3B7]"}`}>
                     {f.nombre}
                   </button>
                 ))}
@@ -469,14 +469,14 @@ export default function Redes() {
           <div className="border-t border-[#1e1e1e] my-3" />
 
           {/* Tipo */}
-          <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Tipo de imagen</span>
+          <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-1.5 block">Tipo de imagen</span>
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {TIPOS.map(t => (
               <button key={t.id} onClick={() => setTipo(t.id)}
                 className={`rounded-md p-2 text-left border transition-all ${tipo === t.id ? "border-[rgba(255,215,0,0.5)] bg-[rgba(255,215,0,0.06)]" : "bg-[#1e1e1e] border-[#2a2a2a]"}`}>
                 <div className="text-xs mb-1">{t.icon}</div>
-                <div className={`text-sm font-bold ${tipo === t.id ? "text-[#FFD700]" : "text-[#EDE8DC]"}`}>{t.nombre}</div>
-                <div className="text-sm text-[#7A7772] leading-tight mt-0.5">{t.desc}</div>
+                <div className={`text-[9px] font-bold ${tipo === t.id ? "text-[#FFD700]" : "text-[#EDE8DC]"}`}>{t.nombre}</div>
+                <div className="text-[8px] text-[#7A7772] leading-tight mt-0.5">{t.desc}</div>
               </button>
             ))}
           </div>
@@ -484,8 +484,8 @@ export default function Redes() {
           {/* Toggle texto encima */}
           <div className="flex items-center justify-between bg-[#1e1e1e] border border-[#2a2a2a] rounded-md px-3 py-2 mb-2">
             <div>
-              <div className="text-sm font-bold text-[#EDE8DC]">Texto encima de la imagen</div>
-              <div className="text-sm text-[#7A7772] mt-0.5">Precio, beneficio y CTA superpuestos</div>
+              <div className="text-[9px] font-bold text-[#EDE8DC]">Texto encima de la imagen</div>
+              <div className="text-[8px] text-[#7A7772] mt-0.5">Precio, beneficio y CTA superpuestos</div>
             </div>
             <button onClick={() => setTextoEncima(!textoEncima)}
               className={`w-8 h-4 rounded-full relative transition-colors ${textoEncima ? "bg-[#FFD700]" : "bg-[#333]"}`}>
@@ -497,7 +497,7 @@ export default function Redes() {
           {modoAvanzado && (
             <textarea value={promptCustom} onChange={e => setPromptCustom(e.target.value)}
               placeholder="Escribe tu prompt personalizado..."
-              className="w-full bg-[#F5F0E8] border border-[#D4CFC3] text-[#0d0d0d] rounded-md px-3 py-2 text-sm outline-none resize-none h-16 mb-2 placeholder-[#888]" />
+              className="w-full bg-[#F5F0E8] border border-[#D4CFC3] text-[#0d0d0d] rounded-md px-3 py-2 text-[10px] outline-none resize-none h-16 mb-2 placeholder-[#888]" />
           )}
 
           <button onClick={() => generarIdeas()} disabled={!producto || loading}
@@ -505,7 +505,7 @@ export default function Redes() {
             ⚡ Generar 4 ideas ahora
           </button>
           <button onClick={() => setModoAvanzado(!modoAvanzado)}
-            className="w-full bg-transparent border border-[#333] rounded-md py-2 text-[#C8C3B7] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
+            className="w-full bg-transparent border border-[#333] rounded-md py-2 text-[#C8C3B7] text-[9px] font-bold cursor-pointer flex items-center justify-center gap-1.5">
             ⚙️ {modoAvanzado ? "Ocultar" : "Prompt personalizado · modo avanzado"}
           </button>
 
@@ -525,11 +525,11 @@ export default function Redes() {
           {/* Loading */}
           {loading && (
             <div className="bg-[#161616] border border-[#1e1e1e] rounded-xl p-5 mb-4">
-              <div className="text-[#FFD700] text-sm font-bold tracking-widest uppercase mb-3">⚙️ Generando imágenes · gpt-image-2</div>
+              <div className="text-[#FFD700] text-[9px] font-bold tracking-widest uppercase mb-3">⚙️ Generando imágenes · gpt-image-2</div>
               {["Analizando producto y mercado", "Construyendo prompts técnicos", "Generando imágenes con IA", "Preparando texto y hashtags"].map((t, i) => (
                 <div key={i} className="flex items-center gap-2 mb-2">
                   <span className="text-[#7A7772] text-xs">⟳</span>
-                  <span className="text-[#EDE8DC] text-sm flex-1">{t}</span>
+                  <span className="text-[#EDE8DC] text-[10px] flex-1">{t}</span>
                   <div className="w-20 h-0.5 bg-[#1e1e1e] rounded-full">
                     <div className="h-0.5 rounded-full bg-[#FFD700] animate-pulse" style={{ width: "60%" }} />
                   </div>
@@ -542,10 +542,10 @@ export default function Redes() {
           {ideas.length > 0 && (
             <>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-[#FFD700] tracking-widest uppercase">
+                <span className="text-[8px] font-bold text-[#FFD700] tracking-widest uppercase">
                   4 ideas · {destinoActual?.nombre} · {TIPOS.find(t => t.id === tipo)?.nombre}
                 </span>
-                <span className="text-sm text-[#7A7772]">gpt-image-2 · automático</span>
+                <span className="text-[8px] text-[#7A7772]">gpt-image-2 · automático</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -557,33 +557,33 @@ export default function Redes() {
                       ) : (
                         <span className="text-4xl opacity-30">🖼️</span>
                       )}
-                      <span className={`absolute top-1.5 left-1.5 text-sm font-black px-1.5 py-0.5 rounded-sm ${idea.modo === "auto" ? "bg-[#FFD700] text-[#0d0d0d]" : idea.modo === "manual" ? "bg-[#86EFAC] text-black" : "bg-[#C084FC] text-white"}`}>
+                      <span className={`absolute top-1.5 left-1.5 text-[7px] font-black px-1.5 py-0.5 rounded-sm ${idea.modo === "auto" ? "bg-[#FFD700] text-[#0d0d0d]" : idea.modo === "manual" ? "bg-[#86EFAC] text-black" : "bg-[#C084FC] text-white"}`}>
                         {idea.modo === "auto" ? "Auto" : idea.modo === "manual" ? "Manual" : "Prompt"}
                       </span>
                       <button onClick={() => toggleFavorita(idea.id)}
-                        className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[rgba(0,0,0,0.6)] flex items-center justify-center text-sm border-none cursor-pointer ${idea.favorita ? "text-[#F472B6]" : "text-[#555]"}`}>
+                        className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[rgba(0,0,0,0.6)] flex items-center justify-center text-[10px] border-none cursor-pointer ${idea.favorita ? "text-[#F472B6]" : "text-[#555]"}`}>
                         ♥
                       </button>
                     </div>
                     <div className="p-2">
-                      <div className="text-sm text-[#C8C3B7] leading-tight mb-1.5">{idea.desc}</div>
+                      <div className="text-[9px] text-[#C8C3B7] leading-tight mb-1.5">{idea.desc}</div>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => generarIdeas(idea.id)} disabled={loading}
-                          className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] disabled:opacity-40 cursor-pointer">
+                          className="text-[8px] font-bold px-1.5 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] disabled:opacity-40 cursor-pointer">
                           ↻ Regenerar
                         </button>
                         <button onClick={() => mejorarIdea(idea.id)} disabled={cargandoTexto === `mejorar-${idea.id}`}
-                          className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] disabled:opacity-40 cursor-pointer">
+                          className="text-[8px] font-bold px-1.5 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] disabled:opacity-40 cursor-pointer">
                           {cargandoTexto === `mejorar-${idea.id}` ? "⟳" : "✦ Mejorar"}
                         </button>
                         {idea.imageUrl && (
                           <button onClick={() => descargarImagen(idea.imageUrl!, `${producto}-${idea.id}.png`)}
-                            className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[#FFD700] text-[#0d0d0d] cursor-pointer">
+                            className="text-[8px] font-bold px-1.5 py-1 rounded-sm bg-[#FFD700] text-[#0d0d0d] cursor-pointer">
                             ↓
                           </button>
                         )}
                         <button onClick={() => guardarImagen(idea)}
-                          className="text-sm font-bold px-1.5 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
+                          className="text-[8px] font-bold px-1.5 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
                           ♥ Guardar
                         </button>
                       </div>
@@ -595,24 +595,24 @@ export default function Redes() {
               {/* Botones globales galería */}
               <div className="flex gap-2 mb-4">
                 <button onClick={() => generarIdeas()} disabled={loading}
-                  className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40">
+                  className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-[9px] font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40">
                   ↻ Regenerar todas
                 </button>
-                <button className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
+                <button className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-[9px] font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
                   ✦ Mejorar todas
                 </button>
                 <button onClick={() => copiar(ideas.map(i => i.desc).join("\n\n"), "prompts")}
-                  className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-sm font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
+                  className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-[9px] font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1">
                   {copiado === "prompts" ? "✓ Copiado" : "⎘ Copiar prompts"}
                 </button>
               </div>
 
               {/* Texto */}
-              <span className="text-sm font-bold tracking-widest uppercase text-[#FFD700] mb-2 block">Texto para publicar</span>
+              <span className="text-[8px] font-bold tracking-widest uppercase text-[#FFD700] mb-2 block">Texto para publicar</span>
               <div className="flex gap-1 bg-[#161616] border border-[#1e1e1e] rounded-md p-1 mb-3">
                 {["instagram", "tiktok", "facebook", "whatsapp"].map(r => (
                   <button key={r} onClick={() => { setTabTexto(r); if (!textos[r]) generarTextos(r); }}
-                    className={`flex-1 text-center py-1 rounded-sm text-sm font-bold tracking-widest uppercase cursor-pointer ${tabTexto === r ? "bg-[#FFD700] text-[#0d0d0d]" : "text-[#555]"}`}>
+                    className={`flex-1 text-center py-1 rounded-sm text-[8px] font-bold tracking-widest uppercase cursor-pointer ${tabTexto === r ? "bg-[#FFD700] text-[#0d0d0d]" : "text-[#555]"}`}>
                     {r === "instagram" ? "IG" : r === "tiktok" ? "TK" : r === "facebook" ? "FB" : "WA"}
                   </button>
                 ))}
@@ -620,35 +620,35 @@ export default function Redes() {
 
               {/* Caption */}
               <div className="bg-[#161616] border border-[#1e1e1e] rounded-lg p-3 mb-2">
-                <div className="text-sm font-bold text-[#FFD700] tracking-widest uppercase mb-2">Caption · {tabTexto}</div>
+                <div className="text-[8px] font-bold text-[#FFD700] tracking-widest uppercase mb-2">Caption · {tabTexto}</div>
                 {cargandoTexto === `texto-${tabTexto}` ? (
-                  <div className="text-sm text-[#7A7772]">Generando caption...</div>
+                  <div className="text-[9px] text-[#7A7772]">Generando caption...</div>
                 ) : textoActual ? (
                   <>
-                    <div className="text-sm text-[#EDE8DC] leading-relaxed mb-2">{textoActual.caption}</div>
-                    <div className="text-sm text-[#C8C3B7] leading-relaxed opacity-80">{textoActual.hashtags}</div>
+                    <div className="text-[10px] text-[#EDE8DC] leading-relaxed mb-2">{textoActual.caption}</div>
+                    <div className="text-[9px] text-[#C8C3B7] leading-relaxed opacity-80">{textoActual.hashtags}</div>
                   </>
                 ) : (
-                  <div className="text-sm text-[#555]">Generando texto automáticamente...</div>
+                  <div className="text-[9px] text-[#555]">Generando texto automáticamente...</div>
                 )}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <button onClick={() => generarTextos(tabTexto)}
-                    className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
+                    className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
                     ↻ Regenerar
                   </button>
                   <button onClick={() => mejorarTexto(tabTexto, "caption")} disabled={cargandoTexto === `mejorar-texto-${tabTexto}-caption`}
-                    className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer disabled:opacity-40">
+                    className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer disabled:opacity-40">
                     {cargandoTexto === `mejorar-texto-${tabTexto}-caption` ? "⟳" : "✦ Mejorar"}
                   </button>
                   <button onClick={() => textoActual && copiar(textoActual.caption, "caption")}
-                    className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
+                    className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
                     {copiado === "caption" ? "✓ Copiado" : "⎘ Copiar texto"}
                   </button>
                   <button onClick={() => textoActual && copiar(textoActual.hashtags, "hashtags")}
-                    className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
+                    className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
                     {copiado === "hashtags" ? "✓ Copiado" : "# Hashtags"}
                   </button>
-                  <button className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
+                  <button className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
                     ♥ Guardar
                   </button>
                 </div>
@@ -657,22 +657,22 @@ export default function Redes() {
               {/* Guión TikTok */}
               {tabTexto === "tiktok" && textoActual?.guion && (
                 <div className="bg-[#161616] border border-[rgba(192,132,252,0.2)] rounded-lg p-3 mb-2">
-                  <div className="text-sm font-bold text-[#C084FC] tracking-widest uppercase mb-2">🎵 Guión TikTok · 30 segundos</div>
-                  <div className="text-sm text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{textoActual.guion}</div>
+                  <div className="text-[8px] font-bold text-[#C084FC] tracking-widest uppercase mb-2">🎵 Guión TikTok · 30 segundos</div>
+                  <div className="text-[9px] text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{textoActual.guion}</div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <button onClick={() => generarTextos("tiktok")}
-                      className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
+                      className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFD700] cursor-pointer">
                       ↻ Regenerar
                     </button>
                     <button onClick={() => mejorarTexto("tiktok", "guion")}
-                      className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer">
+                      className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] text-[#00D4FF] cursor-pointer">
                       ✦ Mejorar hook
                     </button>
                     <button onClick={() => textoActual.guion && copiar(textoActual.guion, "guion")}
-                      className="text-sm font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
+                      className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[#1e1e1e] border border-[#2a2a2a] text-[#7A7772] cursor-pointer">
                       {copiado === "guion" ? "✓ Copiado" : "⎘ Copiar guión"}
                     </button>
-                    <button className="text-sm font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
+                    <button className="text-[8px] font-bold px-2 py-1 rounded-sm bg-[rgba(134,239,172,0.1)] border border-[rgba(134,239,172,0.2)] text-[#86EFAC] cursor-pointer">
                       ♥ Guardar
                     </button>
                   </div>
@@ -682,14 +682,14 @@ export default function Redes() {
               {/* Descarga final */}
               <div className="flex gap-2 mt-3">
                 <button onClick={() => ideas.filter(i => i.imageUrl).forEach((i, idx) => descargarImagen(i.imageUrl!, `${producto}-${idx + 1}.png`))}
-                  className="flex-1 bg-[#FFD700] border-none rounded-md py-2 text-[#0d0d0d] text-sm font-black cursor-pointer flex items-center justify-center gap-1.5">
+                  className="flex-1 bg-[#FFD700] border-none rounded-md py-2 text-[#0d0d0d] text-[9px] font-black cursor-pointer flex items-center justify-center gap-1.5">
                   ↓ Descargar todas
                 </button>
                 <button onClick={descargarFavoritas}
-                  className="flex-1 bg-[rgba(244,114,182,0.1)] border border-[rgba(244,114,182,0.25)] rounded-md py-2 text-[#F472B6] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
+                  className="flex-1 bg-[rgba(244,114,182,0.1)] border border-[rgba(244,114,182,0.25)] rounded-md py-2 text-[#F472B6] text-[9px] font-bold cursor-pointer flex items-center justify-center gap-1.5">
                   ♥ Solo favoritas
                 </button>
-                <button className="flex-1 bg-transparent border border-[#2a2a2a] rounded-md py-2 text-[#7A7772] text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5">
+                <button className="flex-1 bg-transparent border border-[#2a2a2a] rounded-md py-2 text-[#7A7772] text-[9px] font-bold cursor-pointer flex items-center justify-center gap-1.5">
                   ⬇ ZIP organizado
                 </button>
               </div>
