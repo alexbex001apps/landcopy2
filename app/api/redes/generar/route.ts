@@ -3,6 +3,20 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+async function urlToBase64(url: string): Promise<string> {
+  try {
+    const res = await fetch(url);
+    const buffer = await res.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const contentType = res.headers.get('content-type') || 'image/png';
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return '';
+  }
+}
+
+
+
 const TAMANIOS: Record<string, { width: number; height: number; size: string }> = {
   feed45:   { width: 1080, height: 1350, size: "1024x1536" },
   feed11:   { width: 1080, height: 1080, size: "1024x1024" },
@@ -115,7 +129,8 @@ export async function POST(req: NextRequest) {
           quality: "standard",
         });
 
-        const imageUrl = response.data?.[0]?.url || "";
+        const rawUrl = response.data?.[0]?.url || "";
+        const imageUrl = rawUrl ? await urlToBase64(rawUrl) : "";
         return NextResponse.json({
           idea: {
             id: soloUna,
@@ -161,7 +176,7 @@ export async function POST(req: NextRequest) {
           id: `idea-${v}`,
           desc,
           modo: (v === 0 && promptCustom ? "prompt" : v < 2 ? "auto" : "manual") as "auto" | "manual" | "prompt",
-          imageUrl: response.data?.[0]?.url || "",
+          imageUrl: response.data?.[0]?.url ? await urlToBase64(response.data[0].url) : "",
           favorita: false,
         };
       } catch (err) {
