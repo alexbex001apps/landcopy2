@@ -42,7 +42,7 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
       body,
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error?.message || "Error edición");
+    if (!resp.ok) throw new Error(data.error?.message || "Error edicion");
     const b64 = data.data?.[0]?.b64_json;
     return b64 ? `data:image/png;base64,${b64}` : "";
   } else {
@@ -55,7 +55,7 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
       body: JSON.stringify({ model: "gpt-image-2", prompt, n: 1, size }),
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error?.message || "Error generación");
+    if (!resp.ok) throw new Error(data.error?.message || "Error generacion");
     const b64 = data.data?.[0]?.b64_json;
     return b64 ? `data:image/png;base64,${b64}` : "";
   }
@@ -68,6 +68,15 @@ async function fetchImagenComoBase64(url: string): Promise<string> {
   return `data:image/jpeg;base64,${b64}`;
 }
 
+function escaparSvg(texto: string): string {
+  return texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/[^\x00-\x7F]/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+
 async function dibujarTextoConSharp(
   imageBase64: string,
   texto: string,
@@ -77,11 +86,10 @@ async function dibujarTextoConSharp(
 ): Promise<string> {
   const imageBuffer = Buffer.from(imageBase64.split(",")[1], "base64");
   const fontSize = Math.floor(tamanio.width * 0.045);
-  const maxWidth = tamanio.width - 80;
+  const charsPorLinea = Math.floor((tamanio.width - 80) / (fontSize * 0.55));
   const palabras = texto.split(" ");
   const lineas: string[] = [];
   let lineaActual = "";
-  const charsPorLinea = Math.floor(maxWidth / (fontSize * 0.55));
 
   for (const palabra of palabras) {
     if ((lineaActual + " " + palabra).trim().length > charsPorLinea) {
@@ -103,21 +111,18 @@ async function dibujarTextoConSharp(
 
   const svgLineas = lineas.map((linea, i) => {
     const y = yInicio + i * lineHeight + fontSize;
+    const lineaEscapada = escaparSvg(linea);
     return `
-      <text x="${tamanio.width / 2}" y="${y + 3}" 
-        font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold"
-        text-anchor="middle" fill="black" opacity="0.4">${linea}</text>
-      <text x="${tamanio.width / 2}" y="${y}" 
-        font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold"
-        text-anchor="middle" fill="${colorTexto}">${linea}</text>
+      <text x="${tamanio.width / 2}" y="${y + 3}"
+        font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
+        text-anchor="middle" fill="black" opacity="0.5">${lineaEscapada}</text>
+      <text x="${tamanio.width / 2}" y="${y}"
+        font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
+        text-anchor="middle" fill="${colorTexto}">${lineaEscapada}</text>
     `;
   }).join("");
 
-  const svg = `
-    <svg width="${tamanio.width}" height="${tamanio.height}" xmlns="http://www.w3.org/2000/svg">
-      ${svgLineas}
-    </svg>
-  `;
+  const svg = `<svg width="${tamanio.width}" height="${tamanio.height}" xmlns="http://www.w3.org/2000/svg">${svgLineas}</svg>`;
 
   const resultado = await sharp(imageBuffer)
     .resize(tamanio.width, tamanio.height)
