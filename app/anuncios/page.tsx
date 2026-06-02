@@ -42,6 +42,9 @@ export default function Anuncios() {
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<any>(null);
   const [formatoSeleccionado, setFormatoSeleccionado] = useState(FORMATOS[0]);
   const [charCount, setCharCount] = useState(0);
+  const [generando, setGenerando] = useState(false);
+  const [imagenGenerada, setImagenGenerada] = useState<string | null>(null);
+  const [errorGeneracion, setErrorGeneracion] = useState<string | null>(null);
 
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
@@ -49,10 +52,38 @@ export default function Anuncios() {
     if (h) {
       const parsed = JSON.parse(h);
       setHeadlines(parsed);
-      if (parsed.length > 0) setCopySeleccionado(parsed[0]);
+      if (parsed.length > 0) { setCopySeleccionado(parsed[0]); setCharCount(parsed[0].length); }
     }
     if (p) setProductoData(JSON.parse(p));
   }, []);
+
+  const generarAnuncio = async () => {
+    setGenerando(true);
+    setImagenGenerada(null);
+    setErrorGeneracion(null);
+    try {
+      const resp = await fetch("/api/anuncios/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producto: productoData?.producto || "producto",
+          copy: copySeleccionado,
+          colorFondo: plantillaSeleccionada?.colorFondo || "#ffffff",
+          colorTexto: plantillaSeleccionada?.colorTexto || "#000000",
+          posTexto: plantillaSeleccionada?.posTexto || "top",
+          formato: formatoSeleccionado.id,
+          imagen: imagenProducto,
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) setImagenGenerada(data.imageUrl);
+      else setErrorGeneracion(data.error || "Error desconocido");
+    } catch (err: any) {
+      setErrorGeneracion(err.message);
+    } finally {
+      setGenerando(false);
+    }
+  };
 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,7 +97,6 @@ export default function Anuncios() {
     <div className="min-h-screen bg-[#050505] pt-20 px-4 pb-12">
       <div className="max-w-4xl mx-auto">
 
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             {[1,2,3].map(n => (
@@ -80,7 +110,6 @@ export default function Anuncios() {
           <h1 className="text-2xl font-black text-white">Módulo <span className="text-orange-500">Anuncios</span></h1>
         </div>
 
-        {/* PANTALLA 1 */}
         {pantalla === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -99,7 +128,6 @@ export default function Anuncios() {
                   </label>
                 )}
               </div>
-
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
                 <div>
@@ -130,7 +158,6 @@ export default function Anuncios() {
                 <textarea value={copySeleccionado} onChange={e => { setCopySeleccionado(e.target.value); setCharCount(e.target.value.length); }} rows={4} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none resize-none" placeholder="El texto que irá encima de la imagen..." />
                 <div className={`text-[10px] mt-1 text-right ${charCount > 80 ? "text-red-400" : "text-zinc-600"}`}>{charCount} / 80 caracteres</div>
               </div>
-
               <div>
                 <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-2">Formato del anuncio</p>
                 <div className="grid grid-cols-3 gap-2">
@@ -142,7 +169,6 @@ export default function Anuncios() {
                   ))}
                 </div>
               </div>
-
               <button onClick={() => { if (copySeleccionado.trim()) setPantalla(2); }} disabled={!copySeleccionado.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
                 Siguiente — Elegir referencia visual →
               </button>
@@ -150,7 +176,6 @@ export default function Anuncios() {
           </div>
         )}
 
-        {/* PANTALLA 2 */}
         {pantalla === 2 && (
           <div className="space-y-6">
             <div className="flex gap-3 overflow-x-auto pb-2">
@@ -158,7 +183,6 @@ export default function Anuncios() {
                 <button key={cat} onClick={() => setCategoriaActiva(cat)} className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold border transition-all ${categoriaActiva === cat ? "bg-orange-500 border-orange-500 text-white" : "border-[#1e1e1e] text-zinc-500 hover:border-[#333]"}`}>{cat}</button>
               ))}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {BANCO[categoriaActiva].map(plantilla => (
                 <div key={plantilla.id} onClick={() => setPlantillaSeleccionada(plantilla)} className={`rounded-2xl border cursor-pointer overflow-hidden transition-all ${plantillaSeleccionada?.id === plantilla.id ? "border-orange-500 ring-1 ring-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
@@ -176,7 +200,6 @@ export default function Anuncios() {
                 </div>
               ))}
             </div>
-
             <div className="flex gap-3">
               <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-zinc-500 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
               <button onClick={() => { if (plantillaSeleccionada) setPantalla(3); }} disabled={!plantillaSeleccionada} className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
@@ -186,21 +209,56 @@ export default function Anuncios() {
           </div>
         )}
 
-        {/* PANTALLA 3 — PLACEHOLDER */}
         {pantalla === 3 && (
-          <div className="text-center space-y-6 py-12">
-            <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center text-4xl mx-auto">🎯</div>
-            <div>
-              <h2 className="text-2xl font-black text-white mb-2">¡Casi listo!</h2>
-              <p className="text-zinc-500 text-sm">La generación de imagen con IA se activa en la próxima sesión.</p>
-            </div>
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-sm mx-auto space-y-2">
-              <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Resumen de tu anuncio</p>
-              <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Copy:</span> {copySeleccionado}</p>
-              <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
-              <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
-            </div>
-            <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-zinc-500 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+          <div className="space-y-6">
+            {!imagenGenerada && !generando && (
+              <div className="text-center py-12 space-y-4">
+                <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center text-4xl mx-auto">🎯</div>
+                <h2 className="text-2xl font-black text-white">Todo listo para generar</h2>
+                <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-sm mx-auto space-y-2">
+                  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Tu anuncio</p>
+                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Copy:</span> {copySeleccionado}</p>
+                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
+                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
+                </div>
+                <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
+                  ⚡ Generar imagen ahora
+                </button>
+              </div>
+            )}
+            {generando && (
+              <div className="text-center py-20 space-y-4">
+                <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+                <p className="text-white font-bold">Generando tu anuncio...</p>
+                <p className="text-zinc-500 text-sm">Esto toma entre 15 y 30 segundos</p>
+              </div>
+            )}
+            {imagenGenerada && (
+              <div className="space-y-4">
+                <div className="bg-[#0a0a0a] border border-green-500/30 rounded-2xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a1a1a]">
+                    <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">✓ Anuncio generado</span>
+                    <span className="text-zinc-600 text-[10px]">{formatoSeleccionado.nombre} · {formatoSeleccionado.size}</span>
+                  </div>
+                  <div className="p-4 flex justify-center">
+                    <img src={imagenGenerada} alt="anuncio generado" className="max-w-full max-h-[500px] object-contain rounded-xl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <button onClick={generarAnuncio} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-zinc-400 text-xs font-bold py-3 rounded-xl transition-colors">↻ Regenerar</button>
+                  <button onClick={() => setPantalla(2)} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-zinc-400 text-xs font-bold py-3 rounded-xl transition-colors">← Cambiar plantilla</button>
+                  <a href={imagenGenerada} download={`anuncio-${formatoSeleccionado.id}.png`} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition-colors flex items-center justify-center">⬇ Descargar</a>
+                </div>
+                <button onClick={() => { setPantalla(1); setImagenGenerada(null); }} className="w-full border border-[#1a1a1a] text-zinc-600 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+              </div>
+            )}
+            {errorGeneracion && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center">
+                <p className="text-red-400 text-sm font-bold">Error al generar</p>
+                <p className="text-red-400/70 text-xs mt-1">{errorGeneracion}</p>
+                <button onClick={generarAnuncio} className="mt-3 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold px-4 py-2 rounded-lg">Intentar de nuevo</button>
+              </div>
+            )}
           </div>
         )}
 
