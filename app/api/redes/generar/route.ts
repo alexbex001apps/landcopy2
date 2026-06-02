@@ -1,32 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-async function urlToBase64(url: string): Promise<string> {
-  try {
-    const res = await fetch(url);
-    const buffer = await res.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    const contentType = res.headers.get('content-type') || 'image/png';
-    return `data:${contentType};base64,${base64}`;
-  } catch {
-    return '';
-  }
-}
-
-
-
-const TAMANIOS: Record<string, { width: number; height: number; size: string }> = {
-  feed45:   { width: 1080, height: 1350, size: "1024x1536" },
-  feed11:   { width: 1080, height: 1080, size: "1024x1024" },
-  story916: { width: 1080, height: 1920, size: "1024x1536" },
-  reels:    { width: 1080, height: 1920, size: "1024x1536" },
-  carrusel: { width: 1080, height: 1350, size: "1024x1536" },
-  tiktok:   { width: 1080, height: 1920, size: "1024x1536" },
-  facebook: { width: 1080, height: 1080, size: "1024x1024" },
-  whatsapp: { width: 800,  height: 800,  size: "1024x1024" },
-  story:    { width: 1080, height: 1920, size: "1024x1536" },
+const TAMANIOS: Record<string, string> = {
+  feed45:   "1024x1536",
+  feed11:   "1024x1024",
+  story916: "1024x1536",
+  reels:    "1024x1536",
+  carrusel: "1024x1536",
+  tiktok:   "1024x1536",
+  facebook: "1024x1024",
+  whatsapp: "1024x1024",
+  story:    "1024x1536",
 };
 
 function buildPrompt(params: {
@@ -34,19 +17,13 @@ function buildPrompt(params: {
   beneficio: string;
   problema: string;
   pais: string;
-  tono: string;
   tipo: string;
-  destino: string;
-  formatoIg: string;
-  textoEncima: boolean;
-  precioOferta: string;
-  precioAnterior: string;
   variante: number;
   promptCustom?: string;
   mejorar?: boolean;
   promptBase?: string;
 }): { prompt: string; desc: string } {
-  const { producto, beneficio, problema, pais, tono, tipo, variante, precioOferta, precioAnterior, promptCustom, mejorar, promptBase } = params;
+  const { producto, beneficio, problema, pais, tipo, variante, promptCustom, mejorar, promptBase } = params;
 
   if (promptCustom && promptCustom.trim()) {
     return { prompt: promptCustom, desc: promptCustom.slice(0, 80) };
@@ -93,14 +70,64 @@ function buildPrompt(params: {
   return { prompt, desc };
 }
 
+async function generarImagenBase64(prompt: string, size: string, apiKey: string, imagen?: string): Promise<string> {
+  if (imagen && imagen.startsWith("data:")) {
+    // Con imagen de referencia — usar edits endpoint como LandCopy 1
+    const imageBuffer = Buffer.from(imagen.split(",")[1], "base64");
+    const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+    const parts = [
+      `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="n"\r\n\r\n1`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="size"\r\n\r\n${size}`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\nReproduce the exact product shown in the reference image in this scene: ${prompt}. Keep the product identical — same colors, same shape, same design.`,
+    ];
+    const textParts = Buffer.from(parts.join("\r\n") + "\r\n");
+    const fileHeader = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="product.png"\r\nContent-Type: image/jpeg\r\n\r\n`);
+    const closing = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([textParts, fileHeader, imageBuffer, closing]);
+
+    const resp = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": `multipart/form-data; boundary=${boundary}`,
+        "Content-Length": String(body.length),
+      },
+      body,
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || "Error edición");
+    const b64 = data.data?.[0]?.b64_json;
+    return b64 ? `data:image/png;base64,${b64}` : "";
+  } else {
+    // Sin imagen — generación directa con b64_json
+    const resp = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-image-2",
+        prompt,
+        n: 1,
+        size,
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || "Error generación");
+    const b64 = data.data?.[0]?.b64_json;
+    return b64 ? `data:image/png;base64,${b64}` : "";
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
       producto, beneficio = "", problema = "", pais = "Colombia",
       tono = "Urgente", tipo = "escena", destino = "instagram",
-      formatoIg = "feed45", textoEncima = false,
-      precioOferta = "", precioAnterior = "",
+      formatoIg = "feed45", imagen,
       promptCustom = "", soloUna, mejorar = false, promptBase = "",
     } = body;
 
@@ -108,29 +135,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Producto requerido" }, { status: 400 });
     }
 
+    const apiKey = process.env.OPENAI_API_KEY!;
     const claveFormato = destino === "instagram" ? formatoIg : destino;
-    const tamano = TAMANIOS[claveFormato] || TAMANIOS.feed11;
+    const size = TAMANIOS[claveFormato] || "1024x1024";
 
-    // Si es soloUna — regenerar una idea específica
     if (soloUna) {
       const variante = Math.floor(Math.random() * 4);
       const { prompt, desc } = buildPrompt({
-        producto, beneficio, problema, pais, tono, tipo,
-        destino, formatoIg, textoEncima, precioOferta, precioAnterior,
+        producto, beneficio, problema, pais, tipo,
         variante, promptCustom, mejorar, promptBase,
       });
 
       try {
-        const response = await openai.images.generate({
-          model: "gpt-image-2",
-          prompt,
-          n: 1,
-          size: tamano.size as "1024x1024" | "1024x1536" | "1536x1024",
-          quality: "standard",
-        });
-
-        const rawUrl = response.data?.[0]?.url || "";
-        const imageUrl = rawUrl ? await urlToBase64(rawUrl) : "";
+        const imageUrl = await generarImagenBase64(prompt, size, apiKey, imagen);
         return NextResponse.json({
           idea: {
             id: soloUna,
@@ -140,54 +157,33 @@ export async function POST(req: NextRequest) {
             favorita: false,
           }
         });
-      } catch (imgErr) {
-        console.error("Error generando imagen:", imgErr);
+      } catch (err) {
+        console.error("Error generando imagen:", err);
         return NextResponse.json({
-          idea: {
-            id: soloUna,
-            desc,
-            modo: "auto",
-            imageUrl: "",
-            favorita: false,
-          }
+          idea: { id: soloUna, desc, modo: "auto", imageUrl: "", favorita: false }
         });
       }
     }
 
     // Generar 4 ideas en paralelo
-    const variantes = [0, 1, 2, 3];
-    const promesas = variantes.map(async (v) => {
+    const promesas = [0, 1, 2, 3].map(async (v) => {
       const { prompt, desc } = buildPrompt({
-        producto, beneficio, problema, pais, tono, tipo,
-        destino, formatoIg, textoEncima, precioOferta, precioAnterior,
+        producto, beneficio, problema, pais, tipo,
         variante: v, promptCustom: v === 0 ? promptCustom : "",
       });
 
       try {
-        const response = await openai.images.generate({
-          model: "gpt-image-2",
-          prompt,
-          n: 1,
-          size: tamano.size as "1024x1024" | "1024x1536" | "1536x1024",
-          quality: "standard",
-        });
-
+        const imageUrl = await generarImagenBase64(prompt, size, apiKey, imagen);
         return {
           id: `idea-${v}`,
           desc,
           modo: (v === 0 && promptCustom ? "prompt" : v < 2 ? "auto" : "manual") as "auto" | "manual" | "prompt",
-          imageUrl: response.data?.[0]?.url ? await urlToBase64(response.data[0].url) : "",
+          imageUrl,
           favorita: false,
         };
       } catch (err) {
         console.error(`Error en variante ${v}:`, err);
-        return {
-          id: `idea-${v}`,
-          desc,
-          modo: "auto" as const,
-          imageUrl: "",
-          favorita: false,
-        };
+        return { id: `idea-${v}`, desc, modo: "auto" as const, imageUrl: "", favorita: false };
       }
     });
 
