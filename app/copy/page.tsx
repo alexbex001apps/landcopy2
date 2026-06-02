@@ -278,7 +278,7 @@ export default function Copy() {
             <span className="text-cyan-400">conecta</span> y{" "}
             <span className="text-green-400">convierte</span>
           </h1>
-          <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, WhatsApp, Meta Ads, redes y campaña de 7 días en segundos</p>
+          <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, campaña de anuncios y contenido para redes en segundos</p>
         </div>
  
         <div className="grid grid-cols-[380px_1fr] gap-6">
