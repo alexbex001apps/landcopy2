@@ -551,11 +551,11 @@ export default function Redes() {
               <div className="grid grid-cols-2 gap-3 mb-3">
                 {ideas.map((idea) => (
                   <div key={idea.id} className={`bg-[#161616] border rounded-lg overflow-hidden ${idea.favorita ? "border-[#FFF500]" : "border-[#1e1e1e]"}`}>
-                    <div className="h-40 flex items-center justify-center relative bg-[#1a1500]">
+                    <div className="relative bg-[#0a0a0a] w-full overflow-hidden rounded-t-lg" style={{ paddingTop: "125%" }}>
                       {idea.imageUrl ? (
-                        <img src={idea.imageUrl} className="h-full w-full object-cover" alt={idea.desc} />
+                        <img src={idea.imageUrl} className="absolute inset-0 w-full h-full object-cover" alt={idea.desc} />
                       ) : (
-                        <span className="text-4xl opacity-30">🖼️</span>
+                        <div className="absolute inset-0 flex items-center justify-center"><span className="text-4xl opacity-30">🖼️</span></div>
                       )}
                       <span className={`absolute top-1.5 left-1.5 text-xs font-black px-1.5 py-0.5 rounded-sm ${idea.modo === "auto" ? "bg-[#FFF500] text-[#0d0d0d]" : idea.modo === "manual" ? "bg-[#86EFAC] text-black" : "bg-[#C084FC] text-white"}`}>
                         {idea.modo === "auto" ? "Auto" : idea.modo === "manual" ? "Manual" : "Prompt"}
