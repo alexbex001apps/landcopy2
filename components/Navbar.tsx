@@ -34,6 +34,7 @@ export default function Navbar() {
           <a href="/copy" className="hover:text-white transition-colors">Copy</a>
           <a href="/redes" className="hover:text-white transition-colors">Redes</a>
           <a href="/landing" className="hover:text-white transition-colors">Landing</a>
+          <a href="/anuncios" className="hover:text-white transition-colors text-orange-400">Anuncios</a>
           <a href="/precios" className="hover:text-white transition-colors">Precios</a>
           {user ? (
             <div className="relative">
