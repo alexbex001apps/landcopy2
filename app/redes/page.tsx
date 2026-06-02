@@ -341,7 +341,7 @@ export default function Redes() {
         ))}
       </div>
 
-      <div className="grid grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-[380px_1fr]">
 
         {/* Panel izquierdo */}
         <div className="bg-[#161616] border-r border-[#1e1e1e] p-4">
