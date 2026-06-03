@@ -1,63 +1,131 @@
 "use client";
 import { useEffect, useState } from "react";
-import BANCO from "./referencias.json";
 
-const CATEGORIAS = Object.keys(BANCO);
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
   { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
   { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px" },
 ];
 
-const URGENCIAS = [
-  "¡Solo quedan pocas unidades!",
-  "¡Oferta por tiempo limitado!",
-  "¡Hoy solamente!",
-  "¡No te quedes sin el tuyo!",
-  "¡Últimas unidades disponibles!",
+const TEMPERATURAS = [
+  { id: "hot", icon: "🔥", nombre: "Hot Traffic", desc: "Urgencia, precio, escasez. Cierra la venta.", color: "#cc0000", bg: "#1a0000", border: "#cc0000" },
+  { id: "warm", icon: "🌡️", nombre: "Warm Traffic", desc: "Beneficios, confianza, prueba social.", color: "#ff8800", bg: "#1a0e00", border: "#ff8800" },
+  { id: "cold", icon: "❄️", nombre: "Cold Traffic", desc: "Presentación, curiosidad, enganche.", color: "#0088cc", bg: "#00101a", border: "#0088cc" },
 ];
 
-const BADGES = ["OFERTA", "ÚLTIMAS UNIDADES", "HOY SOLAMENTE", "EXCLUSIVO", "AGOTÁNDOSE"];
-const CTAS = ["COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO", "LO QUIERO", "ORDENAR AHORA"];
+const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]> = {
+  hot: [
+    { texto: "¡ÚLTIMAS UNIDADES!", temp: "hot" },
+    { texto: "HOY SOLAMENTE", temp: "hot" },
+    { texto: "STOCK LIMITADO", temp: "hot" },
+    { texto: "OFERTA TERMINA HOY", temp: "hot" },
+    { texto: "PRECIO ESPECIAL", temp: "hot" },
+    { texto: "OFERTA FLASH", temp: "hot" },
+    { texto: "¡NO TE QUEDES SIN EL TUYO!", temp: "hot" },
+    { texto: "COMPRAR AHORA", temp: "hot" },
+    { texto: "PEDIR AHORA", temp: "hot" },
+    { texto: "QUIERO EL MÍO", temp: "hot" },
+  ],
+  warm: [
+    { texto: "RESULTADOS REALES", temp: "warm" },
+    { texto: "GARANTIZADO", temp: "warm" },
+    { texto: "MILES LO USAN", temp: "warm" },
+    { texto: "100% COMPROBADO", temp: "warm" },
+    { texto: "ENVÍO GRATIS", temp: "warm" },
+    { texto: "PAGO CONTRA ENTREGA", temp: "warm" },
+    { texto: "100% NATURAL", temp: "warm" },
+    { texto: "SIN EFECTOS SECUNDARIOS", temp: "warm" },
+    { texto: "QUIERO SABER MÁS", temp: "warm" },
+    { texto: "VER RESULTADOS", temp: "warm" },
+  ],
+  cold: [
+    { texto: "¿SABÍAS QUE...?", temp: "cold" },
+    { texto: "DESCUBRE CÓMO", temp: "cold" },
+    { texto: "EL SECRETO QUE NADIE TE DIJO", temp: "cold" },
+    { texto: "¿TE HA PASADO ESTO?", temp: "cold" },
+    { texto: "CONOCE LA SOLUCIÓN", temp: "cold" },
+    { texto: "APRENDE MÁS", temp: "cold" },
+    { texto: "DESCUBRIR", temp: "cold" },
+    { texto: "LA VERDAD SOBRE...", temp: "cold" },
+    { texto: "LO QUE NO TE CUENTAN", temp: "cold" },
+  ],
+};
+
+const COLORES_TEMP = { hot: "#cc0000", warm: "#ff8800", cold: "#0088cc" };
 
 export default function Anuncios() {
   const [pantalla, setPantalla] = useState(1);
-  const [headlines, setHeadlines] = useState<string[]>([]);
   const [productoData, setProductoData] = useState<any>(null);
+  const [headlines, setHeadlines] = useState<string[]>([]);
   const [imagenProducto, setImagenProducto] = useState<string | null>(null);
-  const [categoriaActiva, setCategoriaActiva] = useState(CATEGORIAS[0]);
-  const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<any>(null);
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [precioOferta, setPrecioOferta] = useState("");
+  const [precioAnterior, setPrecioAnterior] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [temperatura, setTemperatura] = useState<"hot" | "warm" | "cold">("hot");
+  const [frasesSeleccionadas, setFrasesSeleccionadas] = useState<string[]>([]);
+  const [dolorChips, setDolorChips] = useState<string[]>([]);
+  const [dolorSel, setDolorSel] = useState<string[]>([]);
+  const [generandoDolor, setGenerandoDolor] = useState(false);
+  const [promptPropio, setPromptPropio] = useState("");
   const [formatoSeleccionado, setFormatoSeleccionado] = useState(FORMATOS[0]);
   const [generando, setGenerando] = useState(false);
   const [imagenGenerada, setImagenGenerada] = useState<string | null>(null);
   const [errorGeneracion, setErrorGeneracion] = useState<string | null>(null);
 
-  const [headline, setHeadline] = useState("");
-  const [urgencia, setUrgencia] = useState("");
-  const [beneficio1, setBeneficio1] = useState("");
-  const [beneficio2, setBeneficio2] = useState("");
-  const [beneficio3, setBeneficio3] = useState("");
-  const [badge, setBadge] = useState("");
-  const [cta, setCta] = useState("COMPRAR AHORA");
-  const [precioOferta, setPrecioOferta] = useState("");
-  const [precioAnterior, setPrecioAnterior] = useState("");
-
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
     const p = sessionStorage.getItem("anuncios_producto");
-    if (h) {
-      const parsed = JSON.parse(h);
-      setHeadlines(parsed);
-      if (parsed.length > 0) setHeadline(parsed[0]);
-    }
+    if (h) { const parsed = JSON.parse(h); setHeadlines(parsed); if (parsed.length > 0) setHeadline(parsed[0]); }
     if (p) {
       const data = JSON.parse(p);
       setProductoData(data);
-      if (data.beneficio) setBeneficio1(data.beneficio);
-      if (data.precioOferta) setPrecioOferta(data.precioOferta);
-      if (data.precioAnterior) setPrecioAnterior(data.precioAnterior);
+      setNombre(data.producto || "");
+      setPrecioOferta(data.precioOferta || "");
+      setPrecioAnterior(data.precioAnterior || "");
     }
   }, []);
+
+  const generarDolor = async () => {
+    if (!nombre) return;
+    setGenerandoDolor(true);
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 300,
+          messages: [{ role: "user", content: `Genera 5 puntos de dolor cortos (máx 6 palabras cada uno) para el producto: "${nombre}". Descripción: "${descripcion}". También genera 1 frase "Antes: X → Después: Y". Responde SOLO con JSON: {"dolores": ["...", "...", "...", "...", "..."], "antesdespues": "Antes: X → Después: Y"}` }]
+        })
+      });
+      const data = await resp.json();
+      const content = data.content?.[0]?.text || "{}";
+      const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const json = JSON.parse(cleaned);
+      const chips = [...(json.dolores || []), json.antesdespues || ""].filter(Boolean);
+      setDolorChips(chips);
+      setDolorSel(chips.slice(0, 3));
+    } catch (err) {
+      setDolorChips(["Dolor constante", "Sin solución efectiva", "Cansado de sufrir", "Calidad de vida afectada", "Antes: sufriendo → Después: libre"]);
+      setDolorSel(["Dolor constante", "Sin solución efectiva"]);
+    } finally {
+      setGenerandoDolor(false);
+    }
+  };
+
+  const toggleFrase = (texto: string) => {
+    setFrasesSeleccionadas(prev => {
+      if (prev.includes(texto)) return prev.filter(f => f !== texto);
+      if (prev.length >= 7) return prev;
+      return [...prev, texto];
+    });
+  };
+
+  const toggleDolor = (texto: string) => {
+    setDolorSel(prev => prev.includes(texto) ? prev.filter(d => d !== texto) : [...prev, texto]);
+  };
 
   const generarAnuncio = async () => {
     setGenerando(true);
@@ -68,21 +136,16 @@ export default function Anuncios() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          producto: productoData?.producto || "producto",
+          producto: nombre,
           headline,
-          urgencia,
-          beneficios: [beneficio1, beneficio2, beneficio3].filter(Boolean),
-          badge,
-          cta,
+          temperatura,
+          frasesSeleccionadas,
+          dolorSel,
           precioOferta,
           precioAnterior,
-          colorFondo: plantillaSeleccionada?.colorFondo || "#ffffff",
-          colorTexto: plantillaSeleccionada?.colorTexto || "#000000",
-          posTexto: plantillaSeleccionada?.posTexto || "top",
           formato: formatoSeleccionado.id,
           imagen: imagenProducto,
-          referenciaUrl: plantillaSeleccionada?.referenciaUrl || "",
-          promptTecnico: plantillaSeleccionada?.promptTecnico || "",
+          promptPropio,
         }),
       });
       const data = await resp.json();
@@ -103,27 +166,28 @@ export default function Anuncios() {
     reader.readAsDataURL(file);
   };
 
+  const tempActual = TEMPERATURAS.find(t => t.id === temperatura)!;
+
   return (
     <div className="min-h-screen bg-[#050505] pt-20 px-4 pb-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
 
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             {[1,2,3].map(n => (
               <div key={n} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${pantalla === n ? "bg-orange-500 text-white" : pantalla > n ? "bg-green-500 text-white" : "bg-[#111] border border-[#222] text-yellow-400"}`}>{pantalla > n ? "✓" : n}</div>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${pantalla === n ? "bg-orange-500 text-white" : pantalla > n ? "bg-green-500 text-white" : "bg-[#111] border border-[#222] text-zinc-600"}`}>{pantalla > n ? "✓" : n}</div>
                 {n < 3 && <div className={`w-8 h-px ${pantalla > n ? "bg-green-500" : "bg-[#222]"}`}></div>}
               </div>
             ))}
-            <span className="text-yellow-400 text-xs ml-2">{pantalla === 1 ? "Tu anuncio" : pantalla === 2 ? "Elige la referencia" : "Tu anuncio listo"}</span>
+            <span className="text-yellow-400 text-xs ml-2">{pantalla === 1 ? "Tu producto" : pantalla === 2 ? "Temperatura y frases" : "Tu anuncio listo"}</span>
           </div>
           <h1 className="text-2xl font-black text-white">Módulo <span className="text-orange-500">Anuncios</span></h1>
         </div>
 
+        {/* PANTALLA 1 */}
         {pantalla === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Columna izquierda */}
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Foto del producto</p>
@@ -140,25 +204,6 @@ export default function Anuncios() {
                   </label>
                 )}
               </div>
-
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
-                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Producto</p>
-                <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Nombre del producto</label>
-                  <input defaultValue={productoData?.producto || ""} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Rodillax" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Precio oferta</label>
-                    <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="49.000" />
-                  </div>
-                  <div>
-                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Precio anterior</label>
-                    <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="69.000" />
-                  </div>
-                </div>
-              </div>
-
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Formato</p>
                 <div className="grid grid-cols-3 gap-2">
@@ -172,134 +217,170 @@ export default function Anuncios() {
               </div>
             </div>
 
-            {/* Columna derecha */}
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
-                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Copy del anuncio</p>
-
+                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Producto</p>
                 <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Headline principal <span className="text-orange-500">*</span></label>
+                  <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Nombre *</label>
+                  <input value={nombre} onChange={e => setNombre(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Rodillax" />
+                </div>
+                <div>
+                  <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Descripción breve</label>
+                  <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={2} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none resize-none" placeholder="¿Qué hace tu producto? 1-2 líneas" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Precio oferta</label>
+                    <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="49.000" />
+                  </div>
+                  <div>
+                    <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Precio anterior</label>
+                    <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="69.000" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Headline principal *</label>
                   {headlines.length > 0 && (
                     <div className="flex gap-1 flex-wrap mt-1 mb-2">
                       {headlines.map((h, i) => (
-                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{h.slice(0, 30)}...</button>
+                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{h.slice(0, 25)}...</button>
                       ))}
                     </div>
                   )}
                   <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
                 </div>
-
-                <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Urgencia <span className="text-zinc-700">(opcional)</span></label>
-                  <div className="flex gap-1 flex-wrap mt-1 mb-1">
-                    {URGENCIAS.map((u, i) => (
-                      <button key={i} onClick={() => setUrgencia(u)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${urgencia === u ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{u}</button>
-                    ))}
-                  </div>
-                  <input value={urgencia} onChange={e => setUrgencia(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="O escribe tu mensaje de urgencia..." />
-                </div>
-
-                <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Beneficios <span className="text-zinc-700">(opcional)</span></label>
-                  <div className="space-y-1 mt-1">
-                    <input value={beneficio1} onChange={e => setBeneficio1(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 1 — Ej: Alivia el dolor en días" />
-                    <input value={beneficio2} onChange={e => setBeneficio2(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 2 — Ej: 100% natural" />
-                    <input value={beneficio3} onChange={e => setBeneficio3(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 3 — Ej: Sin efectos secundarios" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Badge <span className="text-zinc-700">(opcional)</span></label>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {BADGES.map((b, i) => (
-                        <button key={i} onClick={() => setBadge(badge === b ? "" : b)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${badge === b ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{b}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">CTA <span className="text-zinc-700">(opcional)</span></label>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {CTAS.map((c, i) => (
-                        <button key={i} onClick={() => setCta(c)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${cta === c ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{c}</button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <button onClick={() => { if (headline.trim()) setPantalla(2); }} disabled={!headline.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
-                Siguiente — Elegir referencia visual →
+              <button onClick={() => { if (nombre.trim() && headline.trim()) { setPantalla(2); if (nombre && !dolorChips.length) generarDolor(); } }} disabled={!nombre.trim() || !headline.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
+                Siguiente — Temperatura y frases →
               </button>
             </div>
           </div>
         )}
 
+        {/* PANTALLA 2 */}
         {pantalla === 2 && (
           <div className="space-y-6">
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {CATEGORIAS.map(cat => (
-                <button key={cat} onClick={() => setCategoriaActiva(cat)} className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold border transition-all ${categoriaActiva === cat ? "bg-orange-500 border-orange-500 text-white" : "border-[#1e1e1e] text-zinc-500 hover:border-[#333]"}`}>{cat}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(BANCO as any)[categoriaActiva].map((plantilla: any) => (
-                <div key={plantilla.id} onClick={() => setPlantillaSeleccionada(plantilla)} className={`rounded-2xl border cursor-pointer overflow-hidden transition-all ${plantillaSeleccionada?.id === plantilla.id ? "border-orange-500 ring-1 ring-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
-                  <div className="h-40 flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: plantilla.colorFondo }}>
-                    {plantilla.referenciaUrl ? (
-                      <img src={plantilla.referenciaUrl} alt={plantilla.nombre} className="absolute inset-0 w-full h-full object-cover opacity-80" />
-                    ) : null}
-                    {!plantilla.referenciaUrl && <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">📦</div>}
-                  </div>
-                  <div className="bg-[#0a0a0a] p-3">
-                    <p className="text-[#f0ead6] text-[11px] font-bold">{plantilla.nombre}</p>
-                    <p className="text-yellow-400 text-[10px]">{plantilla.descripcion}</p>
-                    {plantilla.referenciaUrl && <span className="text-orange-500 text-[9px] font-bold">✓ Con imagen de referencia</span>}
-                  </div>
+
+            {/* Puntos de dolor */}
+            {(dolorChips.length > 0 || generandoDolor) && (
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Puntos de dolor — generados por IA</p>
+                  <button onClick={generarDolor} disabled={generandoDolor} className="text-yellow-400 text-[9px] font-bold border border-[#1e1e1e] px-2 py-1 rounded-lg">{generandoDolor ? "⏳ Generando..." : "↻ Regenerar"}</button>
                 </div>
-              ))}
+                <div className="flex flex-wrap gap-2">
+                  {dolorChips.map((d, i) => (
+                    <button key={i} onClick={() => toggleDolor(d)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${dolorSel.includes(d) ? "border-red-500 bg-red-500/20 text-red-400" : "border-[#1e1e1e] text-yellow-400"}`}>{d}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Temperaturas */}
+            <div>
+              <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Temperatura y frases — máximo 7 frases</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {TEMPERATURAS.map(temp => (
+                  <div key={temp.id} className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${temperatura === temp.id ? temp.border : "#1a1a1a"}` }}>
+                    <div onClick={() => setTemperatura(temp.id as any)} className="p-4 cursor-pointer" style={{ background: temp.bg }}>
+                      <div className="text-2xl mb-2">{temp.icon}</div>
+                      <p className="font-black text-sm mb-1" style={{ color: temp.color }}>{temp.nombre}</p>
+                      <p className="text-yellow-400 text-[10px]">{temp.desc}</p>
+                      {temperatura === temp.id && <span className="inline-block mt-2 text-[8px] font-black px-2 py-0.5 rounded text-white" style={{ background: temp.color }}>ELEGIDO</span>}
+                    </div>
+                    <div className="p-3 space-y-1.5 bg-[#0a0a0a]">
+                      {FRASES[temp.id].map((f, i) => {
+                        const sel = frasesSeleccionadas.includes(f.texto);
+                        return (
+                          <button key={i} onClick={() => toggleFrase(f.texto)} className="w-full text-left text-[10px] font-bold px-3 py-2 rounded-lg border transition-all" style={{
+                            borderColor: sel ? temp.color : "#1e1e1e",
+                            background: sel ? temp.color : "transparent",
+                            color: sel ? "#fff" : temp.color,
+                          }}>
+                            {f.texto}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Contador */}
+            <div className="bg-[#111] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center justify-between">
+              <span className="text-yellow-400 text-xs">Frases seleccionadas</span>
+              <span className={`text-sm font-black ${frasesSeleccionadas.length >= 7 ? "text-red-400" : "text-orange-500"}`}>{frasesSeleccionadas.length} / 7</span>
+            </div>
+
+            {/* Resumen */}
+            {frasesSeleccionadas.length > 0 && (
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl px-4 py-3">
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">Seleccionadas</p>
+                <div className="flex flex-wrap gap-2">
+                  {frasesSeleccionadas.map((f, i) => {
+                    const tempId = Object.keys(FRASES).find(k => FRASES[k as keyof typeof FRASES].some(fr => fr.texto === f)) as keyof typeof COLORES_TEMP;
+                    return <span key={i} className="text-[9px] font-black px-2 py-1 rounded text-white" style={{ background: COLORES_TEMP[tempId] || "#ff5000" }}>{f}</span>;
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Prompt propio */}
+            <div className="bg-[#0a0a0a] border border-dashed border-[#333] rounded-xl p-4">
+              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">✏️ Prompt propio — opcional, para usuarios avanzados</p>
+              <textarea value={promptPropio} onChange={e => setPromptPropio(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Escribe tu instrucción directa aquí..." />
+            </div>
+
             <div className="flex gap-3">
-              <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-zinc-500 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
-              <button onClick={() => { if (plantillaSeleccionada) setPantalla(3); }} disabled={!plantillaSeleccionada} className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
-                Generar mi anuncio →
+              <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-yellow-400 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
+              <button onClick={() => setPantalla(3)} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
+                Generar anuncio {tempActual.icon} {tempActual.nombre} →
               </button>
             </div>
           </div>
         )}
 
+        {/* PANTALLA 3 */}
         {pantalla === 3 && (
           <div className="space-y-6">
             {!imagenGenerada && !generando && (
               <div className="text-center py-12 space-y-4">
-                <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center text-4xl mx-auto">🎯</div>
-                <h2 className="text-2xl font-black text-white">Todo listo para generar</h2>
-                <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-sm mx-auto space-y-2">
-                  <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">Resumen</p>
-                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Headline:</span> {headline}</p>
-                  {urgencia && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Urgencia:</span> {urgencia}</p>}
-                  {(beneficio1 || beneficio2 || beneficio3) && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Beneficios:</span> {[beneficio1, beneficio2, beneficio3].filter(Boolean).join(" · ")}</p>}
-                  {precioOferta && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Precio:</span> {precioAnterior && <s className="text-yellow-400">{precioAnterior}</s>} → {precioOferta}</p>}
-                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
-                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
+                <div className="text-6xl">{tempActual.icon}</div>
+                <h2 className="text-2xl font-black text-white">Todo listo — {tempActual.nombre}</h2>
+                <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-md mx-auto space-y-2">
+                  <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Producto:</span> {nombre}</p>
+                  <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Headline:</span> {headline}</p>
+                  {precioOferta && <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Precio:</span> {precioAnterior && <s className="text-yellow-400/50">{precioAnterior}</s>} → {precioOferta}</p>}
+                  {frasesSeleccionadas.length > 0 && (
+                    <div>
+                      <p className="text-yellow-400 text-[10px] mb-1">Frases:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {frasesSeleccionadas.map((f, i) => <span key={i} className="text-[8px] font-bold px-2 py-0.5 rounded text-white bg-orange-500">{f}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Formato:</span> {formatoSeleccionado.nombre}</p>
                 </div>
                 <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
                   ⚡ Generar imagen ahora
                 </button>
+                <div><button onClick={() => setPantalla(2)} className="text-yellow-400 text-xs border border-[#1e1e1e] px-4 py-2 rounded-lg">← Editar frases</button></div>
               </div>
             )}
             {generando && (
               <div className="text-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
-                <p className="text-white font-bold">Generando tu anuncio...</p>
-                <p className="text-zinc-500 text-sm">Esto toma entre 15 y 30 segundos</p>
+                <p className="text-white font-bold">Generando tu anuncio {tempActual.icon}...</p>
+                <p className="text-yellow-400 text-sm">Esto toma entre 15 y 30 segundos</p>
               </div>
             )}
             {imagenGenerada && (
               <div className="space-y-4">
                 <div className="bg-[#0a0a0a] border border-green-500/30 rounded-2xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a1a1a]">
-                    <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">✓ Anuncio generado</span>
+                    <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">✓ Anuncio generado — {tempActual.nombre}</span>
                     <span className="text-yellow-400 text-[10px]">{formatoSeleccionado.nombre} · {formatoSeleccionado.size}</span>
                   </div>
                   <div className="p-4 flex justify-center">
@@ -307,11 +388,11 @@ export default function Anuncios() {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <button onClick={generarAnuncio} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-zinc-400 text-xs font-bold py-3 rounded-xl transition-colors">↻ Regenerar</button>
-                  <button onClick={() => setPantalla(2)} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-zinc-400 text-xs font-bold py-3 rounded-xl transition-colors">← Cambiar plantilla</button>
+                  <button onClick={generarAnuncio} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-yellow-400 text-xs font-bold py-3 rounded-xl transition-colors">↻ Regenerar</button>
+                  <button onClick={() => setPantalla(2)} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-yellow-400 text-xs font-bold py-3 rounded-xl transition-colors">← Editar frases</button>
                   <a href={imagenGenerada} download={`anuncio-${formatoSeleccionado.id}.png`} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition-colors flex items-center justify-center">⬇ Descargar</a>
                 </div>
-                <button onClick={() => { setPantalla(1); setImagenGenerada(null); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+                <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
               </div>
             )}
             {errorGeneracion && (

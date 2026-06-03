@@ -7,11 +7,9 @@ const TAMANIOS: Record<string, string> = {
   tiktok: "1024x1536",
 };
 
-async function generarImagenBase64(prompt: string, size: string, apiKey: string, imagen?: string, referenciaUrl?: string): Promise<string> {
-  const imagenParaEditar = imagen || (referenciaUrl ? await fetchImagenComoBase64(referenciaUrl) : null);
-
-  if (imagenParaEditar && imagenParaEditar.startsWith("data:")) {
-    const imageBuffer = Buffer.from(imagenParaEditar.split(",")[1], "base64");
+async function generarImagenBase64(prompt: string, size: string, apiKey: string, imagen?: string): Promise<string> {
+  if (imagen && imagen.startsWith("data:")) {
+    const imageBuffer = Buffer.from(imagen.split(",")[1], "base64");
     const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
     const parts = [
       `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
@@ -23,11 +21,10 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
     const fileHeader = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="product.png"\r\nContent-Type: image/jpeg\r\n\r\n`);
     const closing = Buffer.from(`\r\n--${boundary}--\r\n`);
     const body = Buffer.concat([textParts, fileHeader, imageBuffer, closing]);
-
     const resp = await fetch("https://api.openai.com/v1/images/edits", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": `multipart/form-data; boundary=${boundary}`,
         "Content-Length": String(body.length),
       },
@@ -40,10 +37,7 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
   } else {
     const resp = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: "gpt-image-2", prompt, n: 1, size }),
     });
     const data = await resp.json();
@@ -53,135 +47,158 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
   }
 }
 
-async function fetchImagenComoBase64(url: string): Promise<string> {
-  const resp = await fetch(url);
-  const buffer = await resp.arrayBuffer();
-  const b64 = Buffer.from(buffer).toString("base64");
-  return `data:image/jpeg;base64,${b64}`;
-}
+const PROMPTS_MAESTROS = {
+  hot: (params: any) => `You are creating a HIGH-CONVERSION LATIN AMERICAN ECOMMERCE ADVERTISEMENT optimized for HOT TRAFFIC — customers ready to buy RIGHT NOW.
 
-function construirPromptMaestro(params: {
-  producto: string;
-  headline: string;
-  urgencia?: string;
-  beneficios?: string[];
-  badge?: string;
-  cta?: string;
-  precioOferta?: string;
-  precioAnterior?: string;
-  colorTexto: string;
-  colorFondo: string;
-  promptTecnico?: string;
-}): string {
-  const { producto, headline, urgencia, beneficios, badge, cta, precioOferta, precioAnterior, colorTexto, colorFondo, promptTecnico } = params;
+PRODUCT: ${params.producto}
+FORMAT: Professional Meta Ads / Facebook Ads winning advertisement
 
-  const beneficiosTexto = beneficios && beneficios.length > 0
-    ? beneficios.map(b => `✓ ${b}`).join(", ")
-    : "";
+MANDATORY BLOCKS — ALL MUST APPEAR:
 
-  const precioTexto = precioOferta
-    ? precioAnterior
-      ? `Price: BEFORE ${precioAnterior} NOW ${precioOferta}`
-      : `Price: ${precioOferta}`
-    : "";
+BLOCK 1 - MASSIVE HEADLINE:
+"${params.headline}"
+Position: Top area. Size: Very large, 25-35% canvas height. Style: Bold italic condensed uppercase. Angle: SLIGHT DIAGONAL -5 to -10 degrees. Color: White or bright yellow. FIRST thing the eye sees.
 
-  const base = promptTecnico || `Professional ecommerce advertising image, dark background, cinematic lighting, high contrast, Facebook Ads winner style`;
-
-  return `${base}
-
-You are creating a HIGH-CONVERSION LATIN AMERICAN ECOMMERCE ADVERTISEMENT. This must look like a winning Meta Ads campaign created by a professional agency.
-
-PRODUCT: ${producto}
-
-MANDATORY ADVERTISING BLOCKS - ALL MUST BE PRESENT:
-
-BLOCK 1 - MASSIVE HEADLINE (HIGHEST PRIORITY):
-Text: "${headline}"
-Position: Top area of image
-Size: Very large, occupies 25-35% of canvas height
-Style: Bold, aggressive, commercial, high impact
-Typography: Uppercase, heavy weight, condensed
-Angle: SLIGHT DIAGONAL - tilted approximately -5 to -10 degrees, NOT perfectly horizontal
-Color: ${colorTexto}
-This must be the FIRST thing the eye sees.
-
-${urgencia ? `BLOCK 2 - URGENCY STRIP:
-Text: "${urgencia}"
-Position: Immediately below headline
-Style: Red banner or red brush stroke
-Purpose: Generate urgency and FOMO` : ""}
+BLOCK 2 - URGENCY STRIP:
+${params.frasesUrgencia.length > 0 ? `Text: "${params.frasesUrgencia.join(" · ")}"` : 'Text: "¡ÚLTIMAS UNIDADES! HOY SOLAMENTE"'}
+Style: Red banner or red brush stroke immediately below headline.
 
 BLOCK 3 - PRODUCT HERO:
-The product ${producto} must DOMINATE the image
-Position: Center, large scale
-Style: Dramatic cinematic lighting, sharp, premium, valuable
-Use: Perspective, depth, reflections, shadows
-The product must NOT look like a catalog image
+${params.producto} must DOMINATE the center. Large, dramatic cinematic lighting, sharp, premium. NOT a catalog image.
 
-${beneficiosTexto ? `BLOCK 4 - BENEFIT COLUMN:
-Position: Left side, vertical stack
-Benefits: ${beneficiosTexto}
-Style: Commercial, easy to scan, with checkmarks or icons` : ""}
+${params.dolorSel.length > 0 ? `BLOCK 4 - PAIN POINTS (left column):
+${params.dolorSel.map((d: string) => `• ${d}`).join("\n")}
+Style: Left side vertical stack with checkmarks or icons.` : ""}
 
-${badge ? `BLOCK 5 - URGENCY BADGE:
-Position: Right side, middle area
-Text: "${badge}"
-Style: Sticker or seal, slight rotation, high contrast, strong visibility` : ""}
+${params.frasesConfianza.length > 0 ? `BLOCK 5 - TRUST BADGES:
+${params.frasesConfianza.join(" · ")}
+Style: Right side badge or seal, slight rotation.` : ""}
 
-${precioTexto ? `PRICING BLOCK:
-${precioTexto}
-Show crossed-out original price if applicable, highlighted new price` : ""}
+${params.precioOferta ? `PRICING BLOCK:
+${params.precioAnterior ? `BEFORE: ${params.precioAnterior} crossed out` : ""} NOW: ${params.precioOferta} highlighted
+Style: Bold price display, prominent.` : ""}
 
-${cta ? `BLOCK 6 - CTA BUTTON:
-Position: Bottom area
-Text: "${cta}"
-Style: Large red ecommerce button, 70-90% width, uppercase white bold text
-Must feel clickable and be one of the strongest visual elements` : ""}
+${params.frasesAccion.length > 0 ? `BLOCK 6 - CTA BUTTON:
+Text: "${params.frasesAccion[0]}"
+Style: Large red ecommerce button, bottom area, 70-90% width, white bold uppercase text with shopping cart icon.` : `BLOCK 6 - CTA BUTTON:
+Text: "COMPRAR AHORA"
+Style: Large red ecommerce button, bottom area, 70-90% width, white bold uppercase text with shopping cart icon.`}
 
-TYPOGRAPHY RULES:
-- Multiple font sizes throughout
-- Dynamic hierarchy
-- Angled/diagonal headlines
-- Layered typography
-- Advertising tension
+VISUAL STYLE:
+Dark background, dramatic cinematic lighting, volumetric light, energy particles, sparks, smoke effects, glow on product. High contrast. Colors: dark background with red, white, yellow accents.
 
-VISUAL EFFECTS:
-- Cinematic lighting
-- Volumetric lighting  
-- High contrast
-- Glow effects
-- Energy particles or smoke
-- Premium commercial rendering
+TYPOGRAPHY: Multiple sizes, diagonal headline, layered text, advertising tension, asymmetric layout.
 
-CONVERSION PSYCHOLOGY:
-Must communicate: Urgency, Scarcity, Value, Professional quality, Immediate action
+CONVERSION PSYCHOLOGY: Maximum urgency, scarcity, value, immediate action. Must feel like a Facebook Ads WINNER.
 
-STYLE: Facebook Ads Winner, Ecommerce Winner, High CTR Advertisement, Direct Response Advertising
-QUALITY: Ultra detailed, Ultra realistic, Commercial advertising quality, Professional marketing design, 4K, Sharp focus, Premium ecommerce style, High conversion layout`;
-}
+QUALITY: Ultra detailed, 4K, commercial advertising quality, professional marketing design, high conversion layout, Direct Response Advertising style.`,
+
+  warm: (params: any) => `You are creating a LATIN AMERICAN ECOMMERCE ADVERTISEMENT optimized for WARM TRAFFIC — customers who know their problem and are evaluating solutions.
+
+PRODUCT: ${params.producto}
+FORMAT: Professional Meta Ads / Facebook Ads — trust and benefits focused
+
+MANDATORY BLOCKS:
+
+BLOCK 1 - BENEFIT HEADLINE:
+"${params.headline}"
+Position: Top area. Style: Bold friendly typography, warm colors. Less aggressive than hot traffic. Conversational and trustworthy tone.
+
+BLOCK 2 - SOCIAL PROOF STRIP:
+${params.frasesConfianza.length > 0 ? `"${params.frasesConfianza.join(" · ")}"` : '"MILES LO HAN COMPROBADO · GARANTIZADO"'}
+Style: Warm colored banner — orange, green or blue. Testimonial style.
+
+BLOCK 3 - PRODUCT HERO:
+${params.producto} centered, clean professional photography, warm lighting, trustworthy atmosphere.
+
+${params.dolorSel.length > 0 ? `BLOCK 4 - BEFORE/AFTER or BENEFITS:
+${params.dolorSel.map((d: string) => `✓ ${d}`).join("\n")}
+Style: Left side benefit column, green checkmarks, clean and scannable.` : ""}
+
+${params.precioOferta ? `PRICING BLOCK:
+Value presentation: ${params.precioAnterior ? `BEFORE ${params.precioAnterior}` : ""} NOW ${params.precioOferta}
+Style: Fair price display, not aggressive.` : ""}
+
+${params.frasesAccion.length > 0 ? `CTA:
+"${params.frasesAccion[0]}"
+Style: Warm colored button — green or orange, friendly and inviting.` : `CTA:
+"QUIERO SABER MÁS"
+Style: Warm colored button — green or orange, friendly and inviting.`}
+
+VISUAL STYLE:
+Warm clean background — cream, light blue, soft green or white. Professional soft lighting. Trustworthy atmosphere. No aggressive red. Colors communicate reliability and quality.
+
+TYPOGRAPHY: Clear hierarchy, readable, professional but approachable.
+
+CONVERSION PSYCHOLOGY: Trust, social proof, benefits, value. Customer feels informed and confident to decide.
+
+QUALITY: Ultra detailed, 4K, commercial advertising quality, professional ecommerce design.`,
+
+  cold: (params: any) => `You are creating a LATIN AMERICAN ECOMMERCE ADVERTISEMENT optimized for COLD TRAFFIC — customers who don't know the product yet.
+
+PRODUCT: ${params.producto}
+FORMAT: Professional Meta Ads / Facebook Ads — curiosity and discovery focused
+
+MANDATORY BLOCKS:
+
+BLOCK 1 - CURIOSITY HEADLINE:
+"${params.headline}"
+Position: Top area. Style: Bold intriguing typography. Creates curiosity and stops the scroll. Question format or surprising statement.
+
+BLOCK 2 - HOOK STRIP:
+${params.frasesDescubrimiento.length > 0 ? `"${params.frasesDescubrimiento.join(" · ")}"` : '"¿SABÍAS QUE EXISTE UNA SOLUCIÓN?"'}
+Style: Soft colored banner — blue or purple. Informative and inviting.
+
+BLOCK 3 - PRODUCT HERO:
+${params.producto} presented beautifully, lifestyle context, aspirational environment. Shows the transformation.
+
+${params.dolorSel.length > 0 ? `BLOCK 4 - PAIN IDENTIFICATION:
+${params.dolorSel.map((d: string) => `• ${d}`).join("\n")}
+Style: Empathetic presentation, identifies with the reader's situation.` : ""}
+
+CTA:
+${params.frasesAccion.length > 0 ? `"${params.frasesAccion[0]}"` : '"DESCUBRE CÓMO"'}
+Style: Soft inviting button — blue or purple. No pressure. Exploratory.
+
+NO PRICE: Cold traffic doesn't show price. Discovery first.
+
+VISUAL STYLE:
+Clean neutral background — white, light gray or soft gradient. Natural lifestyle lighting. Aspirational and relatable. No urgency elements. Colors communicate discovery and possibility.
+
+TYPOGRAPHY: Friendly, approachable, story-like hierarchy.
+
+CONVERSION PSYCHOLOGY: Curiosity, identification with problem, aspiration, gentle invitation. No pressure.
+
+QUALITY: Ultra detailed, 4K, commercial advertising quality, lifestyle photography style.`,
+};
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const {
-      producto, headline, urgencia, beneficios, badge, cta,
-      precioOferta, precioAnterior, colorFondo, colorTexto,
-      posTexto, formato = "instagram", imagen, referenciaUrl, promptTecnico
-    } = body;
+    const { producto, headline, temperatura = "hot", frasesSeleccionadas = [], dolorSel = [], precioOferta, precioAnterior, formato = "instagram", imagen, promptPropio } = body;
 
     if (!producto || !headline) {
       return NextResponse.json({ error: "Producto y headline requeridos" }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY!;
     const size = TAMANIOS[formato] || "1024x1024";
 
-    const promptFinal = construirPromptMaestro({
-      producto, headline, urgencia, beneficios, badge, cta,
-      precioOferta, precioAnterior, colorTexto, colorFondo, promptTecnico,
-    });
+    const frasesHot = ["¡ÚLTIMAS UNIDADES!", "HOY SOLAMENTE", "STOCK LIMITADO", "OFERTA TERMINA HOY", "PRECIO ESPECIAL", "OFERTA FLASH", "¡NO TE QUEDES SIN EL TUYO!", "COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO"];
+    const frasesWarm = ["RESULTADOS REALES", "GARANTIZADO", "MILES LO USAN", "100% COMPROBADO", "ENVÍO GRATIS", "PAGO CONTRA ENTREGA", "100% NATURAL", "SIN EFECTOS SECUNDARIOS", "QUIERO SABER MÁS", "VER RESULTADOS"];
+    const frasesCold = ["¿SABÍAS QUE...?", "DESCUBRE CÓMO", "EL SECRETO QUE NADIE TE DIJO", "¿TE HA PASADO ESTO?", "CONOCE LA SOLUCIÓN", "APRENDE MÁS", "DESCUBRIR", "LA VERDAD SOBRE...", "LO QUE NO TE CUENTAN"];
 
-    const imageUrl = await generarImagenBase64(promptFinal, size, apiKey, imagen, referenciaUrl);
+    const frasesUrgencia = frasesSeleccionadas.filter((f: string) => frasesHot.includes(f) && !["COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO"].includes(f));
+    const frasesConfianza = frasesSeleccionadas.filter((f: string) => frasesWarm.includes(f) && !["QUIERO SABER MÁS", "VER RESULTADOS"].includes(f));
+    const frasesDescubrimiento = frasesSeleccionadas.filter((f: string) => frasesCold.includes(f) && !["DESCUBRIR", "APRENDE MÁS"].includes(f));
+    const frasesAccion = frasesSeleccionadas.filter((f: string) => ["COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO", "QUIERO SABER MÁS", "VER RESULTADOS", "DESCUBRIR", "APRENDE MÁS"].includes(f));
+
+    const params = { producto, headline, frasesUrgencia, frasesConfianza, frasesDescubrimiento, frasesAccion, dolorSel, precioOferta, precioAnterior };
+
+    const promptFinal = promptPropio?.trim()
+      ? `${promptPropio}\n\nPRODUCT: ${producto}\nHEADLINE: "${headline}"\n${precioOferta ? `PRICE: ${precioAnterior ? `BEFORE ${precioAnterior}` : ""} NOW ${precioOferta}` : ""}\nFRASES: ${frasesSeleccionadas.join(", ")}\nQUALITY: Ultra detailed, 4K, commercial advertising quality, high conversion layout.`
+      : PROMPTS_MAESTROS[temperatura as keyof typeof PROMPTS_MAESTROS](params);
+
+    const imageUrl = await generarImagenBase64(promptFinal, size, process.env.OPENAI_API_KEY!, imagen);
 
     return NextResponse.json({ imageUrl, success: true });
 
