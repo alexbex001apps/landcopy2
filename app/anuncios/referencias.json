@@ -7,7 +7,7 @@
     { "id": "salud-5", "nombre": "Confianza azul", "descripcion": "Fondo azul profundo, texto abajo en blanco", "posTexto": "bottom", "colorFondo": "#0a1628", "colorTexto": "#ffffff", "maxChars": 80, "referenciaUrl": "" }
   ],
   "Tecnología": [
-    { "id": "tech-1", "nombre": "Dark tech", "descripcion": "Fondo negro, texto en cyan neón", "posTexto": "top", "colorFondo": "#050505", "colorTexto": "#00e5ff", "maxChars": 80, "referenciaUrl": "" },
+    { "id": "tech-1", "nombre": "Dark tech", "descripcion": "Fondo negro, texto en cyan neón", "posTexto": "top", "colorFondo": "#050505", "colorTexto": "#00e5ff", "maxChars": 80, "referenciaUrl": "https://mrzkfethdxkfoostoaff.supabase.co/storage/v1/object/public/anuncios-referencias/tech-1.jpg" },
     { "id": "tech-2", "nombre": "Premium oscuro", "descripcion": "Fondo carbón, texto en blanco", "posTexto": "bottom", "colorFondo": "#111111", "colorTexto": "#ffffff", "maxChars": 80, "referenciaUrl": "" },
     { "id": "tech-3", "nombre": "Azul eléctrico", "descripcion": "Fondo azul, texto en blanco", "posTexto": "center", "colorFondo": "#0033cc", "colorTexto": "#ffffff", "maxChars": 60, "referenciaUrl": "" },
     { "id": "tech-4", "nombre": "Contraste máximo", "descripcion": "Fondo blanco, texto en negro", "posTexto": "top", "colorFondo": "#ffffff", "colorTexto": "#000000", "maxChars": 80, "referenciaUrl": "" },
