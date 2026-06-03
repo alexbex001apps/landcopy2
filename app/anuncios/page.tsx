@@ -111,11 +111,11 @@ export default function Anuncios() {
           <div className="flex items-center gap-3 mb-2">
             {[1,2,3].map(n => (
               <div key={n} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${pantalla === n ? "bg-orange-500 text-white" : pantalla > n ? "bg-green-500 text-white" : "bg-[#111] border border-[#222] text-zinc-600"}`}>{pantalla > n ? "✓" : n}</div>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${pantalla === n ? "bg-orange-500 text-white" : pantalla > n ? "bg-green-500 text-white" : "bg-[#111] border border-[#222] text-yellow-400"}`}>{pantalla > n ? "✓" : n}</div>
                 {n < 3 && <div className={`w-8 h-px ${pantalla > n ? "bg-green-500" : "bg-[#222]"}`}></div>}
               </div>
             ))}
-            <span className="text-zinc-600 text-xs ml-2">{pantalla === 1 ? "Tu anuncio" : pantalla === 2 ? "Elige la referencia" : "Tu anuncio listo"}</span>
+            <span className="text-yellow-400 text-xs ml-2">{pantalla === 1 ? "Tu anuncio" : pantalla === 2 ? "Elige la referencia" : "Tu anuncio listo"}</span>
           </div>
           <h1 className="text-2xl font-black text-white">Módulo <span className="text-orange-500">Anuncios</span></h1>
         </div>
@@ -165,7 +165,7 @@ export default function Anuncios() {
                   {FORMATOS.map(f => (
                     <div key={f.id} onClick={() => setFormatoSeleccionado(f)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${formatoSeleccionado.id === f.id ? "border-orange-500 bg-orange-500/10" : "border-[#1e1e1e]"}`}>
                       <p className="text-[#f0ead6] text-[10px] font-bold">{f.nombre}</p>
-                      <p className="text-zinc-600 text-[9px]">{f.size}</p>
+                      <p className="text-yellow-400 text-[9px]">{f.size}</p>
                     </div>
                   ))}
                 </div>
@@ -182,7 +182,7 @@ export default function Anuncios() {
                   {headlines.length > 0 && (
                     <div className="flex gap-1 flex-wrap mt-1 mb-2">
                       {headlines.map((h, i) => (
-                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{h.slice(0, 30)}...</button>
+                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{h.slice(0, 30)}...</button>
                       ))}
                     </div>
                   )}
@@ -193,7 +193,7 @@ export default function Anuncios() {
                   <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Urgencia <span className="text-zinc-700">(opcional)</span></label>
                   <div className="flex gap-1 flex-wrap mt-1 mb-1">
                     {URGENCIAS.map((u, i) => (
-                      <button key={i} onClick={() => setUrgencia(u)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${urgencia === u ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{u}</button>
+                      <button key={i} onClick={() => setUrgencia(u)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${urgencia === u ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{u}</button>
                     ))}
                   </div>
                   <input value={urgencia} onChange={e => setUrgencia(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="O escribe tu mensaje de urgencia..." />
@@ -213,7 +213,7 @@ export default function Anuncios() {
                     <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Badge <span className="text-zinc-700">(opcional)</span></label>
                     <div className="flex gap-1 flex-wrap mt-1">
                       {BADGES.map((b, i) => (
-                        <button key={i} onClick={() => setBadge(badge === b ? "" : b)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${badge === b ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{b}</button>
+                        <button key={i} onClick={() => setBadge(badge === b ? "" : b)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${badge === b ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{b}</button>
                       ))}
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export default function Anuncios() {
                     <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">CTA <span className="text-zinc-700">(opcional)</span></label>
                     <div className="flex gap-1 flex-wrap mt-1">
                       {CTAS.map((c, i) => (
-                        <button key={i} onClick={() => setCta(c)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${cta === c ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{c}</button>
+                        <button key={i} onClick={() => setCta(c)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${cta === c ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{c}</button>
                       ))}
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export default function Anuncios() {
                   </div>
                   <div className="bg-[#0a0a0a] p-3">
                     <p className="text-[#f0ead6] text-[11px] font-bold">{plantilla.nombre}</p>
-                    <p className="text-zinc-600 text-[10px]">{plantilla.descripcion}</p>
+                    <p className="text-yellow-400 text-[10px]">{plantilla.descripcion}</p>
                     {plantilla.referenciaUrl && <span className="text-orange-500 text-[9px] font-bold">✓ Con imagen de referencia</span>}
                   </div>
                 </div>
@@ -278,11 +278,11 @@ export default function Anuncios() {
                 <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center text-4xl mx-auto">🎯</div>
                 <h2 className="text-2xl font-black text-white">Todo listo para generar</h2>
                 <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-sm mx-auto space-y-2">
-                  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Resumen</p>
+                  <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">Resumen</p>
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Headline:</span> {headline}</p>
                   {urgencia && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Urgencia:</span> {urgencia}</p>}
                   {(beneficio1 || beneficio2 || beneficio3) && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Beneficios:</span> {[beneficio1, beneficio2, beneficio3].filter(Boolean).join(" · ")}</p>}
-                  {precioOferta && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Precio:</span> {precioAnterior && <s className="text-zinc-600">{precioAnterior}</s>} → {precioOferta}</p>}
+                  {precioOferta && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Precio:</span> {precioAnterior && <s className="text-yellow-400">{precioAnterior}</s>} → {precioOferta}</p>}
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
                 </div>
@@ -303,7 +303,7 @@ export default function Anuncios() {
                 <div className="bg-[#0a0a0a] border border-green-500/30 rounded-2xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a1a1a]">
                     <span className="text-green-400 text-[10px] font-bold tracking-widest uppercase">✓ Anuncio generado</span>
-                    <span className="text-zinc-600 text-[10px]">{formatoSeleccionado.nombre} · {formatoSeleccionado.size}</span>
+                    <span className="text-yellow-400 text-[10px]">{formatoSeleccionado.nombre} · {formatoSeleccionado.size}</span>
                   </div>
                   <div className="p-4 flex justify-center">
                     <img src={imagenGenerada} alt="anuncio generado" className="max-w-full max-h-[500px] object-contain rounded-xl" />
@@ -314,7 +314,7 @@ export default function Anuncios() {
                   <button onClick={() => setPantalla(2)} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-zinc-400 text-xs font-bold py-3 rounded-xl transition-colors">← Cambiar plantilla</button>
                   <a href={imagenGenerada} download={`anuncio-${formatoSeleccionado.id}.png`} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition-colors flex items-center justify-center">⬇ Descargar</a>
                 </div>
-                <button onClick={() => { setPantalla(1); setImagenGenerada(null); }} className="w-full border border-[#1a1a1a] text-zinc-600 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+                <button onClick={() => { setPantalla(1); setImagenGenerada(null); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
               </div>
             )}
             {errorGeneracion && (
