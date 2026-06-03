@@ -309,15 +309,15 @@ export default function Redes() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-[#161616] border-b-2 border-[#FFF500] px-5 py-3 text-center">
-        <div className="inline-flex items-center gap-2 bg-[rgba(255,215,0,0.1)] border border-[rgba(255,215,0,0.3)] text-[#FFF500] text-xs font-bold px-3 py-1 rounded-sm tracking-widest uppercase mb-2">
+     {/* Header */}
+      <div className="bg-[#050505] border-b border-[#1a1a1a] px-5 py-4 text-center">
+        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase mb-2">
           IA generativa · imágenes para redes
         </div>
         <h1 className="text-xl font-black text-white mb-1">
-          Imágenes que <span className="text-[#FFF500]">venden</span> y <span className="text-[#86EFAC]">viralizan</span>
+          Crea imágenes que <span className="text-red-500">venden</span> y <span className="text-green-400">viralizan</span>
         </h1>
-        <p className="text-[#7A7772] text-xs">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
+        <p className="text-zinc-500 text-xs">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
       </div>
 
       {/* Steps */}
