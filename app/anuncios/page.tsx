@@ -249,9 +249,6 @@ export default function Anuncios() {
                     {plantilla.referenciaUrl ? (
                       <img src={plantilla.referenciaUrl} alt={plantilla.nombre} className="absolute inset-0 w-full h-full object-cover opacity-80" />
                     ) : null}
-                    <div className={`absolute w-full px-4 z-10 ${plantilla.posTexto === "top" ? "top-3" : plantilla.posTexto === "bottom" ? "bottom-3" : "top-1/2 -translate-y-1/2"}`}>
-                      <p className="text-center text-xs font-black leading-tight drop-shadow-lg" style={{ color: plantilla.colorTexto }}>{headline || "Tu headline aquí"}</p>
-                    </div>
                     {!plantilla.referenciaUrl && <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">📦</div>}
                   </div>
                   <div className="bg-[#0a0a0a] p-3">
