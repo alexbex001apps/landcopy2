@@ -63,7 +63,7 @@ async function fetchImagenComoBase64(url: string): Promise<string> {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { producto, copy, colorFondo, colorTexto, posTexto, formato = "instagram", imagen, referenciaUrl } = body;
+    const { producto, copy, colorFondo, colorTexto, posTexto, formato = "instagram", imagen, referenciaUrl, promptTecnico } = body;
 
     if (!producto || !copy) {
       return NextResponse.json({ error: "Producto y copy requeridos" }, { status: 400 });
@@ -71,13 +71,12 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.OPENAI_API_KEY!;
     const size = TAMANIOS[formato] || "1024x1024";
-
     const posicionTexto = posTexto === "top" ? "at the top" : posTexto === "bottom" ? "at the bottom" : "in the center";
 
     const prompt = imagen
-      ? `Professional advertising image. Use the product from the reference photo. Place it in a clean commercial scene. Add this advertising text ${posicionTexto} of the image in large bold typography: "${copy}". Text color: ${colorTexto}. Background: ${colorFondo}. Professional ad design, studio lighting.`
+      ? `Professional advertising image. Use the product from the reference photo. Place it in a clean commercial scene. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Background: ${colorFondo}. Professional ad design, studio lighting.`
       : referenciaUrl
-      ? `Professional advertising image inspired by the reference style. Product: ${producto}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Replicate EXACTLY the visual style, typography placement, text position, text angle and font style of the reference image. The text must appear in the EXACT same position, size, angle and style as the text in the reference image. Same background, same lighting, same composition.`
+      ? `Professional advertising image of ${producto}. ${promptTecnico || "Replicate EXACTLY the visual style and composition of the reference image."} Add this advertising text in large bold typography: "${copy}". Text color: ${colorTexto}. High quality commercial photography.`
       : `Professional advertising image. Product: ${producto}. Clean commercial background color: ${colorFondo}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Studio lighting, high quality.`;
 
     const imageUrl = await generarImagenBase64(prompt, size, apiKey, imagen, referenciaUrl);

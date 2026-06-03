@@ -51,6 +51,7 @@ export default function Anuncios() {
           formato: formatoSeleccionado.id,
           imagen: imagenProducto,
           referenciaUrl: plantillaSeleccionada?.referenciaUrl || "",
+          promptTecnico: plantillaSeleccionada?.promptTecnico || "",
         }),
       });
       const data = await resp.json();
