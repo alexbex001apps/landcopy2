@@ -60,26 +60,128 @@ async function fetchImagenComoBase64(url: string): Promise<string> {
   return `data:image/jpeg;base64,${b64}`;
 }
 
+function construirPromptMaestro(params: {
+  producto: string;
+  headline: string;
+  urgencia?: string;
+  beneficios?: string[];
+  badge?: string;
+  cta?: string;
+  precioOferta?: string;
+  precioAnterior?: string;
+  colorTexto: string;
+  colorFondo: string;
+  promptTecnico?: string;
+}): string {
+  const { producto, headline, urgencia, beneficios, badge, cta, precioOferta, precioAnterior, colorTexto, colorFondo, promptTecnico } = params;
+
+  const beneficiosTexto = beneficios && beneficios.length > 0
+    ? beneficios.map(b => `✓ ${b}`).join(", ")
+    : "";
+
+  const precioTexto = precioOferta
+    ? precioAnterior
+      ? `Price: BEFORE ${precioAnterior} NOW ${precioOferta}`
+      : `Price: ${precioOferta}`
+    : "";
+
+  const base = promptTecnico || `Professional ecommerce advertising image, dark background, cinematic lighting, high contrast, Facebook Ads winner style`;
+
+  return `${base}
+
+You are creating a HIGH-CONVERSION LATIN AMERICAN ECOMMERCE ADVERTISEMENT. This must look like a winning Meta Ads campaign created by a professional agency.
+
+PRODUCT: ${producto}
+
+MANDATORY ADVERTISING BLOCKS - ALL MUST BE PRESENT:
+
+BLOCK 1 - MASSIVE HEADLINE (HIGHEST PRIORITY):
+Text: "${headline}"
+Position: Top area of image
+Size: Very large, occupies 25-35% of canvas height
+Style: Bold, aggressive, commercial, high impact
+Typography: Uppercase, heavy weight, condensed
+Angle: SLIGHT DIAGONAL - tilted approximately -5 to -10 degrees, NOT perfectly horizontal
+Color: ${colorTexto}
+This must be the FIRST thing the eye sees.
+
+${urgencia ? `BLOCK 2 - URGENCY STRIP:
+Text: "${urgencia}"
+Position: Immediately below headline
+Style: Red banner or red brush stroke
+Purpose: Generate urgency and FOMO` : ""}
+
+BLOCK 3 - PRODUCT HERO:
+The product ${producto} must DOMINATE the image
+Position: Center, large scale
+Style: Dramatic cinematic lighting, sharp, premium, valuable
+Use: Perspective, depth, reflections, shadows
+The product must NOT look like a catalog image
+
+${beneficiosTexto ? `BLOCK 4 - BENEFIT COLUMN:
+Position: Left side, vertical stack
+Benefits: ${beneficiosTexto}
+Style: Commercial, easy to scan, with checkmarks or icons` : ""}
+
+${badge ? `BLOCK 5 - URGENCY BADGE:
+Position: Right side, middle area
+Text: "${badge}"
+Style: Sticker or seal, slight rotation, high contrast, strong visibility` : ""}
+
+${precioTexto ? `PRICING BLOCK:
+${precioTexto}
+Show crossed-out original price if applicable, highlighted new price` : ""}
+
+${cta ? `BLOCK 6 - CTA BUTTON:
+Position: Bottom area
+Text: "${cta}"
+Style: Large red ecommerce button, 70-90% width, uppercase white bold text
+Must feel clickable and be one of the strongest visual elements` : ""}
+
+TYPOGRAPHY RULES:
+- Multiple font sizes throughout
+- Dynamic hierarchy
+- Angled/diagonal headlines
+- Layered typography
+- Advertising tension
+
+VISUAL EFFECTS:
+- Cinematic lighting
+- Volumetric lighting  
+- High contrast
+- Glow effects
+- Energy particles or smoke
+- Premium commercial rendering
+
+CONVERSION PSYCHOLOGY:
+Must communicate: Urgency, Scarcity, Value, Professional quality, Immediate action
+
+STYLE: Facebook Ads Winner, Ecommerce Winner, High CTR Advertisement, Direct Response Advertising
+QUALITY: Ultra detailed, Ultra realistic, Commercial advertising quality, Professional marketing design, 4K, Sharp focus, Premium ecommerce style, High conversion layout`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { producto, copy, colorFondo, colorTexto, posTexto, formato = "instagram", imagen, referenciaUrl, promptTecnico } = body;
+    const {
+      producto, headline, urgencia, beneficios, badge, cta,
+      precioOferta, precioAnterior, colorFondo, colorTexto,
+      posTexto, formato = "instagram", imagen, referenciaUrl, promptTecnico
+    } = body;
 
-    if (!producto || !copy) {
-      return NextResponse.json({ error: "Producto y copy requeridos" }, { status: 400 });
+    if (!producto || !headline) {
+      return NextResponse.json({ error: "Producto y headline requeridos" }, { status: 400 });
     }
 
     const apiKey = process.env.OPENAI_API_KEY!;
     const size = TAMANIOS[formato] || "1024x1024";
-    const posicionTexto = posTexto === "top" ? "at the top" : posTexto === "bottom" ? "at the bottom" : "in the center";
 
-    const prompt = imagen
-      ? `Professional advertising image. Use the product from the reference photo. Place it in a clean commercial scene. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Background: ${colorFondo}. Professional ad design, studio lighting.`
-      : referenciaUrl
-      ? `Professional advertising image of ${producto}. ${promptTecnico || "Replicate EXACTLY the visual style and composition of the reference image."} Add this advertising text in large bold typography: "${copy}". Text color: ${colorTexto}. High quality commercial photography.`
-      : `Professional advertising image. Product: ${producto}. Clean commercial background color: ${colorFondo}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Studio lighting, high quality.`;
+    const promptFinal = construirPromptMaestro({
+      producto, headline, urgencia, beneficios, badge, cta,
+      precioOferta, precioAnterior, colorTexto, colorFondo, promptTecnico,
+    });
 
-    const imageUrl = await generarImagenBase64(prompt, size, apiKey, imagen, referenciaUrl);
+    const imageUrl = await generarImagenBase64(promptFinal, size, apiKey, imagen, referenciaUrl);
 
     return NextResponse.json({ imageUrl, success: true });
 

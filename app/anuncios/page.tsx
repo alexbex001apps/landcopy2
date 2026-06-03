@@ -9,19 +9,38 @@ const FORMATOS = [
   { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px" },
 ];
 
+const URGENCIAS = [
+  "¡Solo quedan pocas unidades!",
+  "¡Oferta por tiempo limitado!",
+  "¡Hoy solamente!",
+  "¡No te quedes sin el tuyo!",
+  "¡Últimas unidades disponibles!",
+];
+
+const BADGES = ["OFERTA", "ÚLTIMAS UNIDADES", "HOY SOLAMENTE", "EXCLUSIVO", "AGOTÁNDOSE"];
+const CTAS = ["COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO", "LO QUIERO", "ORDENAR AHORA"];
+
 export default function Anuncios() {
   const [pantalla, setPantalla] = useState(1);
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [productoData, setProductoData] = useState<any>(null);
-  const [copySeleccionado, setCopySeleccionado] = useState("");
   const [imagenProducto, setImagenProducto] = useState<string | null>(null);
   const [categoriaActiva, setCategoriaActiva] = useState(CATEGORIAS[0]);
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<any>(null);
   const [formatoSeleccionado, setFormatoSeleccionado] = useState(FORMATOS[0]);
-  const [charCount, setCharCount] = useState(0);
   const [generando, setGenerando] = useState(false);
   const [imagenGenerada, setImagenGenerada] = useState<string | null>(null);
   const [errorGeneracion, setErrorGeneracion] = useState<string | null>(null);
+
+  const [headline, setHeadline] = useState("");
+  const [urgencia, setUrgencia] = useState("");
+  const [beneficio1, setBeneficio1] = useState("");
+  const [beneficio2, setBeneficio2] = useState("");
+  const [beneficio3, setBeneficio3] = useState("");
+  const [badge, setBadge] = useState("");
+  const [cta, setCta] = useState("COMPRAR AHORA");
+  const [precioOferta, setPrecioOferta] = useState("");
+  const [precioAnterior, setPrecioAnterior] = useState("");
 
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
@@ -29,9 +48,15 @@ export default function Anuncios() {
     if (h) {
       const parsed = JSON.parse(h);
       setHeadlines(parsed);
-      if (parsed.length > 0) { setCopySeleccionado(parsed[0]); setCharCount(parsed[0].length); }
+      if (parsed.length > 0) setHeadline(parsed[0]);
     }
-    if (p) setProductoData(JSON.parse(p));
+    if (p) {
+      const data = JSON.parse(p);
+      setProductoData(data);
+      if (data.beneficio) setBeneficio1(data.beneficio);
+      if (data.precioOferta) setPrecioOferta(data.precioOferta);
+      if (data.precioAnterior) setPrecioAnterior(data.precioAnterior);
+    }
   }, []);
 
   const generarAnuncio = async () => {
@@ -44,7 +69,13 @@ export default function Anuncios() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           producto: productoData?.producto || "producto",
-          copy: copySeleccionado,
+          headline,
+          urgencia,
+          beneficios: [beneficio1, beneficio2, beneficio3].filter(Boolean),
+          badge,
+          cta,
+          precioOferta,
+          precioAnterior,
           colorFondo: plantillaSeleccionada?.colorFondo || "#ffffff",
           colorTexto: plantillaSeleccionada?.colorTexto || "#000000",
           posTexto: plantillaSeleccionada?.posTexto || "top",
@@ -84,13 +115,15 @@ export default function Anuncios() {
                 {n < 3 && <div className={`w-8 h-px ${pantalla > n ? "bg-green-500" : "bg-[#222]"}`}></div>}
               </div>
             ))}
-            <span className="text-zinc-600 text-xs ml-2">{pantalla === 1 ? "Tu producto" : pantalla === 2 ? "Elige la referencia" : "Tu anuncio listo"}</span>
+            <span className="text-zinc-600 text-xs ml-2">{pantalla === 1 ? "Tu anuncio" : pantalla === 2 ? "Elige la referencia" : "Tu anuncio listo"}</span>
           </div>
           <h1 className="text-2xl font-black text-white">Módulo <span className="text-orange-500">Anuncios</span></h1>
         </div>
 
         {pantalla === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Columna izquierda */}
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Foto del producto</p>
@@ -107,38 +140,27 @@ export default function Anuncios() {
                   </label>
                 )}
               </div>
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
-                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
-                <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Nombre</label>
-                  <input defaultValue={productoData?.producto || ""} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Nombre del producto" />
-                </div>
-                <div>
-                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">País</label>
-                  <select defaultValue={productoData?.pais || "Colombia"} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none">
-                    <option>Colombia</option><option>México</option><option>Venezuela</option><option>Costa Rica</option><option>Ecuador</option><option>General</option>
-                  </select>
-                </div>
-              </div>
-            </div>
 
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
-              <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Copy del anuncio</p>
-              {headlines.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-zinc-600 text-[10px]">Headlines desde Copy — elige uno:</p>
-                  {headlines.map((h, i) => (
-                    <div key={i} onClick={() => { setCopySeleccionado(h); setCharCount(h.length); }} className={`px-3 py-2 rounded-lg border cursor-pointer text-xs transition-all ${copySeleccionado === h ? "border-orange-500 bg-orange-500/10 text-[#f0ead6]" : "border-[#1e1e1e] text-zinc-500 hover:border-[#333]"}`}>{h}</div>
-                  ))}
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
+                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Producto</p>
+                <div>
+                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Nombre del producto</label>
+                  <input defaultValue={productoData?.producto || ""} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Rodillax" />
                 </div>
-              )}
-              <div>
-                <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">O escribe tu copy aquí</label>
-                <textarea value={copySeleccionado} onChange={e => { setCopySeleccionado(e.target.value); setCharCount(e.target.value.length); }} rows={4} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none resize-none" placeholder="El texto que irá encima de la imagen..." />
-                <div className={`text-[10px] mt-1 text-right ${charCount > 80 ? "text-red-400" : "text-zinc-600"}`}>{charCount} / 80 caracteres</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Precio oferta</label>
+                    <input value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="49.000" />
+                  </div>
+                  <div>
+                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Precio anterior</label>
+                    <input value={precioAnterior} onChange={e => setPrecioAnterior(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="69.000" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-2">Formato del anuncio</p>
+
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
+                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Formato</p>
                 <div className="grid grid-cols-3 gap-2">
                   {FORMATOS.map(f => (
                     <div key={f.id} onClick={() => setFormatoSeleccionado(f)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${formatoSeleccionado.id === f.id ? "border-orange-500 bg-orange-500/10" : "border-[#1e1e1e]"}`}>
@@ -148,7 +170,65 @@ export default function Anuncios() {
                   ))}
                 </div>
               </div>
-              <button onClick={() => { if (copySeleccionado.trim()) setPantalla(2); }} disabled={!copySeleccionado.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
+            </div>
+
+            {/* Columna derecha */}
+            <div className="space-y-4">
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
+                <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Copy del anuncio</p>
+
+                <div>
+                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Headline principal <span className="text-orange-500">*</span></label>
+                  {headlines.length > 0 && (
+                    <div className="flex gap-1 flex-wrap mt-1 mb-2">
+                      {headlines.map((h, i) => (
+                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{h.slice(0, 30)}...</button>
+                      ))}
+                    </div>
+                  )}
+                  <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
+                </div>
+
+                <div>
+                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Urgencia <span className="text-zinc-700">(opcional)</span></label>
+                  <div className="flex gap-1 flex-wrap mt-1 mb-1">
+                    {URGENCIAS.map((u, i) => (
+                      <button key={i} onClick={() => setUrgencia(u)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${urgencia === u ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{u}</button>
+                    ))}
+                  </div>
+                  <input value={urgencia} onChange={e => setUrgencia(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="O escribe tu mensaje de urgencia..." />
+                </div>
+
+                <div>
+                  <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Beneficios <span className="text-zinc-700">(opcional)</span></label>
+                  <div className="space-y-1 mt-1">
+                    <input value={beneficio1} onChange={e => setBeneficio1(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 1 — Ej: Alivia el dolor en días" />
+                    <input value={beneficio2} onChange={e => setBeneficio2(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 2 — Ej: 100% natural" />
+                    <input value={beneficio3} onChange={e => setBeneficio3(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Beneficio 3 — Ej: Sin efectos secundarios" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Badge <span className="text-zinc-700">(opcional)</span></label>
+                    <div className="flex gap-1 flex-wrap mt-1">
+                      {BADGES.map((b, i) => (
+                        <button key={i} onClick={() => setBadge(badge === b ? "" : b)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${badge === b ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{b}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">CTA <span className="text-zinc-700">(opcional)</span></label>
+                    <div className="flex gap-1 flex-wrap mt-1">
+                      {CTAS.map((c, i) => (
+                        <button key={i} onClick={() => setCta(c)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${cta === c ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-zinc-600"}`}>{c}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={() => { if (headline.trim()) setPantalla(2); }} disabled={!headline.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
                 Siguiente — Elegir referencia visual →
               </button>
             </div>
@@ -170,14 +250,13 @@ export default function Anuncios() {
                       <img src={plantilla.referenciaUrl} alt={plantilla.nombre} className="absolute inset-0 w-full h-full object-cover opacity-80" />
                     ) : null}
                     <div className={`absolute w-full px-4 z-10 ${plantilla.posTexto === "top" ? "top-3" : plantilla.posTexto === "bottom" ? "bottom-3" : "top-1/2 -translate-y-1/2"}`}>
-                      <p className="text-center text-xs font-black leading-tight drop-shadow-lg" style={{ color: plantilla.colorTexto }}>{copySeleccionado || "Tu copy aquí"}</p>
+                      <p className="text-center text-xs font-black leading-tight drop-shadow-lg" style={{ color: plantilla.colorTexto }}>{headline || "Tu headline aquí"}</p>
                     </div>
                     {!plantilla.referenciaUrl && <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">📦</div>}
                   </div>
                   <div className="bg-[#0a0a0a] p-3">
                     <p className="text-[#f0ead6] text-[11px] font-bold">{plantilla.nombre}</p>
                     <p className="text-zinc-600 text-[10px]">{plantilla.descripcion}</p>
-                    <p className="text-zinc-700 text-[9px] mt-1">Máx. {plantilla.maxChars} caracteres</p>
                     {plantilla.referenciaUrl && <span className="text-orange-500 text-[9px] font-bold">✓ Con imagen de referencia</span>}
                   </div>
                 </div>
@@ -199,11 +278,13 @@ export default function Anuncios() {
                 <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center text-4xl mx-auto">🎯</div>
                 <h2 className="text-2xl font-black text-white">Todo listo para generar</h2>
                 <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 text-left max-w-sm mx-auto space-y-2">
-                  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Tu anuncio</p>
-                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Copy:</span> {copySeleccionado}</p>
+                  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Resumen</p>
+                  <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Headline:</span> {headline}</p>
+                  {urgencia && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Urgencia:</span> {urgencia}</p>}
+                  {(beneficio1 || beneficio2 || beneficio3) && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Beneficios:</span> {[beneficio1, beneficio2, beneficio3].filter(Boolean).join(" · ")}</p>}
+                  {precioOferta && <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Precio:</span> {precioAnterior && <s className="text-zinc-600">{precioAnterior}</s>} → {precioOferta}</p>}
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Plantilla:</span> {plantillaSeleccionada?.nombre}</p>
                   <p className="text-[#f0ead6] text-xs"><span className="text-zinc-500">Formato:</span> {formatoSeleccionado.nombre}</p>
-                  {plantillaSeleccionada?.referenciaUrl && <p className="text-orange-500 text-[10px]">✓ Usando imagen de referencia</p>}
                 </div>
                 <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
                   ⚡ Generar imagen ahora
