@@ -73,6 +73,9 @@ export default function Anuncios() {
   const [generando, setGenerando] = useState(false);
   const [imagenGenerada, setImagenGenerada] = useState<string | null>(null);
   const [errorGeneracion, setErrorGeneracion] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [instruccionEdicion, setInstruccionEdicion] = useState("");
+  const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
 
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
@@ -158,6 +161,34 @@ export default function Anuncios() {
     }
   };
 
+  const editarAnuncio = async () => {
+    if (!imagenGenerada || !instruccionEdicion.trim()) return;
+    setEditando(true);
+    setErrorGeneracion(null);
+    try {
+      const resp = await fetch("/api/anuncios/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producto: nombre, headline, temperatura, frasesSeleccionadas,
+          dolorSel, precioOferta, precioAnterior,
+          formato: formatoSeleccionado.id,
+          imagen: imagenGenerada,
+          promptPropio: instruccionEdicion,
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        setImagenOriginal(imagenGenerada);
+        setImagenGenerada(data.imageUrl);
+        setInstruccionEdicion("");
+      } else setErrorGeneracion(data.error || "Error al editar");
+    } catch (err: any) {
+      setErrorGeneracion(err.message);
+    } finally {
+      setEditando(false);
+    }
+  };
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -393,6 +424,14 @@ export default function Anuncios() {
                   <a href={imagenGenerada} download={`anuncio-${formatoSeleccionado.id}.png`} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition-colors flex items-center justify-center">⬇ Descargar</a>
                 </div>
                 <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+                <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 space-y-3">
+                  <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">✏️ Editar imagen</p>
+                  <textarea value={instruccionEdicion} onChange={e => setInstruccionEdicion(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Ej: Pon el precio más grande · Cambia el badge a verde · Más luz al producto..." />
+                  <button onClick={editarAnuncio} disabled={editando || !instruccionEdicion.trim()} className="w-full bg-[#111] border border-yellow-400/30 hover:border-yellow-400 text-yellow-400 text-xs font-bold py-2.5 rounded-xl transition-colors disabled:opacity-40">
+                    {editando ? "⏳ Aplicando cambios..." : "✏️ Aplicar cambios"}
+                  </button>
+                  {imagenOriginal && <button onClick={() => { setImagenGenerada(imagenOriginal); setImagenOriginal(null); }} className="w-full text-yellow-400/50 text-[10px] font-bold py-1">↩ Deshacer último cambio</button>}
+                </div>
               </div>
             )}
             {errorGeneracion && (
