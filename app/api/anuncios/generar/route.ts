@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     const prompt = imagen
       ? `Professional advertising image. Use the product from the reference photo. Place it in a clean commercial scene. Add this advertising text ${posicionTexto} of the image in large bold typography: "${copy}". Text color: ${colorTexto}. Background: ${colorFondo}. Professional ad design, studio lighting.`
       : referenciaUrl
-      ? `Professional advertising image inspired by the reference style. Product: ${producto}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Replicate the visual style and color palette of the reference. Studio lighting, high quality ad design.`
+      ? `Professional advertising image inspired by the reference style. Product: ${producto}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Replicate EXACTLY the visual style, typography placement, text position, text angle and font style of the reference image. The text must appear in the EXACT same position, size, angle and style as the text in the reference image. Same background, same lighting, same composition.`
       : `Professional advertising image. Product: ${producto}. Clean commercial background color: ${colorFondo}. Add this advertising text ${posicionTexto} in large bold typography: "${copy}". Text color: ${colorTexto}. Studio lighting, high quality.`;
 
     const imageUrl = await generarImagenBase64(prompt, size, apiKey, imagen, referenciaUrl);
