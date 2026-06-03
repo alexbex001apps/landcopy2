@@ -135,7 +135,7 @@ export default function Anuncios() {
                 ) : (
                   <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-[#222] rounded-xl cursor-pointer hover:border-orange-500/50 transition-colors">
                     <span className="text-3xl mb-2">📷</span>
-                    <span className="text-zinc-500 text-xs">Sube la foto de tu producto</span>
+                    <span className="text-yellow-400 text-xs">Sube la foto de tu producto</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleImagen} />
                   </label>
                 )}
