@@ -97,7 +97,7 @@ export default function Anuncios() {
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 300,
-          messages: [{ role: "user", content: `Genera 5 puntos de dolor cortos (máx 6 palabras cada uno) para el producto: "${nombre}". Descripción: "${descripcion}". También genera 1 frase "Antes: X → Después: Y". Responde SOLO con JSON: {"dolores": ["...", "...", "...", "...", "..."], "antesdespues": "Antes: X → Después: Y"}` }]
+          messages: [{ role: "user", content: `Eres un experto en copywriting de ventas latinoamericano. Genera 8 puntos de dolor y deseo para el producto: "${nombre}". Descripción: "${descripcion}". Incluye: dolores físicos o prácticos, dolor emocional, cansancio de buscar soluciones, ilusión y deseo aspiracional ("siempre lo quisiste", "al fin llegó"), comparativa ("sin X sin Y"), y 1 frase antes/después. Máximo 7 palabras cada punto. Responde SOLO con JSON: {"dolores": ["...", "...", "...", "...", "...", "...", "...", "..."], "antesdespues": "Antes: X → Después: Y"}` }]
         })
       });
       const data = await resp.json();
