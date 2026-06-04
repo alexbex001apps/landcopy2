@@ -67,8 +67,9 @@ BLOCK 3 - PRODUCT HERO:
 ${params.producto} must DOMINATE the center. Large, dramatic cinematic lighting, sharp, premium. NOT a catalog image.
 
 ${params.dolorSel.length > 0 ? `BLOCK 4 - PAIN POINTS (left column):
+IMPORTANT: Each pain point must appear as TWO lines — the title in bold and immediately below it a short explanatory phrase of 4-6 words in smaller text. Example: "Dolor constante" title, below it "que no te deja vivir". Render each as a stacked two-line item with checkmark or icon.
 ${params.dolorSel.map((d: string) => `• ${d}`).join("\n")}
-Style: Left side vertical stack with checkmarks or icons.` : ""}
+Style: Left side vertical stack with checkmarks or icons. Each item has title + subtitle.` : ""}
 
 ${params.frasesConfianza.length > 0 ? `BLOCK 5 - TRUST BADGES:
 ${params.frasesConfianza.join(" · ")}
@@ -111,9 +112,10 @@ Style: Warm colored banner — orange, green or blue. Testimonial style.
 BLOCK 3 - PRODUCT HERO:
 ${params.producto} centered, clean professional photography, warm lighting, trustworthy atmosphere.
 
-${params.dolorSel.length > 0 ? `BLOCK 4 - BEFORE/AFTER or BENEFITS:
+${params.dolorSel.length > 0 ? `BLOCK 4 - BENEFITS / PAIN POINTS (left column):
+IMPORTANT: Each item must appear as TWO lines — the title in bold and immediately below it a short explanatory phrase of 4-6 words in smaller text. Example: "Dolor constante" title, below it "que ya tiene solución". Render each as a stacked two-line item with green checkmark.
 ${params.dolorSel.map((d: string) => `✓ ${d}`).join("\n")}
-Style: Left side benefit column, green checkmarks, clean and scannable.` : ""}
+Style: Left side benefit column, green checkmarks, clean and scannable. Each item has title + subtitle.` : ""}
 
 ${params.precioOferta ? `PRICING BLOCK:
 Value presentation: ${params.precioAnterior ? `BEFORE ${params.precioAnterior}` : ""} NOW ${params.precioOferta}
@@ -153,8 +155,9 @@ BLOCK 3 - PRODUCT HERO:
 ${params.producto} presented beautifully, lifestyle context, aspirational environment. Shows the transformation.
 
 ${params.dolorSel.length > 0 ? `BLOCK 4 - PAIN IDENTIFICATION:
+IMPORTANT: Each item must appear as TWO lines — the title in bold and immediately below it a short empathetic phrase of 4-6 words in smaller text. Example: "Dolor constante" title, below it "¿te suena familiar?". Render each as a stacked two-line item with bullet or icon.
 ${params.dolorSel.map((d: string) => `• ${d}`).join("\n")}
-Style: Empathetic presentation, identifies with the reader's situation.` : ""}
+Style: Empathetic presentation, identifies with the reader's situation. Each item has title + subtitle.` : ""}
 
 CTA:
 ${params.frasesAccion.length > 0 ? `"${params.frasesAccion[0]}"` : '"DESCUBRE CÓMO"'}
@@ -200,7 +203,6 @@ export async function POST(req: NextRequest) {
 
     const imageUrl = await generarImagenBase64(promptFinal, size, process.env.OPENAI_API_KEY!, imagen);
 
-    // Guardar ADN anónimo en Supabase
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
