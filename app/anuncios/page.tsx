@@ -103,8 +103,8 @@ export default function Anuncios() {
         setDolorSel(s.dolorSel || []);
         setPromptPropio(s.promptPropio || "");
         setFormatoSeleccionado(FORMATOS.find(f => f.id === s.formatoId) || FORMATOS[0]);
-        setImagenProducto(s.imagenProducto || null);
-        setImagenGenerada(s.imagenGenerada || null);
+        setImagenProducto(sessionStorage.getItem("anuncios_img_producto") || null);
+        setImagenGenerada(sessionStorage.getItem("anuncios_img_generada") || null);
         setHeadlines(s.headlines || []);
       } catch {}
     } else {
@@ -131,10 +131,11 @@ export default function Anuncios() {
     const estado = {
       pantalla, nombre, descripcion, precioOferta, precioAnterior,
       headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
-      promptPropio, formatoId: formatoSeleccionado.id,
-      imagenProducto, imagenGenerada, headlines,
+      promptPropio, formatoId: formatoSeleccionado.id, headlines,
     };
-    sessionStorage.setItem(SS_KEY, JSON.stringify(estado));
+    try { sessionStorage.setItem(SS_KEY, JSON.stringify(estado)); } catch {}
+    try { if (imagenProducto) sessionStorage.setItem("anuncios_img_producto", imagenProducto); } catch {}
+    try { if (imagenGenerada) sessionStorage.setItem("anuncios_img_generada", imagenGenerada); } catch {}
   }, [hydrated, pantalla, nombre, descripcion, precioOferta, precioAnterior,
     headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
     promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines]);
@@ -195,7 +196,7 @@ export default function Anuncios() {
         }),
       });
       const data = await resp.json();
-      if (data.imageUrl) setImagenGenerada(data.imageUrl);
+      if (data.imageUrl) { sessionStorage.setItem("anuncios_imagen_generada", data.imageUrl); setImagenGenerada(data.imageUrl); }
       else setErrorGeneracion(data.error || "Error desconocido");
     } catch (err: any) {
       setErrorGeneracion(err.message);
