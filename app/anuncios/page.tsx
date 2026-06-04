@@ -161,7 +161,7 @@ export default function Anuncios() {
       setDolorChips(chips);
       setDolorSel(chips.slice(0, 3));
     } catch (err) {
-      setDolorChips(["Dolor constante", "Sin solución efectiva", "Cansado de sufrir", "Calidad de vida afectada", "Antes: sufriendo → Después: libre"]);
+      setDolorChips(["Dolor constante", "Sin solución efectiva", "Cansado de sufrir", "Calidad de vida afectada", "Antes: sufriendo el problema → Después: viviendo la solución"]);
       setDolorSel(["Dolor constante", "Sin solución efectiva"]);
     } finally {
       setGenerandoDolor(false);
