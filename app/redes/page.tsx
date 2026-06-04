@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+ 
 const PAISES = [
   { nombre: "Colombia", flag: "🇨🇴" },
   { nombre: "México", flag: "🇲🇽" },
@@ -10,9 +10,9 @@ const PAISES = [
   { nombre: "Ecuador", flag: "🇪🇨" },
   { nombre: "General", flag: "🌎" },
 ];
-
+ 
 const TONOS = ["Urgente", "Emocional", "Racional", "Casual", "Confianza", "Premium"];
-
+ 
 const DESTINOS = [
   { id: "instagram", nombre: "Instagram", ratio: "ver formatos", icon: "📸" },
   { id: "tiktok", nombre: "TikTok", ratio: "9:16 · 1080×1920", icon: "🎵" },
@@ -20,7 +20,7 @@ const DESTINOS = [
   { id: "whatsapp", nombre: "WhatsApp", ratio: "1:1 · 800×800", icon: "💬" },
   { id: "story", nombre: "Story", ratio: "9:16 · 1080×1920", icon: "📱" },
 ];
-
+ 
 const FORMATOS_IG = [
   { id: "feed45", nombre: "Feed 4:5", width: 1080, height: 1350 },
   { id: "feed11", nombre: "Feed 1:1", width: 1080, height: 1080 },
@@ -28,14 +28,14 @@ const FORMATOS_IG = [
   { id: "reels", nombre: "Reels portada", width: 1080, height: 1920 },
   { id: "carrusel", nombre: "Carrusel ×5", width: 1080, height: 1350 },
 ];
-
+ 
 const TIPOS = [
   { id: "escena", nombre: "Producto en escena", desc: "El producto en ambiente real. Prompt técnico automático.", icon: "🏠" },
   { id: "texto", nombre: "Texto sobre fondo", desc: "Copy visual. Ideal para anuncios de oferta y quotes.", icon: "✍️" },
   { id: "ugc", nombre: "UGC / Persona usando", desc: "Persona real en escena cotidiana. El más viral.", icon: "🤳" },
   { id: "antesdespues", nombre: "Antes / Después", desc: "Dos paneles. Problema y solución con el producto.", icon: "⚡" },
 ];
-
+ 
 type Idea = {
   id: string;
   desc: string;
@@ -43,13 +43,13 @@ type Idea = {
   imageUrl?: string;
   favorita: boolean;
 };
-
+ 
 type TextoRed = {
   caption: string;
   hashtags: string;
   guion?: string;
 };
-
+ 
 export default function Redes() {
   useEffect(() => {
     const supabase = createClient();
@@ -57,10 +57,9 @@ export default function Redes() {
       if (!session) window.location.href = "/login";
     });
   }, []);
-
+ 
   const [paso, setPaso] = useState(1);
-
-  // Datos del producto
+ 
   const [producto, setProducto] = useState("");
   const [imagen, setImagen] = useState<string | null>(null);
   const [precioOferta, setPrecioOferta] = useState("");
@@ -70,16 +69,14 @@ export default function Redes() {
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [desdeCopy, setDesdeCopy] = useState(false);
-
-  // Configuración
+ 
   const [destino, setDestino] = useState("instagram");
   const [formatoIg, setFormatoIg] = useState("feed45");
   const [tipo, setTipo] = useState("escena");
   const [textoEncima, setTextoEncima] = useState(true);
   const [promptCustom, setPromptCustom] = useState("");
   const [modoAvanzado, setModoAvanzado] = useState(false);
-
-  // Generación
+ 
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [tabTexto, setTabTexto] = useState("instagram");
@@ -87,13 +84,11 @@ export default function Redes() {
   const [cargandoTexto, setCargandoTexto] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toast, setToast] = useState("");
-
-  // Modal compartir
+ 
   const [modalCompartir, setModalCompartir] = useState<{ url: string; caption: string } | null>(null);
-
+ 
   const fileRef = useRef<HTMLInputElement>(null);
-
-  // Cargar datos de Copy desde sessionStorage
+ 
   useEffect(() => {
     const datos = sessionStorage.getItem("redes_producto");
     if (datos) {
@@ -110,7 +105,7 @@ export default function Redes() {
       sessionStorage.removeItem("redes_producto");
     }
   }, []);
-
+ 
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -127,22 +122,22 @@ export default function Redes() {
     };
     img.src = URL.createObjectURL(file);
   }
-
+ 
   function mostrarToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   }
-
+ 
   function copiar(texto: string, id: string) {
     navigator.clipboard.writeText(texto);
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
   }
-
+ 
   function toggleFavorita(id: string) {
     setIdeas(prev => prev.map(i => i.id === id ? { ...i, favorita: !i.favorita } : i));
   }
-
+ 
   async function generarIdeas(soloUna?: string) {
     if (!producto) return;
     setLoading(true);
@@ -150,7 +145,7 @@ export default function Redes() {
       setPaso(3);
       setIdeas([]);
     }
-
+ 
     try {
       const res = await fetch("/api/redes/generar", {
         method: "POST",
@@ -168,7 +163,6 @@ export default function Redes() {
         setIdeas(prev => prev.map(i => i.id === soloUna ? { ...data.idea, id: soloUna, favorita: i.favorita } : i));
       } else {
         setIdeas(data.ideas || []);
-        // Generar textos automáticamente
         generarTextos();
       }
     } catch (err) {
@@ -176,7 +170,7 @@ export default function Redes() {
     }
     setLoading(false);
   }
-
+ 
   async function mejorarIdea(id: string) {
     const idea = ideas.find(i => i.id === id);
     if (!idea) return;
@@ -199,7 +193,7 @@ export default function Redes() {
     }
     setCargandoTexto(null);
   }
-
+ 
   async function generarTextos(red?: string) {
     const redes = red ? [red] : ["instagram", "tiktok", "facebook", "whatsapp"];
     for (const r of redes) {
@@ -218,7 +212,7 @@ export default function Redes() {
       setCargandoTexto(null);
     }
   }
-
+ 
   async function mejorarTexto(red: string, campo: string) {
     const textoActual = textos[red];
     if (!textoActual) return;
@@ -236,7 +230,7 @@ export default function Redes() {
     }
     setCargandoTexto(null);
   }
-
+ 
   async function guardarImagen(idea: Idea) {
     try {
       const res = await fetch("/api/redes/guardar", {
@@ -253,33 +247,31 @@ export default function Redes() {
       console.error(err);
     }
   }
-
+ 
   function descargarImagen(url: string, nombre: string) {
     const a = document.createElement("a");
     a.href = url;
     a.download = nombre;
     a.click();
   }
-
+ 
   function descargarFavoritas() {
     const favs = ideas.filter(i => i.favorita && i.imageUrl);
     favs.forEach((i, idx) => descargarImagen(i.imageUrl!, `${producto}-favorita-${idx + 1}.png`));
   }
-
+ 
   const destinoActual = DESTINOS.find(d => d.id === destino);
   const textoActual = textos[tabTexto];
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
-
-      {/* Toast */}
+ 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">
           {toast}
         </div>
       )}
-
-      {/* Modal Compartir */}
+ 
       {modalCompartir && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
           <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 w-[360px]">
@@ -308,18 +300,37 @@ export default function Redes() {
           </div>
         </div>
       )}
-
-     {/* Header */}
-      <div className="bg-[#050505] border-b border-[#1a1a1a] px-5 py-4 text-center">
-        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase mb-2">
-          IA generativa · imágenes para redes
+ 
+      {/* Header homogeneizado igual que Copy */}
+      <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-0">
+        <div className="flex items-center mb-4">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-[72px] h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center">
+              <svg width="42" height="42" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
+                <circle cx="16" cy="16" r="6" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                <circle cx="16" cy="16" r="2.5" fill="white"/>
+                <line x1="16" y1="6" x2="16" y2="10" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="16" y1="22" x2="16" y2="26" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="6" y1="16" x2="10" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Redes</p>
+          </div>
+          <div className="flex-1 text-center">
+            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+              IA GENERATIVA · IMÁGENES PARA REDES
+            </div>
+            <h1 className="text-xl font-black text-white mb-1">
+              Crea imágenes que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
+            </h1>
+            <p className="text-yellow-400 text-[11px]">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
+          </div>
+          <div className="flex-shrink-0" style={{width:"99px"}}></div>
         </div>
-        <h1 className="text-xl font-black text-white mb-1">
-          Crea imágenes que <span className="text-red-500">venden</span> y <span className="text-green-400">viralizan</span>
-        </h1>
-        <p className="text-zinc-500 text-xs">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
       </div>
-
+ 
       {/* Steps */}
       <div className="flex bg-[#1e1e1e] border-b border-[#2a2a2a]">
         {[
@@ -340,13 +351,12 @@ export default function Redes() {
           </div>
         ))}
       </div>
-
+ 
       <div className="max-w-[1400px] mx-auto px-6 pb-20"><div className="grid grid-cols-[380px_1fr] gap-6 mt-4">
-
+ 
         {/* Panel izquierdo */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-
-          {/* Banner desde Copy */}
+ 
           {desdeCopy && (
             <div className="bg-[#1e1e1e] border border-[rgba(134,239,172,0.2)] rounded-md p-2.5 mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#86EFAC] flex-shrink-0" />
@@ -358,8 +368,7 @@ export default function Redes() {
               </button>
             </div>
           )}
-
-          {/* Producto */}
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">Producto</span>
           {producto && desdeCopy ? (
             <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-2.5 mb-3 flex items-center gap-2">
@@ -388,8 +397,7 @@ export default function Redes() {
                 className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs h-8 outline-none placeholder-[#888]" />
             </div>
           )}
-
-          {/* Upload imagen */}
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">Imagen del producto</span>
           <div onClick={() => !imagen && fileRef.current?.click()}
             className="bg-[#1e1e1e] border border-dashed border-[#333] rounded-md p-3 text-center mb-3 cursor-pointer hover:border-[#FFF500] transition-colors">
@@ -408,8 +416,7 @@ export default function Redes() {
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
-
-          {/* País y Tono */}
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">País</span>
           <div className="flex flex-wrap gap-1 mb-3">
             {PAISES.map(p => (
@@ -419,7 +426,7 @@ export default function Redes() {
               </button>
             ))}
           </div>
-
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">Tono</span>
           <div className="flex flex-wrap gap-1 mb-3">
             {TONOS.map(t => (
@@ -429,10 +436,9 @@ export default function Redes() {
               </button>
             ))}
           </div>
-
+ 
           <div className="border-t border-[#1e1e1e] my-3" />
-
-          {/* Destino */}
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">¿Para qué red?</span>
           <div className="grid grid-cols-2 gap-1 mb-2">
             {DESTINOS.map(d => (
@@ -446,12 +452,11 @@ export default function Redes() {
               </button>
             ))}
           </div>
-
+ 
           <button className="w-full bg-[rgba(255,215,0,0.08)] border border-[rgba(255,215,0,0.25)] rounded-md py-2 mb-2 text-xs font-bold text-[#FFF500] flex items-center justify-center gap-1.5">
             ⚡ Generar para TODOS los formatos
           </button>
-
-          {/* Formatos Instagram */}
+ 
           {destino === "instagram" && (
             <div className="bg-[#2a2a2a] rounded-md p-2 mb-2">
               <div className="text-xs font-bold text-[#7A7772] tracking-widest uppercase mb-1.5">Formatos de Instagram</div>
@@ -465,10 +470,9 @@ export default function Redes() {
               </div>
             </div>
           )}
-
+ 
           <div className="border-t border-[#1e1e1e] my-3" />
-
-          {/* Tipo */}
+ 
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-1.5 block">Tipo de imagen</span>
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {TIPOS.map(t => (
@@ -480,8 +484,7 @@ export default function Redes() {
               </button>
             ))}
           </div>
-
-          {/* Toggle texto encima */}
+ 
           <div className="flex items-center justify-between bg-[#1e1e1e] border border-[#2a2a2a] rounded-md px-3 py-2 mb-2">
             <div>
               <div className="text-xs font-bold text-[#EDE8DC]">Texto encima de la imagen</div>
@@ -492,14 +495,13 @@ export default function Redes() {
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[#0d0d0d] transition-all ${textoEncima ? "right-0.5" : "left-0.5"}`} />
             </button>
           </div>
-
-          {/* Modo avanzado */}
+ 
           {modoAvanzado && (
             <textarea value={promptCustom} onChange={e => setPromptCustom(e.target.value)}
               placeholder="Escribe tu prompt personalizado..."
               className="w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-sm outline-none resize-none h-16 mb-2 placeholder-[#888]" />
           )}
-
+ 
           <button onClick={() => generarIdeas()} disabled={!producto || loading}
             className="w-full bg-[#FFF500] border-none rounded-md py-2.5 text-[#0d0d0d] text-xs font-black cursor-pointer flex items-center justify-center gap-1.5 mb-1.5 disabled:opacity-40">
             ⚡ Generar 4 ideas ahora
@@ -508,21 +510,19 @@ export default function Redes() {
             className="w-full bg-transparent border border-[#333] rounded-md py-2 text-[#C8C3B7] text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5">
             ⚙️ {modoAvanzado ? "Ocultar" : "Prompt personalizado · modo avanzado"}
           </button>
-
+ 
         </div>
-
+ 
         {/* Panel derecho */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-
-          {/* Estado vacío */}
+ 
           {!loading && ideas.length === 0 && (
             <div className="flex items-center justify-center h-64 text-[#555250] text-sm flex-col gap-2">
               <span className="text-3xl">🎨</span>
               <span>Configura el producto y presiona Generar</span>
             </div>
           )}
-
-          {/* Loading */}
+ 
           {loading && (
             <div className="bg-[#161616] border border-[#1e1e1e] rounded-xl p-5 mb-4">
               <div className="text-[#FFF500] text-xs font-bold tracking-widest uppercase mb-3">⚙️ Generando imágenes · gpt-image-2</div>
@@ -537,8 +537,7 @@ export default function Redes() {
               ))}
             </div>
           )}
-
-          {/* Galería de ideas */}
+ 
           {ideas.length > 0 && (
             <>
               <div className="flex items-center justify-between mb-3">
@@ -547,7 +546,7 @@ export default function Redes() {
                 </span>
                 <span className="text-xs text-[#7A7772]">gpt-image-2 · automático</span>
               </div>
-
+ 
               <div className="grid grid-cols-2 gap-3 mb-3">
                 {ideas.map((idea) => (
                   <div key={idea.id} className={`bg-[#161616] border rounded-lg overflow-hidden ${idea.favorita ? "border-[#FFF500]" : "border-[#1e1e1e]"}`}>
@@ -591,8 +590,7 @@ export default function Redes() {
                   </div>
                 ))}
               </div>
-
-              {/* Botones globales galería */}
+ 
               <div className="flex gap-2 mb-4">
                 <button onClick={() => generarIdeas()} disabled={loading}
                   className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-xs font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40">
@@ -606,8 +604,7 @@ export default function Redes() {
                   {copiado === "prompts" ? "✓ Copiado" : "⎘ Copiar prompts"}
                 </button>
               </div>
-
-              {/* Texto */}
+ 
               <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-2 block">Texto para publicar</span>
               <div className="flex gap-1 bg-[#161616] border border-[#1e1e1e] rounded-md p-1 mb-3">
                 {["instagram", "tiktok", "facebook", "whatsapp"].map(r => (
@@ -617,8 +614,7 @@ export default function Redes() {
                   </button>
                 ))}
               </div>
-
-              {/* Caption */}
+ 
               <div className="bg-[#161616] border border-[#1e1e1e] rounded-lg p-3 mb-2">
                 <div className="text-xs font-bold text-[#FFF500] tracking-widest uppercase mb-2">Caption · {tabTexto}</div>
                 {cargandoTexto === `texto-${tabTexto}` ? (
@@ -653,8 +649,7 @@ export default function Redes() {
                   </button>
                 </div>
               </div>
-
-              {/* Guión TikTok */}
+ 
               {tabTexto === "tiktok" && textoActual?.guion && (
                 <div className="bg-[#161616] border border-[rgba(192,132,252,0.2)] rounded-lg p-3 mb-2">
                   <div className="text-xs font-bold text-[#C084FC] tracking-widest uppercase mb-2">🎵 Guión TikTok · 30 segundos</div>
@@ -678,8 +673,7 @@ export default function Redes() {
                   </div>
                 </div>
               )}
-
-              {/* Descarga final */}
+ 
               <div className="flex gap-2 mt-3">
                 <button onClick={() => ideas.filter(i => i.imageUrl).forEach((i, idx) => descargarImagen(i.imageUrl!, `${producto}-${idx + 1}.png`))}
                   className="flex-1 bg-[#FFF500] border-none rounded-md py-2 text-[#0d0d0d] text-xs font-black cursor-pointer flex items-center justify-center gap-1.5">
