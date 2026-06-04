@@ -287,22 +287,23 @@ export default function Copy() {
           <div className="flex-shrink-0" style={{width:"99px"}}></div>
         </div>
  
-        <div className="grid grid-cols-3 border border-[#1a1a1a] rounded-xl overflow-hidden mb-6">
-          <div className="text-center py-2.5 px-3 border-r border-[#1a1a1a] border-t-2 border-t-orange-500">
-            <p className="text-orange-500 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 1</p>
-            <p className="text-white text-[11px] font-bold">Tu producto</p>
-            <p className="text-yellow-400 text-[9px]">Datos y foto</p>
-          </div>
-          <div className="text-center py-2.5 px-3 border-r border-[#1a1a1a]">
-            <p className="text-yellow-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 2</p>
-            <p className="text-white text-[11px] font-bold">Genera</p>
-            <p className="text-yellow-400 text-[9px]">IA crea todo</p>
-          </div>
-          <div className="text-center py-2.5 px-3">
-            <p className="text-yellow-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 3</p>
-            <p className="text-white text-[11px] font-bold">Resultado</p>
-            <p className="text-yellow-400 text-[9px]">Edita y descarga</p>
-          </div>
+        <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] -mx-6 mb-6">
+          {[
+            { n: 1, label: "Paso 1 — Producto", sub: "Datos y foto" },
+            { n: 2, label: "Paso 2 — Genera", sub: "IA crea todo" },
+            { n: 3, label: "Paso 3 — Resultado", sub: "Edita y descarga" },
+          ].map((s) => (
+            <div key={s.n} className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative">
+              <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${s.n === 1 ? "bg-orange-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
+                {s.n}
+              </div>
+              <div>
+                <div className={`text-[10px] font-bold tracking-widest uppercase ${s.n === 1 ? "text-orange-500" : "text-yellow-400"}`}>{s.label}</div>
+                <div className="text-[9px] text-yellow-400 mt-0.5">{s.sub}</div>
+              </div>
+              {s.n === 1 && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
+            </div>
+          ))}
         </div>
  
         <div className="grid grid-cols-[380px_1fr] gap-6">
