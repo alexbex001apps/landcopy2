@@ -474,7 +474,7 @@ export default function Anuncios() {
                 <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
                 <p className="text-white font-bold">Generando tu anuncio {tempActual.icon}...</p>
                 <p className="text-yellow-400 text-sm">Esto toma entre 15 y 30 segundos</p>
-                <p className="text-zinc-600 text-xs">Puedes navegar libremente — cuando vuelvas seguirá aquí</p>
+                <p className="text-xs font-bold" style={{color:"#00ff88"}}>⚠️ No salgas de esta pantalla hasta que se genere tu imagen</p>
               </div>
             )}
  
