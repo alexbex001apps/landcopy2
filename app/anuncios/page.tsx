@@ -246,7 +246,7 @@ export default function Anuncios() {
     <div className="min-h-screen bg-[#050505] text-white">
  
       {/* Header */}
-      <div className="max-w-5xl mx-auto px-4 pt-6 pb-0">
+      <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
           <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#1a0000] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
@@ -294,7 +294,7 @@ export default function Anuncios() {
         ))}
       </div>
  
-      <div className="max-w-5xl mx-auto px-4 pb-12 mt-6">
+      <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
  
         {/* PANTALLA 1 */}
         {pantalla === 1 && (
