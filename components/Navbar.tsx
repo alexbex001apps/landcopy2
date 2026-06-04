@@ -5,48 +5,48 @@ import type { User } from "@supabase/supabase-js";
 
 const LogoCopy = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-    <rect x="6" y="4" width="14" height="18" rx="2" fill="#ff5000" opacity="0.2" stroke="#ff5000" strokeWidth="1.5"/>
-    <rect x="10" y="8" width="14" height="18" rx="2" fill="#ff5000" opacity="0.4" stroke="#ff5000" strokeWidth="1.5"/>
-    <line x1="13" y1="13" x2="21" y2="13" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="13" y1="16" x2="21" y2="16" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="13" y1="19" x2="18" y2="19" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
+    <rect x="6" y="4" width="14" height="18" rx="2" fill="white" opacity="0.2" stroke="white" strokeWidth="1.5"/>
+    <rect x="10" y="8" width="14" height="18" rx="2" fill="white" opacity="0.4" stroke="white" strokeWidth="1.5"/>
+    <line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
 const LogoRedes = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-    <circle cx="16" cy="16" r="10" stroke="#ff5000" strokeWidth="1.5" opacity="0.3"/>
-    <circle cx="16" cy="16" r="6" stroke="#ff5000" strokeWidth="1.5" opacity="0.6"/>
-    <circle cx="16" cy="16" r="2.5" fill="#ff5000"/>
-    <line x1="16" y1="6" x2="16" y2="10" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="16" y1="22" x2="16" y2="26" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="6" y1="16" x2="10" y2="16" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="22" y1="16" x2="26" y2="16" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
+    <circle cx="16" cy="16" r="6" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+    <circle cx="16" cy="16" r="2.5" fill="white"/>
+    <line x1="16" y1="6" x2="16" y2="10" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="16" y1="22" x2="16" y2="26" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="6" y1="16" x2="10" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
 const LogoLanding = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-    <rect x="4" y="6" width="24" height="18" rx="2" stroke="#ff5000" strokeWidth="1.5" fill="#ff5000" fillOpacity="0.1"/>
-    <rect x="4" y="6" width="24" height="5" rx="2" fill="#ff5000" fillOpacity="0.4"/>
-    <circle cx="8" cy="8.5" r="1" fill="#ff5000"/>
-    <circle cx="11" cy="8.5" r="1" fill="#ff5000"/>
-    <circle cx="14" cy="8.5" r="1" fill="#ff5000"/>
-    <rect x="8" y="14" width="8" height="5" rx="1" fill="#ff5000" fillOpacity="0.5"/>
-    <line x1="18" y1="14" x2="24" y2="14" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="18" y1="17" x2="24" y2="17" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="18" y1="20" x2="22" y2="20" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
+    <rect x="4" y="6" width="24" height="18" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
+    <rect x="4" y="6" width="24" height="5" rx="2" fill="white" fillOpacity="0.4"/>
+    <circle cx="8" cy="8.5" r="1" fill="white"/>
+    <circle cx="11" cy="8.5" r="1" fill="white"/>
+    <circle cx="14" cy="8.5" r="1" fill="white"/>
+    <rect x="8" y="14" width="8" height="5" rx="1" fill="white" fillOpacity="0.5"/>
+    <line x1="18" y1="14" x2="24" y2="14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="18" y1="17" x2="24" y2="17" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="18" y1="20" x2="22" y2="20" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
 const LogoAnuncios = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-    <path d="M6 14 L20 8 L20 24 L6 18 Z" fill="#ff5000" fillOpacity="0.4" stroke="#ff5000" strokeWidth="1.5" strokeLinejoin="round"/>
-    <rect x="6" y="14" width="4" height="4" fill="#ff5000" fillOpacity="0.6"/>
-    <rect x="6" y="18" width="4" height="4" rx="0 0 2 2" fill="#ff5000" fillOpacity="0.3"/>
-    <circle cx="24" cy="12" r="2" fill="#ff5000"/>
-    <circle cx="24" cy="20" r="2" fill="#ff5000"/>
-    <line x1="22" y1="16" x2="26" y2="16" stroke="#ff5000" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M6 14 L20 8 L20 24 L6 18 Z" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+    <rect x="6" y="14" width="4" height="4" fill="white" fillOpacity="0.6"/>
+    <rect x="6" y="18" width="4" height="4" rx="0 0 2 2" fill="white" fillOpacity="0.3"/>
+    <circle cx="24" cy="12" r="2" fill="white"/>
+    <circle cx="24" cy="20" r="2" fill="white"/>
+    <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
