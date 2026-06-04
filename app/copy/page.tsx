@@ -293,7 +293,7 @@ export default function Copy() {
             { n: 2, label: "Paso 2 — Genera", sub: "IA crea todo" },
             { n: 3, label: "Paso 3 — Resultado", sub: "Edita y descarga" },
           ].map((s) => (
-            <div key={s.n} className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative">
+            <div key={s.n} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative">
               <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${s.n === 1 ? "bg-orange-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
                 {s.n}
               </div>
