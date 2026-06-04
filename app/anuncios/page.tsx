@@ -281,7 +281,7 @@ export default function Anuncios() {
           { n: 3, label: "Paso 3 — Tu anuncio", sub: "Genera y descarga" },
         ].map((s) => (
           <div key={s.n} onClick={() => setPantalla(s.n)}
-            className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative">
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative">
             <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${pantalla === s.n ? "bg-orange-500 text-white" : pantalla > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
               {pantalla > s.n ? "✓" : s.n}
             </div>
