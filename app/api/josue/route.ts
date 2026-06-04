@@ -35,7 +35,8 @@ MÓDULOS DISPONIBLES:
 - Máximo 7 frases seleccionables de cualquier temperatura
 - Se pueden mezclar frases de diferentes temperaturas
 - La IA genera puntos de dolor automáticamente según el producto
-- Prompt propio para usuarios avanzados
+- Se puede subir foto del producto para que aparezca en el anuncio generado
+- Prompt propio para usuarios avanzados         
 - Edición de imagen: escribe una instrucción y la IA aplica el cambio
 - Deshacer último cambio disponible
 - Formatos: Facebook Ad (1200×628px), Instagram Ad (1080×1080px), Stories/TikTok (1080×1920px)
