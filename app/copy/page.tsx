@@ -270,16 +270,37 @@ export default function Copy() {
     <div className="min-h-screen bg-[#050505] text-white">
       <div className="max-w-[1400px] mx-auto px-6 pt-24 pb-20">
  
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
-            IA generativa · copy profesional
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center mx-auto mb-3">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </div>
-          <h1 className="text-4xl font-black text-white mb-2">
+          <p className="text-white text-[11px] font-bold tracking-[0.12em] uppercase mb-2">Copy</p>
+          <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+            IA GENERATIVA · COPY PROFESIONAL
+          </div>
+          <h1 className="text-xl font-black text-white mb-1">
             Crea copy que <span className="text-orange-500">vende</span>,{" "}
             <span className="text-cyan-400">conecta</span> y{" "}
             <span className="text-green-400">convierte</span>
           </h1>
-          <p className="text-zinc-500 text-base">Sube tu producto — la IA genera landing, campaña de anuncios y contenido para redes en segundos</p>
+          <p className="text-yellow-400 text-[11px]">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
+        </div>
+        <div className="grid grid-cols-3 border border-[#1a1a1a] rounded-xl overflow-hidden mb-6">
+          <div className="text-center py-2.5 px-3 border-r border-[#1a1a1a] border-t-2 border-t-orange-500">
+            <p className="text-orange-500 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 1</p>
+            <p className="text-white text-[11px] font-bold">Tu producto</p>
+            <p className="text-yellow-400 text-[9px]">Datos y foto</p>
+          </div>
+          <div className="text-center py-2.5 px-3 border-r border-[#1a1a1a]">
+            <p className="text-yellow-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 2</p>
+            <p className="text-white text-[11px] font-bold">Genera</p>
+            <p className="text-yellow-400 text-[9px]">IA crea todo</p>
+          </div>
+          <div className="text-center py-2.5 px-3">
+            <p className="text-yellow-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 3</p>
+            <p className="text-white text-[11px] font-bold">Resultado</p>
+            <p className="text-yellow-400 text-[9px]">Edita y descarga</p>
+          </div>
         </div>
  
         <div className="grid grid-cols-[380px_1fr] gap-6">
