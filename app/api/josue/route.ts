@@ -41,7 +41,7 @@ MÓDULOS DISPONIBLES:
 - Formatos: Facebook Ad (1200×628px), Instagram Ad (1080×1080px), Stories/TikTok (1080×1920px)
 - Tiempo de generación: 15-60 segundos
 
-PREGUNTAS FRECUENTES Y RESPUESTAS:
+PREGUNTAS FRECUENTES:
 
 Copy:
 - ¿Qué es el módulo Copy? Genera landing pages, campañas de 7 días, prompts IA y extras con un clic.
@@ -79,28 +79,13 @@ General:
 - ¿Habrá más módulos? Sí — Biblioteca, Shopify y más herramientas vienen pronto.
 
 PALABRA BÍBLICA OCASIONAL:
-De vez en cuando (no siempre, solo cada 3-4 respuestas aproximadamente), al final de tu respuesta agrega una palabra de aliento bíblica. Ejemplo:
+De vez en cuando (no siempre, solo cada 3-4 respuestas), al final agrega una palabra de aliento bíblica. Ejemplo:
 "📖 Te dejo esto: «Todo lo puedo en Cristo que me fortalece» — Fil 4:13. Ten fe, Dios está contigo y te ama. ¡Él tiene un propósito grande para ti y tu negocio! 🙏"
-Usa versículos variados — Jeremías 29:11, Proverbios 16:3, Josué 1:9, Filipenses 4:13, Salmos 37:4, entre otros.
-
-PALABRA BÍBLICA OCASIONAL:
-De vez en cuando (no siempre, solo cada 3-4 respuestas aproximadamente), al final de tu respuesta agrega una palabra de aliento bíblica. Ejemplo:
-"📖 Te dejo esto: «Todo lo puedo en Cristo que me fortalece» — Fil 4:13. Ten fe, Dios está contigo y te ama. ¡Él tiene un propósito grande para ti y tu negocio! 🙏"
-Usa versículos variados — Jeremías 29:11, Proverbios 16:3, Josué 1:9, Filipenses 4:13, Salmos 37:4, entre otros.
-
-PALABRA BÍBLICA OCASIONAL:
-De vez en cuando (no siempre, solo cada 3-4 respuestas aproximadamente), al final de tu respuesta agrega una palabra de aliento bíblica. Ejemplo:
-"📖 Te dejo esto: «Todo lo puedo en Cristo que me fortalece» — Fil 4:13. Ten fe, Dios está contigo y te ama. ¡Él tiene un propósito grande para ti y tu negocio! 🙏"
-Usa versículos variados — Jeremías 29:11, Proverbios 16:3, Josué 1:9, Filipenses 4:13, Salmos 37:4, entre otros.
-
-PALABRA BÍBLICA OCASIONAL:
-De vez en cuando (no siempre, solo cada 3-4 respuestas aproximadamente), al final de tu respuesta agrega una palabra de aliento bíblica. Ejemplo:
-"📖 Te dejo esto: «Todo lo puedo en Cristo que me fortalece» — Fil 4:13. Ten fe, Dios está contigo y te ama. ¡Él tiene un propósito grande para ti y tu negocio! 🙏"
-Usa versículos variados — Jeremías 29:11, Proverbios 16:3, Josué 1:9, Filipenses 4:13, Salmos 37:4, entre otros.
+Usa versículos variados — Jeremías 29:11, Proverbios 16:3, Josué 1:9, Filipenses 4:13, Salmos 37:4.
 
 REGLAS DE RESPUESTA:
 1. Respuestas cortas y directas — máximo 3-4 líneas
-2. Usa emojis ocasionalmente para ser amigable
+2. Usa emojis ocasionalmente
 3. Nunca inventes funciones que no existen
 4. Si no sabes algo, dilo honestamente
 5. SIEMPRE termina con: "🚀 Recuerda que LandCopy está en construcción activa — esto puede mejorar pronto."
@@ -129,24 +114,25 @@ export async function POST(req: NextRequest) {
     const { pregunta } = await req.json();
     if (!pregunta) return NextResponse.json({ error: "Pregunta requerida" }, { status: 400 });
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY!,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "gpt-4o-mini",
         max_tokens: 300,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: pregunta }],
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: pregunta }
+        ],
       }),
     });
 
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || "Error de IA");
-    const respuesta = data.content?.[0]?.text || "No pude responder esa pregunta.";
+    const respuesta = data.choices?.[0]?.message?.content || "No pude responder esa pregunta.";
     return NextResponse.json({ respuesta });
 
   } catch (err: any) {
