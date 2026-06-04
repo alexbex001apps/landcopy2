@@ -196,7 +196,7 @@ export default function Anuncios() {
         }),
       });
       const data = await resp.json();
-      if (data.imageUrl) { sessionStorage.setItem("anuncios_imagen_generada", data.imageUrl); setImagenGenerada(data.imageUrl); }
+      if (data.imageUrl) { setImagenGenerada(data.imageUrl); }
       else setErrorGeneracion(data.error || "Error desconocido");
     } catch (err: any) {
       setErrorGeneracion(err.message);
