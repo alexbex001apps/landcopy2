@@ -64,6 +64,16 @@ export default function Login() {
             <button onClick={modo === "login" ? handleLogin : handleRegistro} disabled={loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors">
               {loading ? "Cargando..." : modo === "login" ? "Entrar" : "Crear cuenta"}
             </button>
+            {modo === "login" && (
+              <button onClick={async () => {
+                if (!email) { setError("Escribe tu correo primero."); return; }
+                const supabase = createClient();
+                await supabase.auth.resetPasswordForEmail(email, { redirectTo: "https://landcopy2.vercel.app/reset-password" });
+                setError("✅ Te enviamos un correo para recuperar tu contraseña.");
+              }} className="w-full text-yellow-400 text-xs font-bold py-1 hover:text-orange-500 transition-colors">
+                ¿Olvidaste tu contraseña?
+              </button>
+            )}
           </div>
         </div>
       </div>
