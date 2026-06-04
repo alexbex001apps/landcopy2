@@ -677,7 +677,7 @@ export default function Copy() {
                         </div>
                         {headlinesSeleccionados.length > 0 && (
                           <div className="px-3 pb-3">
-                            <button onClick={() => { sessionStorage.setItem("anuncios_headlines", JSON.stringify(headlinesSeleccionados)); sessionStorage.setItem("anuncios_producto", JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono })); window.location.href = "/anuncios"; }} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold py-2.5 rounded-lg transition-colors">
+                            <button onClick={() => { sessionStorage.setItem("anuncios_headlines", JSON.stringify(headlinesSeleccionados)); sessionStorage.setItem("anuncios_producto", JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, imagen })); window.location.href = "/anuncios"; }} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold py-2.5 rounded-lg transition-colors">
                               → Enviar {headlinesSeleccionados.length} headline{headlinesSeleccionados.length > 1 ? "s" : ""} a Anuncios
                             </button>
                           </div>
@@ -709,7 +709,7 @@ export default function Copy() {
                                 </div>
                                 <div className="flex gap-1.5">
                                   <button onClick={() => copiar(`${dia.titulo}\n${dia.texto}`, `campana-dia-${i + 1}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[9px] font-bold px-2 py-1 rounded-md">{copiado === `campana-dia-${i + 1}` ? "✓ Copiado" : "Copiar"}</button>
-                                  <button onClick={() => { sessionStorage.setItem("anuncios_headlines", JSON.stringify([`${dia.titulo}\n${dia.texto}`])); sessionStorage.setItem("anuncios_producto", JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono })); window.location.href = "/anuncios"; }} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[9px] font-bold px-2 py-1 rounded-md">→ Anuncios</button>
+                                  <button onClick={() => { sessionStorage.setItem("anuncios_headlines", JSON.stringify([`${dia.titulo}\n${dia.texto}`])); sessionStorage.setItem("anuncios_producto", JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, imagen })); window.location.href = "/anuncios"; }} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[9px] font-bold px-2 py-1 rounded-md">→ Anuncios</button>
                                   <button onClick={() => guardar(`${dia.titulo}\n${dia.texto}`, `Campaña Día ${i + 1}`)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[9px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
                                 </div>
                               </div>

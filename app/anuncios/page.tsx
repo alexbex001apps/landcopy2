@@ -115,6 +115,7 @@ export default function Anuncios() {
         const data = JSON.parse(p);
         setProductoData(data);
         setNombre(data.producto || "");
+        setImagenProducto(data.imagen || null);
         setPrecioOferta(data.precioOferta || "");
         setPrecioAnterior(data.precioAnterior || "");
       }
