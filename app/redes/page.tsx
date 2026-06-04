@@ -339,7 +339,7 @@ export default function Redes() {
           { n: 3, label: "Paso 3 — Resultado", sub: "Galería + texto + descarga" },
         ].map((s) => (
           <div key={s.n} onClick={() => setPaso(s.n)}
-            className={`flex-1 flex items-center gap-2 px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
             <div className={`w-5 h-5 rounded-sm flex items-center justify-center text-xs font-black flex-shrink-0 ${paso >= s.n ? "bg-[#FFF500] text-[#0d0d0d]" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
