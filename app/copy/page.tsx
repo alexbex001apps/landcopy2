@@ -268,7 +268,7 @@ export default function Copy() {
  
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <div className="max-w-[1400px] mx-auto px-6 pt-20 pb-10">
+      <div className="max-w-[1400px] mx-auto px-6 pt-16 pb-8">
  
         <div className="text-center mb-6">
           <div className="w-14 h-14 rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center mx-auto mb-3">
