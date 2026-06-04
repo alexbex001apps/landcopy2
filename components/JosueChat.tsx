@@ -95,7 +95,7 @@ export default function JosueChat() {
   return (
     <>
       {/* Botón flotante */}
-      <button onClick={() => setAbierto(!abierto)} style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 1000, background: "transparent", border: "none", cursor: "pointer", filter: "drop-shadow(0 4px 12px rgba(255,80,0,0.4))" }}>
+      <button onClick={() => setAbierto(!abierto)} style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 1000, background: "transparent", border: "none", cursor: "pointer", filter: "drop-shadow(0 4px 20px rgba(255,80,0,0.8))" }}>
         <JosueRobot size={50} />
       </button>
 
@@ -139,14 +139,7 @@ export default function JosueChat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Preguntas rápidas */}
-          <div style={{ padding: "8px 12px", borderTop: "1px solid #1a1a1a", display: "flex", gap: "5px", flexWrap: "wrap" }}>
-            {PREGUNTAS_RAPIDAS.slice(0, 5).map((p, i) => (
-              <button key={i} onClick={() => enviar(p)} style={{ background: "#111", border: "1px solid #1e1e1e", color: "#ff5000", fontSize: "9px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", cursor: "pointer", fontFamily: "sans-serif" }}>
-                {p}
-              </button>
-            ))}
-          </div>
+          
 
           {/* Banner construccion */}
           <div style={{ padding: "6px 12px", background: "#0d0d0d", borderTop: "1px solid #1a1a1a", textAlign: "center" }}>
