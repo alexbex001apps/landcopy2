@@ -36,7 +36,6 @@ export default function Copy() {
   const [headlinesSeleccionados, setHeadlinesSeleccionados] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
  
-  // Auth check
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,7 +43,6 @@ export default function Copy() {
     });
   }, []);
  
-  // Cargar desde storage al montar (solo cliente)
   useEffect(() => {
     const ss = sessionStorage;
     const ls = localStorage;
@@ -68,7 +66,6 @@ export default function Copy() {
     setHydrated(true);
   }, []);
  
-  // Guardar formulario en sessionStorage
   useEffect(() => {
     if (!hydrated) return;
     sessionStorage.setItem("lc_producto", producto);
@@ -86,7 +83,6 @@ export default function Copy() {
     else sessionStorage.removeItem("lc_imagen");
   }, [hydrated, producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, competidor, pais, tono, categoria, imagen]);
  
-  // Guardar guardados en localStorage
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem("landcopy_guardados", JSON.stringify(guardados));
@@ -268,23 +264,29 @@ export default function Copy() {
  
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <div className="max-w-[1400px] mx-auto px-6 pt-12 pb-6">
+      <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-6">
  
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center mx-auto mb-3">
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        <div className="flex items-center mb-6">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-[72px] h-[72px] rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center">
+              <svg width="42" height="42" viewBox="0 0 32 32" fill="none"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </div>
+            <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Copy</p>
           </div>
-          <p className="text-white text-[11px] font-bold tracking-[0.12em] uppercase mb-2">Copy</p>
-          <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
-            IA GENERATIVA · COPY PROFESIONAL
+          <div className="flex-1 text-center">
+            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+              IA GENERATIVA · COPY PROFESIONAL
+            </div>
+            <h1 className="text-xl font-black text-white mb-1">
+              Crea copy que <span className="text-orange-500">vende</span>,{" "}
+              <span className="text-cyan-400">conecta</span> y{" "}
+              <span className="text-green-400">convierte</span>
+            </h1>
+            <p className="text-yellow-400 text-[11px]">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
           </div>
-          <h1 className="text-xl font-black text-white mb-1">
-            Crea copy que <span className="text-orange-500">vende</span>,{" "}
-            <span className="text-cyan-400">conecta</span> y{" "}
-            <span className="text-green-400">convierte</span>
-          </h1>
-          <p className="text-yellow-400 text-[11px]">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
+          <div className="flex-shrink-0" style={{width:"99px"}}></div>
         </div>
+ 
         <div className="grid grid-cols-3 border border-[#1a1a1a] rounded-xl overflow-hidden mb-6">
           <div className="text-center py-2.5 px-3 border-r border-[#1a1a1a] border-t-2 border-t-orange-500">
             <p className="text-orange-500 text-[8px] font-bold uppercase tracking-widest mb-0.5">PASO 1</p>
@@ -567,10 +569,8 @@ export default function Copy() {
             <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
               {[
                 {id:"landing",label:"Landing",color:"bg-orange-500"},
-                // tab whatsapp oculto
                 {id:"campana",label:"Campaña",color:"bg-green-400"},
                 {id:"prompts",label:"Prompts IA",color:"bg-purple-500"},
-                // tab metaads oculto
                 {id:"extras",label:"Extras",color:"bg-zinc-600"},
               ].map(t => (
                 <button key={t.id} onClick={() => setTabActivo(t.id)} className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-bold transition-all ${tabActivo === t.id ? `${t.color} text-white` : "text-zinc-500"}`}>
@@ -658,21 +658,6 @@ export default function Copy() {
                   </>
                 )}
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
                 {tabActivo === "campana" && (
                   <div className="space-y-4">
                     {resultado?.headlines && resultado.headlines.length > 0 && (
@@ -753,21 +738,6 @@ export default function Copy() {
                     </div>
                   </div>
                 )}
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  
                 {tabActivo === "extras" && (
                   <div className="space-y-4">
