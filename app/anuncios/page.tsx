@@ -80,7 +80,6 @@ export default function Anuncios() {
   const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
  
-  // Cargar estado persistido al montar
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
     const p = sessionStorage.getItem("anuncios_producto");
@@ -125,7 +124,6 @@ export default function Anuncios() {
     setHydrated(true);
   }, []);
  
-  // Persistir estado en sessionStorage cada vez que cambia algo relevante
   useEffect(() => {
     if (!hydrated) return;
     const estado = {
@@ -247,11 +245,11 @@ export default function Anuncios() {
   return (
     <div className="min-h-screen bg-[#050505] text-white">
  
-      {/* Header homogeneizado igual que Copy y Redes */}
+      {/* Header */}
       <div className="max-w-5xl mx-auto px-4 pt-6 pb-0">
-        <div className="flex items-center mb-4">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-[72px] h-[72px] rounded-full bg-[#1a0000] border border-[#2a2a2a] flex items-center justify-center">
+        <div className="flex items-center mb-0">
+          <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
+            <div className="w-[72px] h-[72px] rounded-full bg-[#1a0000] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
               <svg width="42" height="42" viewBox="0 0 32 32" fill="none">
                 <path d="M6 14 L20 8 L20 24 L6 18 Z" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
                 <rect x="6" y="14" width="4" height="4" fill="white" fillOpacity="0.6"/>
@@ -260,9 +258,9 @@ export default function Anuncios() {
                 <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
-            <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Anuncios</p>
+            <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Anuncios</p>
           </div>
-          <div className="flex-1 text-center">
+          <div className="flex-1 text-center px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · META ADS PROFESIONAL
             </div>
@@ -271,24 +269,32 @@ export default function Anuncios() {
             </h1>
             <p className="text-yellow-400 text-[11px]">Producto · temperatura · frases · la IA genera el anuncio listo para Meta Ads</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"99px"}}></div>
+          <div className="flex-shrink-0" style={{width:"160px"}}></div>
         </div>
       </div>
  
-      <div className="max-w-5xl mx-auto px-4 pb-12">
- 
-        {/* Steps */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            {[1,2,3].map(n => (
-              <div key={n} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${pantalla === n ? "bg-orange-500 text-white" : pantalla > n ? "bg-green-500 text-white" : "bg-[#111] border border-[#222] text-zinc-600"}`}>{pantalla > n ? "✓" : n}</div>
-                {n < 3 && <div className={`w-8 h-px ${pantalla > n ? "bg-green-500" : "bg-[#222]"}`}></div>}
-              </div>
-            ))}
-            <span className="text-yellow-400 text-xs ml-2">{pantalla === 1 ? "Tu producto" : pantalla === 2 ? "Temperatura y frases" : "Tu anuncio listo"}</span>
+      {/* Steps bar full width */}
+      <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
+        {[
+          { n: 1, label: "Paso 1 — Producto", sub: "Tu producto" },
+          { n: 2, label: "Paso 2 — Temperatura", sub: "Hot / Warm / Cold" },
+          { n: 3, label: "Paso 3 — Tu anuncio", sub: "Genera y descarga" },
+        ].map((s) => (
+          <div key={s.n} onClick={() => setPantalla(s.n)}
+            className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative">
+            <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${pantalla === s.n ? "bg-orange-500 text-white" : pantalla > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
+              {pantalla > s.n ? "✓" : s.n}
+            </div>
+            <div>
+              <div className={`text-[10px] font-bold tracking-widest uppercase ${pantalla === s.n ? "text-orange-500" : pantalla > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
+              <div className="text-[9px] text-yellow-400 mt-0.5">{s.sub}</div>
+            </div>
+            {pantalla === s.n && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
           </div>
-        </div>
+        ))}
+      </div>
+ 
+      <div className="max-w-5xl mx-auto px-4 pb-12 mt-6">
  
         {/* PANTALLA 1 */}
         {pantalla === 1 && (
