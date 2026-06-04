@@ -200,6 +200,31 @@ export async function POST(req: NextRequest) {
 
     const imageUrl = await generarImagenBase64(promptFinal, size, process.env.OPENAI_API_KEY!, imagen);
 
+    // Guardar ADN anónimo en Supabase
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      await fetch(`${supabaseUrl}/rest/v1/anuncios_adn`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          temperatura,
+          pais: "latam",
+          frases_usadas: frasesSeleccionadas,
+          headline_length: headline?.length || 0,
+          tiene_precio: !!precioOferta,
+          tiene_foto_producto: !!imagen,
+          formato,
+        }),
+      });
+    } catch (e) {
+      console.log("ADN save error (non-critical):", e);
+    }
+
     return NextResponse.json({ imageUrl, success: true });
 
   } catch (err: any) {
