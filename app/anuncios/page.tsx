@@ -84,7 +84,9 @@ export default function Anuncios() {
   useEffect(() => {
     const h = sessionStorage.getItem("anuncios_headlines");
     const p = sessionStorage.getItem("anuncios_producto");
-    const saved = sessionStorage.getItem(SS_KEY);
+    const fromCopy = sessionStorage.getItem("anuncios_producto");
+    if (fromCopy) sessionStorage.removeItem(SS_KEY);
+    const saved = fromCopy ? null : sessionStorage.getItem(SS_KEY);
  
     if (saved) {
       try {
