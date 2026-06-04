@@ -56,6 +56,16 @@ export default function Navbar() {
                   >
                     Cerrar sesión
                   </button>
+                  <button
+                    onClick={async () => {
+                      const supabase = createClient();
+                      await supabase.auth.signOut({ scope: "global" });
+                      window.location.href = "/login";
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-orange-400 hover:bg-zinc-800 transition-colors border-t border-zinc-800"
+                  >
+                    Cerrar todas las sesiones
+                  </button>       
                 </div>
               )}
             </div>
