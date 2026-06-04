@@ -148,6 +148,11 @@ export default function JosueChat() {
             ))}
           </div>
 
+          {/* Banner construccion */}
+          <div style={{ padding: "6px 12px", background: "#0d0d0d", borderTop: "1px solid #1a1a1a", textAlign: "center" }}>
+            <span style={{ color: "#ff5000", fontSize: "9px", fontWeight: 700, fontFamily: "sans-serif" }}>🚧 LandCopy está en construcción activa — esto puede mejorar pronto</span>
+          </div>
+
           {/* Input */}
           <div style={{ padding: "10px 12px", borderTop: "1px solid #1a1a1a", display: "flex", gap: "8px" }}>
             <input
