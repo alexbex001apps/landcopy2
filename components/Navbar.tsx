@@ -50,7 +50,12 @@ const LogoAnuncios = () => (
   </svg>
 );
 
-const LogoCampanas = () => (
+
+
+export default function Navbar() {
+  const [user, setUser] = useState<User | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const LogoCampanas = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="4" y="8" width="24" height="16" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
     <line x1="4" y1="13" x2="28" y2="13" stroke="white" strokeWidth="1" opacity="0.3"/>
@@ -62,11 +67,6 @@ const LogoCampanas = () => (
     <line x1="22.5" y1="9" x2="25.5" y2="9" stroke="white" strokeWidth="1" strokeLinecap="round"/>
   </svg>
 );
-
-export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
