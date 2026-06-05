@@ -460,7 +460,7 @@ export default function Landing() {
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
                 </div>
-                <div className="flex-1 bg-[#111] border border-[#1a1a1a] rounded px-2 py-1 text-[9px] text-zinc-600">
+                <div className="flex-1 bg-[#111] border border-[#1a1a1a] rounded px-2 py-1 text-[9px] text-yellow-400">
                   landcopy2.vercel.app/p/{datosActivos.producto?.toLowerCase().replace(/\s+/g, '-') || 'landing'}
                 </div>
                 <div className="flex gap-1">
