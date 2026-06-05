@@ -14,6 +14,7 @@ interface BibliotecaItem {
   carpeta_id: string | null;
   created_at: string;
   metadata: any;
+  notas: string | null;
 }
 
 interface Carpeta {
@@ -53,6 +54,8 @@ export default function Biblioteca() {
   const [nuevaCarpetaNombre, setNuevaCarpetaNombre] = useState("");
   const [nuevaCarpetaColor, setNuevaCarpetaColor] = useState("#f97316");
   const [modalMover, setModalMover] = useState<string | null>(null);
+  const [modalNotas, setModalNotas] = useState<string | null>(null);
+  const [notasTexto, setNotasTexto] = useState("");
 
   const supabase = createClient();
 
@@ -98,7 +101,17 @@ export default function Biblioteca() {
     if (carpetaActiva === id) setCarpetaActiva(null);
     showToast("Carpeta eliminada");
   };
-
+  const guardarNotas = async () => {
+    if (!modalNotas) return;
+    await fetch("/api/biblioteca", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: modalNotas, notas: notasTexto }),
+    });
+    setItems(prev => prev.map(i => i.id === modalNotas ? { ...i, notas: notasTexto } : i));
+    setModalNotas(null);
+    showToast("Nota guardada");
+  };
   const moverItem = async (itemId: string, carpetaId: string | null) => {
     await fetch("/api/biblioteca", {
       method: "PATCH",
@@ -208,7 +221,19 @@ export default function Biblioteca() {
           </div>
         </div>
       )}
-
+      {/* Modal notas */}
+      {modalNotas && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalNotas(null)}>
+          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-white font-bold text-sm mb-4">✏️ Notas</h2>
+            <textarea value={notasTexto} onChange={e => setNotasTexto(e.target.value)} rows={4} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none resize-none mb-4" placeholder="Ej: Esta imagen rompió récords de venta..." />
+            <div className="flex gap-2">
+              <button onClick={() => setModalNotas(null)} className="flex-1 border border-[#1e1e1e] text-zinc-500 text-sm font-bold py-2 rounded-xl">Cancelar</button>
+              <button onClick={guardarNotas} className="flex-1 bg-orange-500 text-white text-sm font-bold py-2 rounded-xl">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal mover a carpeta */}
       {modalMover && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalMover(null)}>
@@ -393,6 +418,7 @@ export default function Biblioteca() {
                         {copiado === item.id ? "✓" : "📋"}
                       </button>
                     )}
+                    <button onClick={() => { setModalNotas(item.id); setNotasTexto(item.notas || ""); }} className="bg-[#111] border border-[#1a1a1a] text-zinc-400 text-[9px] font-bold px-2 py-1.5 rounded-lg">✏️</button>
                     <button onClick={() => setModalMover(item.id)} className="bg-[#111] border border-[#1a1a1a] text-zinc-400 text-[9px] font-bold px-2 py-1.5 rounded-lg">📁</button>
                     <button onClick={() => eliminar(item.id)} className="bg-[#111] border border-red-500/20 text-red-400 text-[9px] font-bold px-2 py-1.5 rounded-lg">✕</button>
                   </div>

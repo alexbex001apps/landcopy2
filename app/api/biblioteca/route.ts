@@ -62,12 +62,13 @@ export async function PATCH(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const body = await req.json();
-    const { id, favorito, nombre, carpeta_id } = body;
+    const { id, favorito, nombre, carpeta_id, notas } = body;
 
     const updates: any = {};
     if (favorito !== undefined) updates.favorito = favorito;
     if (carpeta_id !== undefined) updates.carpeta_id = carpeta_id;
     if (nombre !== undefined) updates.nombre = nombre;
+    if (notas !== undefined) updates.notas = notas;
 
     const { data, error } = await supabase.from("biblioteca")
       .update(updates)
