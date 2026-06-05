@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
 
 interface Campaign {
   id: string;
@@ -62,6 +63,8 @@ export default function Landing() {
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string | null>(null);
+  const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
+  const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [fNombre, setFNombre] = useState("");
   const [fProducto, setFProducto] = useState("");
@@ -183,7 +186,7 @@ export default function Landing() {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado }),
       });
       const data = await resp.json();
       if (data.imageUrl) setImagenes(prev => ({ ...prev, [seccionId]: data.imageUrl }));
@@ -556,14 +559,39 @@ export default function Landing() {
               </div>
 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Estilo visual</p>
-                <div className="grid grid-cols-2 gap-1.5">
+              <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Estilo visual</p>
+                <div className="grid grid-cols-2 gap-1.5 mb-3">
                   {ESTILOS.map(e => (
                     <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a]"}`}>
                       <p className="text-white text-[9px] font-bold">{e.nombre}</p>
                     </div>
                   ))}
                 </div>
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo de imagen</p>
+                <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
+                  <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
+                  <span className="text-yellow-400 text-[10px]">{mostrarFondos ? "▲" : "▼"}</span>
+                </button>
+                {mostrarFondos && (
+                  <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+                    <div onClick={() => { setFondoSeleccionado(null); setMostrarFondos(false); }} className="flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer border-b border-[#1a1a1a]">
+                      <div className="w-5 h-5 rounded border border-[#333] flex-shrink-0"></div>
+                      <span className="text-[10px] text-zinc-500">Sin fondo específico</span>
+                    </div>
+                    {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil"].map(cat => (
+                      <div key={cat}>
+                        <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest px-3 py-1 bg-[#080808]">{cat}</p>
+                        {FONDOS_DISPONIBLES.filter(f => f.categoria === cat).map(f => (
+                          <div key={f.id} onClick={() => { setFondoSeleccionado(f.id); setMostrarFondos(false); }} className={`flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer ${fondoSeleccionado === f.id ? "bg-[#1a1a1a]" : ""}`}>
+                            <div className="w-5 h-5 rounded flex-shrink-0" style={{ background: f.color }}></div>
+                            <span className="text-[10px] text-[#f0ead6]">{f.nombre}</span>
+                            {fondoSeleccionado === f.id && <span className="ml-auto text-yellow-400 text-[9px]">✓</span>}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
