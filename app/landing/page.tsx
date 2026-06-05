@@ -62,7 +62,7 @@ export default function Landing() {
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string | null>(null);
-
+  const [toast, setToast] = useState<string | null>(null);
   const [fNombre, setFNombre] = useState("");
   const [fProducto, setFProducto] = useState("");
   const [fProblema, setFProblema] = useState("");
@@ -191,6 +191,31 @@ export default function Landing() {
     setImagenGenerando(null);
   };
 
+  const guardarEnBiblioteca = async () => {
+    const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
+    if (seccionesConContenido.length === 0) return;
+    const producto = datosActivos.producto || "Producto";
+    const nombre = `${producto} — Landing completa`;
+    await fetch("/api/biblioteca", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "landing",
+        modulo: "landing",
+        nombre,
+        producto,
+        contenido: JSON.stringify({ secciones: contenido, imagenes }),
+        imagen_url: imagenes["hero"] || null,
+        metadata: { secciones: Object.keys(contenido), estilo },
+      }),
+    });
+    showToast("✓ Landing guardada en Biblioteca");
+  };
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
@@ -515,7 +540,7 @@ export default function Landing() {
                 <div className="space-y-1.5">
                   <button className="w-full bg-green-500 hover:bg-green-600 text-black text-[9px] font-bold py-2 rounded-lg transition-colors">⬇ Descargar HTML</button>
                   <button className="w-full border border-orange-500/40 text-orange-400 text-[9px] font-bold py-2 rounded-lg">🔗 Link compartible</button>
-                  <button className="w-full border border-purple-500/40 text-purple-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar en Biblioteca</button>
+                  
                   <button className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
                 </div>
               </div>
