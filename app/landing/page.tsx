@@ -343,7 +343,7 @@ export default function Landing() {
               </div>
               <div className="flex-1">
                 <p className="text-[9px] text-green-400 uppercase tracking-widest mb-0.5">Campaña activa {campaign.es_combo && <span className="bg-orange-500/20 text-orange-400 px-1 rounded ml-1">COMBO</span>}</p>
-                <p className="text-white text-sm font-bold">{campaign.nombre}</p>
+                <p className="text-white text-base font-bold">{campaign.nombre}</p>
                 <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
               </div>
               <div className="flex gap-2 items-center">
