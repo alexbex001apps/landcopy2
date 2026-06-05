@@ -108,6 +108,7 @@ export default function Biblioteca() {
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i));
     setModalMover(null);
     showToast("Movido a carpeta");
+    await cargar();
   };
 
   const toggleFavorito = async (item: BibliotecaItem) => {
