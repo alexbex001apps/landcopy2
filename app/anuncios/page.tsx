@@ -1,18 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
- 
+
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
   { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
   { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px" },
 ];
- 
+
 const TEMPERATURAS = [
   { id: "hot", icon: "🔥", nombre: "Hot Traffic", desc: "Urgencia, precio, escasez. Cierra la venta.", color: "#cc0000", bg: "#1a0000", border: "#cc0000" },
   { id: "warm", icon: "🌡️", nombre: "Warm Traffic", desc: "Beneficios, confianza, prueba social.", color: "#ff8800", bg: "#1a0e00", border: "#ff8800" },
   { id: "cold", icon: "❄️", nombre: "Cold Traffic", desc: "Presentación, curiosidad, enganche.", color: "#0088cc", bg: "#00101a", border: "#0088cc" },
 ];
- 
+
 const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]> = {
   hot: [
     { texto: "¡ÚLTIMAS UNIDADES!", temp: "hot" },
@@ -50,11 +50,11 @@ const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]>
     { texto: "LO QUE NO TE CUENTAN", temp: "cold" },
   ],
 };
- 
+
 const COLORES_TEMP = { hot: "#cc0000", warm: "#ff8800", cold: "#0088cc" };
- 
+
 const SS_KEY = "anuncios_estado";
- 
+
 export default function Anuncios() {
   const [pantalla, setPantalla] = useState(1);
   const [productoData, setProductoData] = useState<any>(null);
@@ -79,14 +79,26 @@ export default function Anuncios() {
   const [instruccionEdicion, setInstruccionEdicion] = useState("");
   const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
- 
+
   useEffect(() => {
+    // Campaña activa tiene prioridad sobre todo
+    const campaign = sessionStorage.getItem("campaign_activa");
+    if (campaign) {
+      const c = JSON.parse(campaign);
+      setNombre(c.producto || "");
+      setPrecioOferta(c.precio_oferta || "");
+      setPrecioAnterior(c.precio_anterior || "");
+      if (c.imagen_url) setImagenProducto(c.imagen_url);
+      setHydrated(true);
+      return;
+    }
+
     const h = sessionStorage.getItem("anuncios_headlines");
     const p = sessionStorage.getItem("anuncios_producto");
     const fromCopy = sessionStorage.getItem("anuncios_producto");
     if (fromCopy) sessionStorage.removeItem(SS_KEY);
     const saved = fromCopy ? null : sessionStorage.getItem(SS_KEY);
- 
+
     if (saved) {
       try {
         const s = JSON.parse(saved);
@@ -112,17 +124,6 @@ export default function Anuncios() {
         setHeadlines(parsed);
         if (parsed.length > 0) setHeadline(parsed[0]);
       }
-      const campaign = sessionStorage.getItem("campaign_activa");
-      if (campaign) {
-        const c = JSON.parse(campaign);
-        setNombre(c.producto || "");
-        setPrecioOferta(c.precio_oferta || "");
-        setPrecioAnterior(c.precio_anterior || "");
-        if (c.imagen_url) setImagenProducto(c.imagen_url);
-        
-        setHydrated(true);
-        return;
-      }
       if (p) {
         const data = JSON.parse(p);
         setProductoData(data);
@@ -134,7 +135,7 @@ export default function Anuncios() {
     }
     setHydrated(true);
   }, []);
- 
+
   useEffect(() => {
     if (!hydrated) return;
     const estado = {
@@ -148,7 +149,7 @@ export default function Anuncios() {
   }, [hydrated, pantalla, nombre, descripcion, precioOferta, precioAnterior,
     headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
     promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines]);
- 
+
   const generarDolor = async () => {
     if (!nombre) return;
     setGenerandoDolor(true);
@@ -176,7 +177,7 @@ export default function Anuncios() {
       setGenerandoDolor(false);
     }
   };
- 
+
   const toggleFrase = (texto: string) => {
     setFrasesSeleccionadas(prev => {
       if (prev.includes(texto)) return prev.filter(f => f !== texto);
@@ -184,11 +185,11 @@ export default function Anuncios() {
       return [...prev, texto];
     });
   };
- 
+
   const toggleDolor = (texto: string) => {
     setDolorSel(prev => prev.includes(texto) ? prev.filter(d => d !== texto) : [...prev, texto]);
   };
- 
+
   const generarAnuncio = async () => {
     setGenerando(true);
     setImagenGenerada(null);
@@ -213,7 +214,7 @@ export default function Anuncios() {
       setGenerando(false);
     }
   };
- 
+
   const editarAnuncio = async () => {
     if (!imagenGenerada || !instruccionEdicion.trim()) return;
     setEditando(true);
@@ -242,7 +243,7 @@ export default function Anuncios() {
       setEditando(false);
     }
   };
- 
+
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -250,12 +251,12 @@ export default function Anuncios() {
     reader.onload = () => setImagenProducto(reader.result as string);
     reader.readAsDataURL(file);
   };
- 
+
   const tempActual = TEMPERATURAS.find(t => t.id === temperatura)!;
- 
+
   return (
     <div className="min-h-screen bg-[#050505] text-white">
- 
+
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
@@ -283,7 +284,7 @@ export default function Anuncios() {
           <div className="flex-shrink-0" style={{width:"160px"}}></div>
         </div>
       </div>
- 
+
       {/* Steps bar full width */}
       <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
         {[
@@ -304,9 +305,9 @@ export default function Anuncios() {
           </div>
         ))}
       </div>
- 
+
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
- 
+
         {/* PANTALLA 1 */}
         {pantalla === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -338,7 +339,7 @@ export default function Anuncios() {
                 </div>
               </div>
             </div>
- 
+
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Producto</p>
@@ -372,14 +373,14 @@ export default function Anuncios() {
                   <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
                 </div>
               </div>
- 
+
               <button onClick={() => { if (nombre.trim() && headline.trim()) { setPantalla(2); if (nombre && !dolorChips.length) generarDolor(); } }} disabled={!nombre.trim() || !headline.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
                 Siguiente — Temperatura y frases →
               </button>
             </div>
           </div>
         )}
- 
+
         {/* PANTALLA 2 */}
         {pantalla === 2 && (
           <div className="space-y-6">
@@ -396,7 +397,7 @@ export default function Anuncios() {
                 </div>
               </div>
             )}
- 
+
             <div>
               <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Temperatura y frases — máximo 7 frases</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -426,12 +427,12 @@ export default function Anuncios() {
                 ))}
               </div>
             </div>
- 
+
             <div className="bg-[#111] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center justify-between">
               <span className="text-yellow-400 text-xs">Frases seleccionadas</span>
               <span className={`text-sm font-black ${frasesSeleccionadas.length >= 7 ? "text-red-400" : "text-orange-500"}`}>{frasesSeleccionadas.length} / 7</span>
             </div>
- 
+
             {frasesSeleccionadas.length > 0 && (
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl px-4 py-3">
                 <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">Seleccionadas</p>
@@ -443,12 +444,12 @@ export default function Anuncios() {
                 </div>
               </div>
             )}
- 
+
             <div className="bg-[#0a0a0a] border border-dashed border-[#333] rounded-xl p-4">
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">✏️ Prompt propio — opcional, para usuarios avanzados</p>
               <textarea value={promptPropio} onChange={e => setPromptPropio(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Escribe tu instrucción directa aquí..." />
             </div>
- 
+
             <div className="flex gap-3">
               <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-yellow-400 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
               <button onClick={() => setPantalla(3)} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
@@ -457,7 +458,7 @@ export default function Anuncios() {
             </div>
           </div>
         )}
- 
+
         {/* PANTALLA 3 */}
         {pantalla === 3 && (
           <div className="space-y-6">
@@ -485,7 +486,7 @@ export default function Anuncios() {
                 <div><button onClick={() => setPantalla(2)} className="text-yellow-400 text-xs border border-[#1e1e1e] px-4 py-2 rounded-lg">← Editar frases</button></div>
               </div>
             )}
- 
+
             {generando && (
               <div className="text-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
@@ -494,7 +495,7 @@ export default function Anuncios() {
                 <p className="text-xs font-bold" style={{color:"#00ff88"}}>⚠️ No salgas de esta pantalla hasta que se genere tu imagen</p>
               </div>
             )}
- 
+
             {imagenGenerada && (
               <div className="space-y-4">
                 <div className="bg-[#0a0a0a] border border-green-500/30 rounded-2xl overflow-hidden">
@@ -522,7 +523,7 @@ export default function Anuncios() {
                 </div>
               </div>
             )}
- 
+
             {errorGeneracion && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center">
                 <p className="text-red-400 text-sm font-bold">Error al generar</p>
@@ -532,7 +533,7 @@ export default function Anuncios() {
             )}
           </div>
         )}
- 
+
       </div>
     </div>
   );
