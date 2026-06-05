@@ -356,7 +356,7 @@ export default function Biblioteca() {
               <div key={item.id} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden hover:border-[#333] transition-colors">
 
                 {/* Preview */}
-                <div className={`h-[140px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
+                <div className={`h-[100px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
                   {item.imagen_url ? (
                     <img src={item.imagen_url} className="w-full h-full object-cover" alt={item.nombre} />
                   ) : (
