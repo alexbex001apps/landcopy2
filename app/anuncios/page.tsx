@@ -119,7 +119,7 @@ export default function Anuncios() {
         setPrecioOferta(c.precio_oferta || "");
         setPrecioAnterior(c.precio_anterior || "");
         if (c.imagen_url) setImagenProducto(c.imagen_url);
-        sessionStorage.removeItem("campaign_activa");
+        
         setHydrated(true);
         return;
       }
