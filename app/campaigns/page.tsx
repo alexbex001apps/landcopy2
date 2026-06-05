@@ -135,9 +135,9 @@ export default function Campaigns() {
     setSaving(false);
   };
 
-  const usarCampaign = (c: Campaign) => {
+  const usarCampaign = (c: Campaign, destino: string = "/copy") => {
     sessionStorage.setItem("campaign_activa", JSON.stringify(c));
-    router.push("/copy");
+    router.push(destino);
   };
 
   const eliminarCampaign = async (id: string) => {
@@ -181,12 +181,10 @@ export default function Campaigns() {
 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
 
-        {/* Formulario nueva campaña */}
         {showForm && (
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-8">
             <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Nueva campaña</p>
 
-            {/* Fotos */}
             <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fotos del producto (hasta 3)</p>
             <div className="flex gap-4 mb-6">
               {[1,2,3].map(slot => (
@@ -211,7 +209,6 @@ export default function Campaigns() {
               ))}
             </div>
 
-            {/* Campos */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre de la campaña *</label>
@@ -264,7 +261,6 @@ export default function Campaigns() {
           </div>
         )}
 
-        {/* Lista de campañas */}
         {loading ? (
           <div className="text-center py-20 text-yellow-400 text-sm">Cargando campañas...</div>
         ) : campaigns.length === 0 && !showForm ? (
@@ -297,11 +293,11 @@ export default function Campaigns() {
                   </div>
                 </div>
                 <div className="border-t border-[#1a1a1a] grid grid-cols-3">
-                  <button onClick={() => usarCampaign(c)} className="py-2.5 text-[10px] font-bold text-orange-500 hover:bg-orange-500/10 transition-colors border-r border-[#1a1a1a]">
-                    Usar campaña
+                  <button onClick={() => usarCampaign(c, "/copy")} className="py-2.5 text-[10px] font-bold text-orange-500 hover:bg-orange-500/10 transition-colors border-r border-[#1a1a1a]">
+                    → Copy
                   </button>
-                  <button className="py-2.5 text-[10px] font-bold text-yellow-400 hover:bg-yellow-400/10 transition-colors border-r border-[#1a1a1a]">
-                    Duplicar
+                  <button onClick={() => usarCampaign(c, "/anuncios")} className="py-2.5 text-[10px] font-bold text-yellow-400 hover:bg-yellow-400/10 transition-colors border-r border-[#1a1a1a]">
+                    → Anuncios
                   </button>
                   <button onClick={() => eliminarCampaign(c.id)} className="py-2.5 text-[10px] font-bold text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors">
                     Eliminar
