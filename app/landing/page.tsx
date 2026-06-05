@@ -468,7 +468,7 @@ export default function Landing() {
                   <button onClick={() => setVistaMovil(true)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${vistaMovil ? "bg-orange-500 text-white" : "text-zinc-500 border border-[#1a1a1a]"}`}>Móvil</button>
                 </div>
               </div>
-              <div className="p-4 overflow-y-auto max-h-[600px]">
+              <div className="p-4 overflow-y-auto max-h-screen">
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[8px] text-zinc-600 uppercase tracking-widest mb-1">{s.nombre}</p>
