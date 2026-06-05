@@ -112,6 +112,17 @@ export default function Anuncios() {
         setHeadlines(parsed);
         if (parsed.length > 0) setHeadline(parsed[0]);
       }
+      const campaign = sessionStorage.getItem("campaign_activa");
+      if (campaign) {
+        const c = JSON.parse(campaign);
+        setNombre(c.producto || "");
+        setPrecioOferta(c.precio_oferta || "");
+        setPrecioAnterior(c.precio_anterior || "");
+        if (c.imagen_url) setImagenProducto(c.imagen_url);
+        sessionStorage.removeItem("campaign_activa");
+        setHydrated(true);
+        return;
+      }
       if (p) {
         const data = JSON.parse(p);
         setProductoData(data);
