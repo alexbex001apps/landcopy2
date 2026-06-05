@@ -225,7 +225,7 @@ export default function Landing() {
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Landing</p>
           </div>
           <div className="flex-1 text-center px-5">
-            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+            <div className="inline-flex items-center gap-2 bg-orange-500 text-yellow-400 text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · LANDING DE VENTAS
             </div>
             <h1 className="text-xl font-black text-white mb-1">
@@ -339,7 +339,7 @@ export default function Landing() {
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
-                <p className="text-white text-[9px] font-bold">Al terminar puedes guardar como campaña</p>
+                <p className="text-yellow-400 text-[9px] font-bold">Al terminar puedes guardar como campaña</p>
               </div>
 
               <p className="text-green-400 text-[9px] font-bold uppercase tracking-wider mb-2">Foto del producto</p>
@@ -419,7 +419,7 @@ export default function Landing() {
                     </div>
                     <div>
                       <p className="text-white text-[11px] font-bold">{s.nombre}</p>
-                      <p className="text-white text-[9px] font-bold">{s.sub}</p>
+                      <p className="text-yellow-400 text-[9px] font-bold">{s.sub}</p>
                     </div>
                     {contenido[s.id] && <span className="ml-auto text-green-400 text-[9px] font-bold">Listo</span>}
                     {seccionGenerando === s.id && <span className="ml-auto text-orange-400 text-[9px] font-bold">Generando...</span>}
@@ -495,7 +495,7 @@ export default function Landing() {
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar sección</button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-white text-[9px] font-bold font-bold py-2 rounded-lg">👁️ Ocultar</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold font-bold py-2 rounded-lg">👁️ Ocultar</button>
                 </div>
               </div>
 
@@ -504,7 +504,7 @@ export default function Landing() {
                 <div className="grid grid-cols-2 gap-1.5">
                   {ESTILOS.map(e => (
                     <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a]"}`}>
-                      <p className="text-white text-[9px] font-bold">{e.nombre}</p>
+                      <p className="text-yellow-400 text-[9px] font-bold">{e.nombre}</p>
                     </div>
                   ))}
                 </div>
