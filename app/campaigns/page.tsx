@@ -271,7 +271,7 @@ export default function Campaigns() {
             <button onClick={() => setShowForm(true)} className="bg-orange-500 text-white font-bold px-8 py-3 rounded-xl text-sm">+ Nueva campaña</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {campaigns.map(c => (
               <div key={c.id} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden hover:border-[#333] transition-colors">
                 <div className="p-4 flex items-center gap-3">
