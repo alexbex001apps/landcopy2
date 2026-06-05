@@ -291,7 +291,7 @@ export default function Landing() {
           { n: 2, label: "Paso 2 — Generando", sub: "Secciones con IA" },
           { n: 3, label: "Paso 3 — Resultado", sub: "Descarga o comparte" },
         ].map((s) => (
-          <div key={s.n} onClick={() => { if (s.n < paso) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
+          <div key={s.n} onClick={() => { if (s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0)) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
             <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${paso === s.n ? "bg-orange-500 text-white" : paso > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
