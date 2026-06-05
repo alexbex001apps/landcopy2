@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
-  hero: (p) => `Professional hero image for a Latin American ecommerce landing page. Product: ${p.producto}. Large dramatic product shot, centered, premium cinematic lighting. Clean background. High contrast. Commercial advertising quality. 4K ultra detailed.`,
+  hero: (p) => `Professional ecommerce hero banner for Latin American market. Product: ${p.producto}. Large bold headline text overlaid: "${p.headline || p.producto}". Subheadline: "${p.beneficio}". Call to action button text: "¡Comprar ahora!". Dramatic cinematic product shot centered. Dark premium background with orange accent lighting. Bold white typography. Commercial advertising quality. 4K ultra detailed.`,
 
   problema: (p) => `Emotional lifestyle photo showing the PROBLEM before using ${p.producto}. Person experiencing: ${p.problema}. Relatable, empathetic, slightly dark mood. Latin American context. Commercial photography quality.`,
 
