@@ -496,8 +496,8 @@ export default function Landing() {
                 ))}
               </div>
               <div className="mt-3 space-y-1.5">
-                <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg">↻ Regenerar todo</button>
-                <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[11px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
+                <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">↻ Regenerar todo</button>
+                <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
               </div>
             </div>
 
@@ -535,15 +535,15 @@ export default function Landing() {
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">{secciones.find(s => s.id === seccionActiva)?.nombre}</p>
                 <div className="space-y-1.5">
-                  <button onClick={() => regenerarSeccion(seccionActiva)} disabled={seccionGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">
+                  <button onClick={() => regenerarSeccion(seccionActiva)} disabled={seccionGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg">✎ Editar texto</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
                   <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg">💾 Guardar sección</button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[11px] font-bold py-2 rounded-lg">👁️ Ocultar</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">💾 Guardar sección</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
 
@@ -561,10 +561,10 @@ export default function Landing() {
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
                 <div className="space-y-1.5">
-                  <button className="w-full bg-green-500 hover:bg-green-600 text-black text-[11px] font-bold py-2 rounded-lg transition-colors">⬇ Descargar HTML</button>
-                  <button className="w-full border border-orange-500/40 text-orange-400 text-[11px] font-bold py-2 rounded-lg">🔗 Link compartible</button>
-                  <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[11px] font-bold py-2 rounded-lg">💾 Guardar en Biblioteca</button>
-                  <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[11px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
+                  <button className="w-full bg-green-500 hover:bg-green-600 text-black text-[11px] font-bold py-2 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
+                  <button className="w-full border border-orange-500/40 text-orange-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">🔗 Link compartible</button>
+                  <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">💾 Guardar en Biblioteca</button>
+                  <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
                 </div>
               </div>
             </div>
