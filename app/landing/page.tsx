@@ -43,18 +43,10 @@ const SECCIONES_COMBO = [
   { id: "cta_final", nombre: "CTA final", sub: "Cierre de venta" },
 ];
 
-const ESTILOS = [
-  { id: "oscuro", nombre: "Oscuro", sub: "Dark premium" },
-  { id: "claro", nombre: "Claro", sub: "Clean white" },
-  { id: "bold", nombre: "Bold", sub: "Alta energía" },
-  { id: "suave", nombre: "Suave", sub: "Confianza" },
-];
-
 export default function Landing() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [sinCampaña, setSinCampaña] = useState(false);
   const [paso, setPaso] = useState(1);
-  const [estilo, setEstilo] = useState("oscuro");
   const [seccionesSeleccionadas, setSeccionesSeleccionadas] = useState<string[]>([]);
   const [vistaMovil, setVistaMovil] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState("hero");
@@ -204,9 +196,7 @@ export default function Landing() {
     if (seccionesConContenido.length === 0) return;
     const producto = datosActivos.producto || "Producto";
     const nombre = `${producto} — Landing completa`;
-
     const { data: { user } } = await supabase.auth.getUser();
-
     let heroUrl: string | null = null;
     if (imagenes["hero"] && imagenes["hero"].startsWith("data:")) {
       try {
@@ -219,18 +209,14 @@ export default function Landing() {
     } else {
       heroUrl = imagenes["hero"] || null;
     }
-
     await fetch("/api/biblioteca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        tipo: "landing",
-        modulo: "landing",
-        nombre,
-        producto,
+        tipo: "landing", modulo: "landing", nombre, producto,
         contenido: JSON.stringify({ secciones: contenido }),
         imagen_url: heroUrl,
-        metadata: { secciones: Object.keys(contenido), estilo },
+        metadata: { secciones: Object.keys(contenido) },
       }),
     });
     showToast("✓ Landing guardada en Biblioteca");
@@ -282,7 +268,7 @@ export default function Landing() {
             <h1 className="text-xl font-black text-white mb-1">
               Crea páginas que <span style={{color:"#f97316"}}>venden</span> y <span style={{color:"#22c55e"}}>convierten</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · sección · estilo · la IA genera la landing completa lista para publicar</p>
+            <p className="text-yellow-400 text-[11px]">Producto · sección · fondo · la IA genera la landing completa lista para publicar</p>
           </div>
           <div className="flex-shrink-0" style={{width:"160px"}}></div>
         </div>
@@ -356,16 +342,6 @@ export default function Landing() {
             </div>
 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
-              <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Estilo visual</p>
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {ESTILOS.map(e => (
-                  <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
-                    <p className="text-white text-[11px] font-bold">{e.nombre}</p>
-                    <p className="text-zinc-500 text-[9px]">{e.sub}</p>
-                  </div>
-                ))}
-              </div>
-
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {secciones.map(s => (
@@ -380,14 +356,8 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-
               <button onClick={generarLanding} disabled={seccionesSeleccionadas.length === 0} className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black py-3 rounded-xl text-sm transition-colors">
                 ⚡ Generar {seccionesSeleccionadas.length} sección{seccionesSeleccionadas.length !== 1 ? "es" : ""} seleccionada{seccionesSeleccionadas.length !== 1 ? "s" : ""}
-                {Object.keys(contenido).length > 0 && (
-                <button onClick={() => setPaso(3)} className="w-full mt-2 border border-green-500/40 text-green-400 text-sm font-bold py-2.5 rounded-xl active:scale-95 transition-transform">
-                  → Ver resultado generado
-                </button>
-              )}
               </button>
             </div>
           </div>
@@ -400,7 +370,6 @@ export default function Landing() {
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
                 <p className="text-zinc-600 text-[9px]">Al terminar puedes guardar como campaña</p>
               </div>
-
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Foto del producto</p>
               <div className="flex gap-4 mb-6">
                 {[1,2,3].map(slot => (
@@ -424,7 +393,6 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
                   <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre del producto *</label>
@@ -453,7 +421,6 @@ export default function Landing() {
                   </select>
                 </div>
               </div>
-
               <div className="flex gap-3 mt-4">
                 <button onClick={generarLanding} disabled={!fNombre.trim()} className="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-black font-black py-3 rounded-xl text-sm transition-colors">
                   ⚡ Generar landing ahora
@@ -550,7 +517,7 @@ export default function Landing() {
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
-                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">
+                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">💾 Guardar sección</button>
@@ -559,14 +526,6 @@ export default function Landing() {
               </div>
 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-              <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Estilo visual</p>
-                <div className="grid grid-cols-2 gap-1.5 mb-3">
-                  {ESTILOS.map(e => (
-                    <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a]"}`}>
-                      <p className="text-white text-[9px] font-bold">{e.nombre}</p>
-                    </div>
-                  ))}
-                </div>
                 <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo de imagen</p>
                 <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
                   <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
