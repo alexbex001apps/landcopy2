@@ -21,6 +21,9 @@ interface Carpeta {
   id: string;
   nombre: string;
   color: string;
+  descripcion: string | null;
+  responsable: string | null;
+  notas: string | null;
   created_at: string;
 }
 
@@ -55,6 +58,12 @@ export default function Biblioteca() {
   const [nuevaCarpetaColor, setNuevaCarpetaColor] = useState("#f97316");
   const [modalMover, setModalMover] = useState<string | null>(null);
   const [modalNotas, setModalNotas] = useState<string | null>(null);
+  const [modalEditarCarpeta, setModalEditarCarpeta] = useState<Carpeta | null>(null);
+  const [editCarpetaNombre, setEditCarpetaNombre] = useState("");
+  const [editCarpetaDescripcion, setEditCarpetaDescripcion] = useState("");
+  const [editCarpetaResponsable, setEditCarpetaResponsable] = useState("");
+  const [editCarpetaNotas, setEditCarpetaNotas] = useState("");
+  const [editCarpetaColor, setEditCarpetaColor] = useState("#f97316");
   const [notasTexto, setNotasTexto] = useState("");
 
   const supabase = createClient();
@@ -100,6 +109,20 @@ export default function Biblioteca() {
     setCarpetas(prev => prev.filter(c => c.id !== id));
     if (carpetaActiva === id) setCarpetaActiva(null);
     showToast("Carpeta eliminada");
+  };
+ const guardarCarpetaEditada = async () => {
+    if (!modalEditarCarpeta) return;
+    const updates = {
+      nombre: editCarpetaNombre,
+      color: editCarpetaColor,
+      descripcion: editCarpetaDescripcion,
+      responsable: editCarpetaResponsable,
+      notas: editCarpetaNotas,
+    };
+    await supabase.from("carpetas").update(updates).eq("id", modalEditarCarpeta.id);
+    setCarpetas(prev => prev.map(c => c.id === modalEditarCarpeta.id ? { ...c, ...updates } : c));
+    setModalEditarCarpeta(null);
+    showToast("Carpeta actualizada");
   };
   const guardarNotas = async () => {
     if (!modalNotas) return;
@@ -221,6 +244,44 @@ export default function Biblioteca() {
           </div>
         </div>
       )}
+      {/* Modal editar carpeta */}
+      {modalEditarCarpeta && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalEditarCarpeta(null)}>
+          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-white font-bold text-sm mb-4">✏️ Editar carpeta</h2>
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre</label>
+                <input value={editCarpetaNombre} onChange={e => setEditCarpetaNombre(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" />
+              </div>
+              <div>
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Descripción</label>
+                <input value={editCarpetaDescripcion} onChange={e => setEditCarpetaDescripcion(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Campaña navidad 2024" />
+              </div>
+              <div>
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Responsable</label>
+                <input value={editCarpetaResponsable} onChange={e => setEditCarpetaResponsable(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Carolina" />
+              </div>
+              <div>
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Notas</label>
+                <textarea value={editCarpetaNotas} onChange={e => setEditCarpetaNotas(e.target.value)} rows={3} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none resize-none" placeholder="Notas internas sobre esta carpeta..." />
+              </div>
+              <div>
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2 block">Color</label>
+                <div className="flex gap-2 flex-wrap">
+                  {COLORES_CARPETA.map(c => (
+                    <button key={c} onClick={() => setEditCarpetaColor(c)} className="w-7 h-7 rounded-full border-2 transition-all" style={{ background: c, borderColor: editCarpetaColor === c ? "white" : "transparent" }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setModalEditarCarpeta(null)} className="flex-1 border border-[#1e1e1e] text-zinc-500 text-sm font-bold py-2 rounded-xl">Cancelar</button>
+              <button onClick={guardarCarpetaEditada} className="flex-1 bg-orange-500 text-white text-sm font-bold py-2 rounded-xl">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal notas */}
       {modalNotas && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalNotas(null)}>
@@ -321,6 +382,7 @@ export default function Biblioteca() {
                     {c.nombre}
                     <span className="text-[9px] opacity-60">{items.filter(i => i.carpeta_id === c.id).length}</span>
                   </button>
+                  <button onClick={() => { setModalEditarCarpeta(c); setEditCarpetaNombre(c.nombre); setEditCarpetaDescripcion(c.descripcion || ""); setEditCarpetaResponsable(c.responsable || ""); setEditCarpetaNotas(c.notas || ""); setEditCarpetaColor(c.color); }} className="text-zinc-700 hover:text-blue-400 text-[10px] px-1">✏️</button>
                   <button onClick={() => eliminarCarpeta(c.id)} className="text-zinc-700 hover:text-red-400 text-[10px] px-1">✕</button>
                 </div>
               ))}
