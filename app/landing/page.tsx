@@ -59,6 +59,8 @@ export default function Landing() {
   const [contenido, setContenido] = useState<Record<string, string>>({});
   const [generando, setGenerando] = useState(false);
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
+  const [imagenes, setImagenes] = useState<Record<string, string>>({});
+  const [imagenGenerando, setImagenGenerando] = useState<string | null>(null);
 
   // Formulario sin campaña
   const [fNombre, setFNombre] = useState("");
@@ -166,6 +168,22 @@ export default function Landing() {
     setPaso(3);
   };
 
+  const generarImagen = async (seccionId: string) => {
+    setImagenGenerando(seccionId);
+    try {
+      const resp = await fetch("/api/landing/imagen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          seccion: seccionId,
+          ...datosActivos,
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) setImagenes(prev => ({ ...prev, [seccionId]: data.imageUrl }));
+    } catch {}
+    setImagenGenerando(null);
+  };
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
@@ -465,7 +483,9 @@ export default function Landing() {
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">✎ Editar texto</button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">🖼️ Generar imagen</button>
+                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg disabled:opacity-40">
+                    {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
+                  </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar sección</button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[9px] font-bold py-2 rounded-lg">👁️ Ocultar</button>
                 </div>
