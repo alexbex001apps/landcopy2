@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
-  hero: (p) => `Professional ecommerce hero banner for Latin American market. Product: ${p.producto}. Large bold headline text overlaid: "${p.headline || p.producto}". Subheadline: "${p.beneficio}". Call to action button text: "¡Comprar ahora!". Dramatic cinematic product shot centered. Dark premium background with orange accent lighting. Bold white typography. Commercial advertising quality. 4K ultra detailed.`,
+  hero: (p) => `Professional ecommerce hero banner for Latin American market. MUST include large bold text overlay on the image. Product: ${p.producto}. Bold headline text: "${p.headline || p.producto}". Subheadline text: "${p.beneficio}". CTA button with text: "¡Comprar ahora!". Dramatic cinematic product shot. Dark premium background with orange accent lighting. Bold white typography. Commercial advertising quality. 4K ultra detailed.`,
 
-  problema: (p) => `Emotional lifestyle photo showing the PROBLEM before using ${p.producto}. Person experiencing: ${p.problema}. Relatable, empathetic, slightly dark mood. Latin American context. Commercial photography quality.`,
+  problema: (p) => `Emotional marketing image showing the PROBLEM before using ${p.producto}. MUST include bold text overlay on the image. Main text: "${p.problema}". Secondary text: "¿Te ha pasado esto?". Split before/after style. Person looking frustrated or in pain. Latin American context. Dark moody lighting on left side. Bold white typography over image. Commercial photography quality.`,
 
-  solucion: (p) => `Person happily using ${p.producto} and experiencing: ${p.beneficio}. Warm lighting, hopeful and positive mood. Latin American lifestyle. Before/after transformation feeling. Commercial photography quality.`,
+  solucion: (p) => `Transformation marketing image for ${p.producto}. MUST include bold text overlay. Before side text: "Antes" with sad person. After side text: "Después" with happy person using the product. Center headline: "${p.beneficio}". Warm hopeful lighting on right side. Bold white and orange typography. Latin American lifestyle. Commercial photography quality.`,
 
-  kit: (p) => `Professional product flat lay showing multiple products from the kit: ${p.producto}. Clean white or gradient background. All products visible and well arranged. Premium commercial photography.`,
+  kit: (p) => `Professional product kit flat lay for ${p.producto}. MUST include bold text overlay. Headline text: "Todo lo que incluye tu kit". All products visible and well arranged. Clean white or gradient background. Orange accent colors. Premium commercial photography with text labels for each product.`,
 
-  beneficios: (p) => `Clean infographic-style image showing 3 benefits of ${p.producto}. Minimalist design, orange accent colors, icons or simple illustrations. Modern flat design. Professional marketing material.`,
+  beneficios: (p) => `Marketing infographic for ${p.producto}. MUST include bold text overlay. Large headline: "3 Beneficios que cambian todo". Three benefit sections with icons and bold text descriptions related to: ${p.beneficio}. Orange and white color scheme. Modern flat design. Professional marketing material quality.`,
 
-  como_funciona: (p) => `Simple step-by-step illustration showing how to use ${p.producto}. 3 clear steps with icons. Clean modern flat design. Latin American style. Professional infographic quality.`,
+  como_funciona: (p) => `Step-by-step marketing infographic for ${p.producto}. MUST include bold text overlay. Large headline: "¿Cómo funciona?". Three numbered steps (1, 2, 3) with icons and short bold text instructions. Orange numbered circles. Clean white background. Bold typography. Professional infographic quality.`,
 
-  testimonios: (p) => `Social proof testimonial image for ${p.producto}. Include 3 customer review cards with 5 stars, photos of happy Latin American customers, and short quotes about results. Bold headline text: "Lo que dicen nuestros clientes". Orange accent colors. Clean white background. Professional marketing design. Commercial quality.`,
+  testimonios: (p) => `Social proof marketing image for ${p.producto}. MUST include bold text overlay. Large headline: "Lo que dicen nuestros clientes". Three customer review cards with 5 orange stars each, photos of happy Latin American customers, and short bold quote text. Trust badges at bottom: "Garantía 30 días", "Envío rápido", "Pago seguro". Orange accent colors. Professional marketing design.`,
 
-  oferta: (p) => `${p.producto} product with price tag showing ${p.precioOferta}. Urgency visual elements — red accents, sale badge, limited time feeling. Dark dramatic background. High contrast commercial advertising.`,
+  oferta: (p) => `Urgency sales image for ${p.producto}. MUST include large bold text overlay. Main price text: "${p.precioOferta || "Precio especial"}". Crossed out old price: "${p.precioAnterior || ""}". Bold text: "¡OFERTA LIMITADA!". Countdown or urgency badge. Red and orange accent colors. Dark dramatic background. High contrast commercial advertising typography.`,
 
-  cta_final: (p) => `Clean premium product shot of ${p.producto} on elegant background. Inspiring closing mood. Aspirational lifestyle. The product as the hero. High end commercial photography quality.`,
+  cta_final: (p) => `Closing sales banner for ${p.producto}. MUST include bold text overlay. Large headline: "¿Listo para transformar tu vida?". Subheadline: "${p.beneficio}". Bold CTA button text: "¡Quiero el mío ahora!". Guarantee text: "Garantía de satisfacción". Premium product shot centered. Aspirational lifestyle background. Orange and white bold typography. High end commercial quality.`,
 };
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
     let imageUrl = "";
 
     if (imagen_url && imagen_url.startsWith("http")) {
-      // Usar imagen del producto como referencia via edits
       const imgResp = await fetch(imagen_url);
       const imgBlob = await imgResp.blob();
       const imgBuffer = Buffer.from(await imgBlob.arrayBuffer());
@@ -70,7 +69,6 @@ export async function POST(req: NextRequest) {
       const b64 = data.data?.[0]?.b64_json;
       imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
     } else {
-      // Generación directa sin referencia
       const resp = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
