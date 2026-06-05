@@ -263,7 +263,7 @@ export default function Landing() {
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-8 text-center mb-6">
               <div className="text-5xl mb-4">🚀</div>
               <h2 className="text-xl font-black text-white mb-2">¿Tienes una campaña activa?</h2>
-              <p className="text-zinc-500 text-sm mb-6 leading-relaxed">Con una campaña tus datos viajan automáticamente — producto, fotos, precios, headline y beneficios. Sin llenar nada de nuevo.</p>
+              <p className="text-yellow-400 text-sm mb-6 leading-relaxed">Con una campaña tus datos viajan automáticamente — producto, fotos, precios, headline y beneficios. Sin llenar nada de nuevo.</p>
               <div className="flex gap-3 justify-center mb-6">
                 <a href="/campaigns" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">→ Ir a Mis Campañas</a>
                 <button onClick={() => setSinCampaña(true)} className="border border-[#333] text-[#f0ead6] font-bold px-6 py-3 rounded-xl text-sm hover:border-[#555] transition-colors">Continuar sin campaña</button>
@@ -276,7 +276,7 @@ export default function Landing() {
                 ].map((v, i) => (
                   <div key={i} className="bg-[#111] border border-[#1a1a1a] rounded-xl p-4 text-center">
                     <div className="text-2xl mb-2">{v.icon}</div>
-                    <p className="text-[10px] text-zinc-500">{v.txt}</p>
+                    <p className="text-[10px] text-yellow-400">{v.txt}</p>
                   </div>
                 ))}
               </div>
@@ -296,9 +296,9 @@ export default function Landing() {
               <div className="flex-1">
                 <p className="text-[9px] text-green-400 uppercase tracking-widest mb-0.5">Campaña activa {campaign.es_combo && <span className="bg-orange-500/20 text-orange-400 px-1 rounded ml-1">COMBO</span>}</p>
                 <p className="text-white text-sm font-bold">{campaign.nombre}</p>
-                <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
+                <p className="text-yellow-400 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
               </div>
-              <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
+              <a href="/campaigns" className="text-[9px] text-yellow-400 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
             </div>
 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
@@ -307,7 +307,7 @@ export default function Landing() {
                 {ESTILOS.map(e => (
                   <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-white text-[11px] font-bold">{e.nombre}</p>
-                    <p className="text-zinc-500 text-[9px]">{e.sub}</p>
+                    <p className="text-yellow-400 text-[9px]">{e.sub}</p>
                   </div>
                 ))}
               </div>
@@ -352,7 +352,7 @@ export default function Landing() {
                       ) : (
                         <>
                           <span className="text-xl mb-1">📷</span>
-                          <span className="text-[8px] text-zinc-500">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
+                          <span className="text-[8px] text-yellow-400">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
                         </>
                       )}
                       <input type="file" accept="image/*" className="hidden" onChange={e => handleImagen(e, slot as 1|2|3)} />
@@ -464,8 +464,8 @@ export default function Landing() {
                   landcopy2.vercel.app/p/{datosActivos.producto?.toLowerCase().replace(/\s+/g, '-') || 'landing'}
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => setVistaMovil(false)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${!vistaMovil ? "bg-orange-500 text-white" : "text-zinc-500 border border-[#1a1a1a]"}`}>Desktop</button>
-                  <button onClick={() => setVistaMovil(true)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${vistaMovil ? "bg-orange-500 text-white" : "text-zinc-500 border border-[#1a1a1a]"}`}>Móvil</button>
+                  <button onClick={() => setVistaMovil(false)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${!vistaMovil ? "bg-orange-500 text-white" : "text-yellow-400 border border-[#1a1a1a]"}`}>Desktop</button>
+                  <button onClick={() => setVistaMovil(true)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${vistaMovil ? "bg-orange-500 text-white" : "text-yellow-400 border border-[#1a1a1a]"}`}>Móvil</button>
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-screen">
