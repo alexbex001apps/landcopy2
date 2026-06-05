@@ -476,7 +476,7 @@ export default function Landing() {
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
                     ) : (
-                      <p className="text-zinc-700 text-[10px] italic">Sin generar</p>
+                      <p className="text-yellow-400 text-[10px] italic font-bold">Sin generar</p>
                     )}
                   </div>
                 ))}
