@@ -291,7 +291,7 @@ export default function Landing() {
           { n: 2, label: "Paso 2 — Generando", sub: "Secciones con IA" },
           { n: 3, label: "Paso 3 — Resultado", sub: "Descarga o comparte" },
         ].map((s) => (
-          <div key={s.n} onClick={() => { if (s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0)) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
+          <div key={s.n} onClick={() => { if (s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0))) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0)) ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
             <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${paso === s.n ? "bg-orange-500 text-white" : paso > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
@@ -346,7 +346,10 @@ export default function Landing() {
                 <p className="text-white text-sm font-bold">{campaign.nombre}</p>
                 <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
               </div>
-              <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
+              <div className="flex gap-2 items-center">
+                {Object.keys(contenido).length > 0 && <button onClick={() => setPaso(3)} className="text-[9px] bg-green-500 text-black font-bold px-3 py-1.5 rounded-lg">→ Ver resultado</button>}
+                <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
+              </div>
             </div>
 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
