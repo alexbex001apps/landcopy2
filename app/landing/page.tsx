@@ -540,14 +540,13 @@ export default function Landing() {
                 <div className="space-y-1.5">
                   <button className="w-full bg-green-500 hover:bg-green-600 text-black text-[9px] font-bold py-2 rounded-lg transition-colors">⬇ Descargar HTML</button>
                   <button className="w-full border border-orange-500/40 text-orange-400 text-[9px] font-bold py-2 rounded-lg">🔗 Link compartible</button>
-                  
-                  <button className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
+                  <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar en Biblioteca</button>
+                  <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
                 </div>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
