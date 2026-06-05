@@ -321,7 +321,7 @@ export default function Landing() {
                     </div>
                     <div>
                       <p className="text-[10px] text-[#f0ead6] font-bold">{s.nombre}</p>
-                      <p className="text-[8px] text-zinc-600">{s.sub}</p>
+                     text-[8px] text-yellow-400
                     </div>
                   </div>
                 ))}
@@ -442,7 +442,7 @@ export default function Landing() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-white text-[10px] font-bold truncate">{s.nombre}</p>
-                      <p className="text-zinc-600 text-[8px] truncate">{s.sub}</p>
+                      <p className="text-yellow-400 text-[8px] truncate">{s.sub}</p>
                     </div>
                   </div>
                 ))}
