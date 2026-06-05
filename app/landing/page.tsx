@@ -337,7 +337,7 @@ export default function Landing() {
             <div className="bg-[#0d1a0a] border border-[#22c55e30] rounded-xl p-4 flex items-center gap-3 mb-6">
               <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
               <div className="flex gap-2">
-                {campaign.imagen_url && <img src={campaign.imagen_url} className="w-10 h-10 object-contain rounded-lg bg-[#111]" />}
+                {campaign.imagen_url && <img src={campaign.imagen_url} className="w-16 h-16 object-contain rounded-lg bg-[#111]" />}
                 {campaign.imagen_url_2 && <img src={campaign.imagen_url_2} className="w-8 h-8 object-contain rounded-lg bg-[#111]" />}
                 {campaign.imagen_url_3 && <img src={campaign.imagen_url_3} className="w-8 h-8 object-contain rounded-lg bg-[#111]" />}
               </div>
