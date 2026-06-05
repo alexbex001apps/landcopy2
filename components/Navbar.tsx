@@ -92,6 +92,7 @@ export default function Navbar() {
     { href: "/redes", label: "Redes", Icon: LogoRedes },
     { href: "/landing", label: "Landing", Icon: LogoLanding },
     { href: "/anuncios", label: "Anuncios", Icon: LogoAnuncios },
+    { href: "/biblioteca", label: "Biblioteca", Icon: LogoCopy },
   ];
 
   return (
