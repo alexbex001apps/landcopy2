@@ -298,9 +298,9 @@ export default function Campaigns() {
                   </button>
                   <button onClick={() => usarCampaign(c, "/anuncios")} className="py-2.5 text-[10px] font-bold text-yellow-400 hover:bg-yellow-400/10 transition-colors border-r border-[#1a1a1a]">
                     → Anuncios
-                    <button onClick={() => usarCampaign(c, "/landing")} className="py-2.5 text-[10px] font-bold text-green-400 hover:bg-green-400/10 transition-colors border-r border-[#1a1a1a]">
-                    → Landing
                   </button>
+                  <button onClick={() => usarCampaign(c, "/landing")} className="py-2.5 text-[10px] font-bold text-green-400 hover:bg-green-400/10 transition-colors border-r border-[#1a1a1a]">
+                    → Landing
                   </button>
                   <button onClick={() => eliminarCampaign(c.id)} className="py-2.5 text-[10px] font-bold text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors">
                     Eliminar
