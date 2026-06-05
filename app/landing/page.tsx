@@ -472,7 +472,7 @@ export default function Landing() {
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest mb-1">{s.nombre}</p>
-                    {imagenes[s.id] && <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 max-h-48 object-contain" />}
+                    {imagenes[s.id] && <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 max-h-96 object-contain" />}
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
                     ) : (
