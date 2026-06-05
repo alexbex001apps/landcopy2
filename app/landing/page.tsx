@@ -191,11 +191,32 @@ export default function Landing() {
     setImagenGenerando(null);
   };
 
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
+
   const guardarEnBiblioteca = async () => {
     const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
     if (seccionesConContenido.length === 0) return;
     const producto = datosActivos.producto || "Producto";
     const nombre = `${producto} — Landing completa`;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let heroUrl: string | null = null;
+    if (imagenes["hero"] && imagenes["hero"].startsWith("data:")) {
+      try {
+        const blob = await fetch(imagenes["hero"]).then(r => r.blob());
+        const path = `${user?.id}/${Date.now()}_hero.png`;
+        await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+        const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+        heroUrl = urlData.publicUrl;
+      } catch {}
+    } else {
+      heroUrl = imagenes["hero"] || null;
+    }
+
     await fetch("/api/biblioteca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -204,18 +225,14 @@ export default function Landing() {
         modulo: "landing",
         nombre,
         producto,
-        contenido: JSON.stringify({ secciones: contenido, imagenes }),
-        imagen_url: imagenes["hero"] || null,
+        contenido: JSON.stringify({ secciones: contenido }),
+        imagen_url: heroUrl,
         metadata: { secciones: Object.keys(contenido), estilo },
       }),
     });
     showToast("✓ Landing guardada en Biblioteca");
   };
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
-  };
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
@@ -232,6 +249,12 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
+          {toast}
+        </div>
+      )}
 
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
@@ -250,13 +273,13 @@ export default function Landing() {
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Landing</p>
           </div>
           <div className="flex-1 text-center px-5">
-            <div className="inline-flex items-center gap-2 bg-orange-500 text-yellow-400 text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · LANDING DE VENTAS
             </div>
             <h1 className="text-xl font-black text-white mb-1">
               Crea páginas que <span style={{color:"#f97316"}}>venden</span> y <span style={{color:"#22c55e"}}>convierten</span>
             </h1>
-            <p className="text-green-400 text-[11px]">Producto · sección · estilo · la IA genera la landing completa lista para publicar</p>
+            <p className="text-yellow-400 text-[11px]">Producto · sección · estilo · la IA genera la landing completa lista para publicar</p>
           </div>
           <div className="flex-shrink-0" style={{width:"160px"}}></div>
         </div>
@@ -273,8 +296,8 @@ export default function Landing() {
               {paso > s.n ? "✓" : s.n}
             </div>
             <div>
-              <div className={`text-[10px] font-bold tracking-widest uppercase ${paso === s.n ? "text-orange-500" : paso > s.n ? "text-green-400" : "text-green-400"}`}>{s.label}</div>
-              <div className="text-[9px] text-green-400 mt-0.5">{s.sub}</div>
+              <div className={`text-[10px] font-bold tracking-widest uppercase ${paso === s.n ? "text-orange-500" : paso > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
+              <div className="text-[9px] text-yellow-400 mt-0.5">{s.sub}</div>
             </div>
             {paso === s.n && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
           </div>
@@ -288,7 +311,7 @@ export default function Landing() {
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-8 text-center mb-6">
               <div className="text-5xl mb-4">🚀</div>
               <h2 className="text-xl font-black text-white mb-2">¿Tienes una campaña activa?</h2>
-              <p className="text-green-400 text-sm mb-6 leading-relaxed">Con una campaña tus datos viajan automáticamente — producto, fotos, precios, headline y beneficios. Sin llenar nada de nuevo.</p>
+              <p className="text-zinc-500 text-sm mb-6 leading-relaxed">Con una campaña tus datos viajan automáticamente — producto, fotos, precios, headline y beneficios. Sin llenar nada de nuevo.</p>
               <div className="flex gap-3 justify-center mb-6">
                 <a href="/campaigns" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">→ Ir a Mis Campañas</a>
                 <button onClick={() => setSinCampaña(true)} className="border border-[#333] text-[#f0ead6] font-bold px-6 py-3 rounded-xl text-sm hover:border-[#555] transition-colors">Continuar sin campaña</button>
@@ -301,7 +324,7 @@ export default function Landing() {
                 ].map((v, i) => (
                   <div key={i} className="bg-[#111] border border-[#1a1a1a] rounded-xl p-4 text-center">
                     <div className="text-2xl mb-2">{v.icon}</div>
-                    <p className="text-[10px] text-green-400">{v.txt}</p>
+                    <p className="text-[10px] text-zinc-500">{v.txt}</p>
                   </div>
                 ))}
               </div>
@@ -321,9 +344,9 @@ export default function Landing() {
               <div className="flex-1">
                 <p className="text-[9px] text-green-400 uppercase tracking-widest mb-0.5">Campaña activa {campaign.es_combo && <span className="bg-orange-500/20 text-orange-400 px-1 rounded ml-1">COMBO</span>}</p>
                 <p className="text-white text-sm font-bold">{campaign.nombre}</p>
-                <p className="text-green-400 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
+                <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
               </div>
-              <a href="/campaigns" className="text-[9px] text-green-400 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
+              <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
             </div>
 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
@@ -332,12 +355,12 @@ export default function Landing() {
                 {ESTILOS.map(e => (
                   <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-white text-[11px] font-bold">{e.nombre}</p>
-                    <p className="text-green-400 text-[9px]">{e.sub}</p>
+                    <p className="text-zinc-500 text-[9px]">{e.sub}</p>
                   </div>
                 ))}
               </div>
 
-              <p className="text-green-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
+              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => toggleSeccion(s.id)} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${seccionesSeleccionadas.includes(s.id) ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
@@ -364,10 +387,10 @@ export default function Landing() {
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
-                <p className="text-yellow-400 text-[9px] font-bold">Al terminar puedes guardar como campaña</p>
+                <p className="text-zinc-600 text-[9px]">Al terminar puedes guardar como campaña</p>
               </div>
 
-              <p className="text-green-400 text-[9px] font-bold uppercase tracking-wider mb-2">Foto del producto</p>
+              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Foto del producto</p>
               <div className="flex gap-4 mb-6">
                 {[1,2,3].map(slot => (
                   <div key={slot} className="relative">
@@ -377,7 +400,7 @@ export default function Landing() {
                       ) : (
                         <>
                           <span className="text-xl mb-1">📷</span>
-                          <span className="text-[8px] text-green-400">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
+                          <span className="text-[8px] text-zinc-500">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
                         </>
                       )}
                       <input type="file" accept="image/*" className="hidden" onChange={e => handleImagen(e, slot as 1|2|3)} />
@@ -393,27 +416,27 @@ export default function Landing() {
 
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Nombre del producto *</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre del producto *</label>
                   <input value={fNombre} onChange={e => setFNombre(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Rodillax" />
                 </div>
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Beneficio principal</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Beneficio principal</label>
                   <input value={fBeneficio} onChange={e => setFBeneficio(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Se llena solo con 🔍" />
                 </div>
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Problema que resuelve</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Problema que resuelve</label>
                   <input value={fProblema} onChange={e => setFProblema(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Se llena solo con 🔍" />
                 </div>
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Precio oferta</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Precio oferta</label>
                   <input value={fPrecioOferta} onChange={e => setFPrecioOferta(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="49.000" />
                 </div>
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Precio anterior</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Precio anterior</label>
                   <input value={fPrecioAnterior} onChange={e => setFPrecioAnterior(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="89.000" />
                 </div>
                 <div>
-                  <label className="text-green-400 text-[9px] font-bold uppercase tracking-wider">País</label>
+                  <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">País</label>
                   <select value={fPais} onChange={e => setFPais(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none">
                     {["Colombia","México","Venezuela","Ecuador","Costa Rica","General"].map(p => <option key={p}>{p}</option>)}
                   </select>
@@ -467,13 +490,13 @@ export default function Landing() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-white text-[10px] font-bold truncate">{s.nombre}</p>
-                      <p className="text-yellow-400 text-[10px] truncate">{s.sub}</p>
+                      <p className="text-yellow-400 text-[10px] font-bold truncate">{s.sub}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="mt-3 space-y-1.5">
-                <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg">↻ Regenerar todo</button>
+                <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">↻ Regenerar todo</button>
                 <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
               </div>
             </div>
@@ -489,8 +512,8 @@ export default function Landing() {
                   landcopy2.vercel.app/p/{datosActivos.producto?.toLowerCase().replace(/\s+/g, '-') || 'landing'}
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => setVistaMovil(false)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${!vistaMovil ? "bg-orange-500 text-white" : "text-green-400 border border-[#1a1a1a]"}`}>Desktop</button>
-                  <button onClick={() => setVistaMovil(true)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${vistaMovil ? "bg-orange-500 text-white" : "text-green-400 border border-[#1a1a1a]"}`}>Móvil</button>
+                  <button onClick={() => setVistaMovil(false)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${!vistaMovil ? "bg-orange-500 text-white" : "text-zinc-500 border border-[#1a1a1a]"}`}>Desktop</button>
+                  <button onClick={() => setVistaMovil(true)} className={`text-[8px] font-bold px-2 py-1 rounded transition-colors ${vistaMovil ? "bg-orange-500 text-white" : "text-zinc-500 border border-[#1a1a1a]"}`}>Móvil</button>
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-screen">
@@ -501,7 +524,7 @@ export default function Landing() {
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
                     ) : (
-                      <p className="text-green-400 text-[10px] italic font-bold">Sin generar</p>
+                      <p className="text-yellow-400 text-[10px] italic font-bold">Sin generar</p>
                     )}
                   </div>
                 ))}
@@ -512,15 +535,15 @@ export default function Landing() {
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">{secciones.find(s => s.id === seccionActiva)?.nombre}</p>
                 <div className="space-y-1.5">
-                  <button onClick={() => regenerarSeccion(seccionActiva)} disabled={seccionGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg disabled:opacity-40">
+                  <button onClick={() => regenerarSeccion(seccionActiva)} disabled={seccionGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg disabled:opacity-40">
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg">✎ Editar texto</button>
-                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg disabled:opacity-40">
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">✎ Editar texto</button>
+                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg disabled:opacity-40">
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-green-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar sección</button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold font-bold py-2 rounded-lg">👁️ Ocultar</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">💾 Guardar sección</button>
+                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[9px] font-bold py-2 rounded-lg">👁️ Ocultar</button>
                 </div>
               </div>
 
@@ -529,7 +552,7 @@ export default function Landing() {
                 <div className="grid grid-cols-2 gap-1.5">
                   {ESTILOS.map(e => (
                     <div key={e.id} onClick={() => setEstilo(e.id)} className={`p-2 rounded-lg border cursor-pointer text-center transition-all ${estilo === e.id ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a]"}`}>
-                      <p className="text-yellow-400 text-[9px] font-bold">{e.nombre}</p>
+                      <p className="text-white text-[9px] font-bold">{e.nombre}</p>
                     </div>
                   ))}
                 </div>
