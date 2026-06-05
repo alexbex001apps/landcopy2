@@ -11,8 +11,16 @@ interface BibliotecaItem {
   imagen_url: string | null;
   producto: string | null;
   favorito: boolean;
+  carpeta_id: string | null;
   created_at: string;
   metadata: any;
+}
+
+interface Carpeta {
+  id: string;
+  nombre: string;
+  color: string;
+  created_at: string;
 }
 
 const MODULO_COLORS: Record<string, string> = {
@@ -29,14 +37,22 @@ const MODULO_BG: Record<string, string> = {
   copy: "from-[#000d1a] to-[#001a33]",
 };
 
+const COLORES_CARPETA = ["#f97316", "#22c55e", "#3b82f6", "#a855f7", "#ec4899", "#eab308", "#ef4444", "#14b8a6"];
+
 export default function Biblioteca() {
   const [items, setItems] = useState<BibliotecaItem[]>([]);
+  const [carpetas, setCarpetas] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [tabActivo, setTabActivo] = useState("todos");
   const [filtroModulo, setFiltroModulo] = useState("todos");
+  const [carpetaActiva, setCarpetaActiva] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [modalCarpeta, setModalCarpeta] = useState(false);
+  const [nuevaCarpetaNombre, setNuevaCarpetaNombre] = useState("");
+  const [nuevaCarpetaColor, setNuevaCarpetaColor] = useState("#f97316");
+  const [modalMover, setModalMover] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -45,6 +61,7 @@ export default function Biblioteca() {
       if (!session) window.location.href = "/login";
     });
     cargar();
+    cargarCarpetas();
   }, []);
 
   const cargar = async () => {
@@ -53,6 +70,44 @@ export default function Biblioteca() {
     const data = await resp.json();
     setItems(data.items || []);
     setLoading(false);
+  };
+
+  const cargarCarpetas = async () => {
+    const { data } = await supabase.from("carpetas").select("*").order("created_at", { ascending: true });
+    setCarpetas(data || []);
+  };
+
+  const crearCarpeta = async () => {
+    if (!nuevaCarpetaNombre.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase.from("carpetas").insert({
+      user_id: user.id,
+      nombre: nuevaCarpetaNombre.trim(),
+      color: nuevaCarpetaColor,
+    }).select().single();
+    if (data) setCarpetas(prev => [...prev, data]);
+    setNuevaCarpetaNombre("");
+    setModalCarpeta(false);
+    showToast("Carpeta creada");
+  };
+
+  const eliminarCarpeta = async (id: string) => {
+    await supabase.from("carpetas").delete().eq("id", id);
+    setCarpetas(prev => prev.filter(c => c.id !== id));
+    if (carpetaActiva === id) setCarpetaActiva(null);
+    showToast("Carpeta eliminada");
+  };
+
+  const moverItem = async (itemId: string, carpetaId: string | null) => {
+    await fetch("/api/biblioteca", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: itemId, carpeta_id: carpetaId }),
+    });
+    setItems(prev => prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i));
+    setModalMover(null);
+    showToast("Movido a carpeta");
   };
 
   const toggleFavorito = async (item: BibliotecaItem) => {
@@ -94,6 +149,7 @@ export default function Biblioteca() {
   };
 
   const itemsFiltrados = items.filter(item => {
+    if (carpetaActiva !== null && item.carpeta_id !== carpetaActiva) return false;
     if (tabActivo === "favoritos" && !item.favorito) return false;
     if (tabActivo === "imagenes" && item.tipo !== "imagen") return false;
     if (tabActivo === "copys" && item.tipo !== "copy") return false;
@@ -130,6 +186,51 @@ export default function Biblioteca() {
         </div>
       )}
 
+      {/* Modal nueva carpeta */}
+      {modalCarpeta && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalCarpeta(false)}>
+          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-white font-bold text-sm mb-4">Nueva carpeta</h2>
+            <input value={nuevaCarpetaNombre} onChange={e => setNuevaCarpetaNombre(e.target.value)} placeholder="Nombre de la carpeta" className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none mb-4" onKeyDown={e => e.key === "Enter" && crearCarpeta()} />
+            <div className="mb-4">
+              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color</p>
+              <div className="flex gap-2 flex-wrap">
+                {COLORES_CARPETA.map(c => (
+                  <button key={c} onClick={() => setNuevaCarpetaColor(c)} className="w-7 h-7 rounded-full border-2 transition-all" style={{ background: c, borderColor: nuevaCarpetaColor === c ? "white" : "transparent" }} />
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setModalCarpeta(false)} className="flex-1 border border-[#1e1e1e] text-zinc-500 text-sm font-bold py-2 rounded-xl">Cancelar</button>
+              <button onClick={crearCarpeta} disabled={!nuevaCarpetaNombre.trim()} className="flex-1 bg-orange-500 disabled:opacity-40 text-white text-sm font-bold py-2 rounded-xl">Crear</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal mover a carpeta */}
+      {modalMover && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalMover(null)}>
+          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-white font-bold text-sm mb-4">Mover a carpeta</h2>
+            <div className="space-y-2 mb-4">
+              <button onClick={() => moverItem(modalMover, null)} className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#1e1e1e] hover:border-[#333] text-left">
+                <span className="text-lg">📁</span>
+                <span className="text-white text-sm">Sin carpeta</span>
+              </button>
+              {carpetas.map(c => (
+                <button key={c.id} onClick={() => moverItem(modalMover, c.id)} className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#1e1e1e] hover:border-[#333] text-left">
+                  <div className="w-5 h-5 rounded" style={{ background: c.color }}></div>
+                  <span className="text-white text-sm">{c.nombre}</span>
+                  <span className="ml-auto text-yellow-400 text-[10px]">{items.filter(i => i.carpeta_id === c.id).length} items</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setModalMover(null)} className="w-full border border-[#1e1e1e] text-zinc-500 text-sm font-bold py-2 rounded-xl">Cancelar</button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
@@ -151,9 +252,13 @@ export default function Biblioteca() {
             <h1 className="text-xl font-black text-white mb-1">
               Todo tu contenido en un <span style={{color:"#f97316"}}>solo lugar</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Imágenes · Copys · Landings · Favoritos · Descarga y reutiliza</p>
+            <p className="text-yellow-400 text-[11px]">Imágenes · Copys · Landings · Carpetas · Favoritos</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}></div>
+          <div className="flex-shrink-0" style={{width:"160px"}}>
+            <button onClick={() => setModalCarpeta(true)} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold py-2 px-4 rounded-xl transition-colors">
+              + Nueva carpeta
+            </button>
+          </div>
         </div>
       </div>
 
@@ -174,6 +279,28 @@ export default function Biblioteca() {
             </div>
           ))}
         </div>
+
+        {/* Carpetas */}
+        {carpetas.length > 0 && (
+          <div className="mb-6">
+            <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Carpetas</p>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => setCarpetaActiva(null)} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all ${carpetaActiva === null ? "border-orange-500 bg-orange-500/10 text-orange-500" : "border-[#1a1a1a] text-zinc-500"}`}>
+                📁 Todos
+              </button>
+              {carpetas.map(c => (
+                <div key={c.id} className="flex items-center gap-1">
+                  <button onClick={() => setCarpetaActiva(carpetaActiva === c.id ? null : c.id)} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all ${carpetaActiva === c.id ? "border-white/30 text-white" : "border-[#1a1a1a] text-zinc-400"}`} style={carpetaActiva === c.id ? { background: c.color + "20", borderColor: c.color + "50" } : {}}>
+                    <div className="w-3 h-3 rounded" style={{ background: c.color }}></div>
+                    {c.nombre}
+                    <span className="text-[9px] opacity-60">{items.filter(i => i.carpeta_id === c.id).length}</span>
+                  </button>
+                  <button onClick={() => eliminarCarpeta(c.id)} className="text-zinc-700 hover:text-red-400 text-[10px] px-1">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
@@ -213,9 +340,7 @@ export default function Biblioteca() {
               {items.length === 0 ? "Tu biblioteca está vacía" : "Sin resultados"}
             </p>
             <p className="text-yellow-400 text-sm mb-6">
-              {items.length === 0
-                ? "Guarda imágenes, copys y landings desde cada módulo"
-                : "Prueba con otros filtros"}
+              {items.length === 0 ? "Guarda imágenes, copys y landings desde cada módulo" : "Prueba con otros filtros"}
             </p>
             {items.length === 0 && (
               <div className="flex gap-3 justify-center">
@@ -244,6 +369,9 @@ export default function Biblioteca() {
                   <button onClick={() => toggleFavorito(item)} className="absolute top-2 right-2 text-lg">
                     <span className={item.favorito ? "text-yellow-400" : "text-zinc-700"}>★</span>
                   </button>
+                  {item.carpeta_id && (
+                    <div className="absolute bottom-2 right-2 w-3 h-3 rounded" style={{ background: carpetas.find(c => c.id === item.carpeta_id)?.color || "#f97316" }}></div>
+                  )}
                 </div>
 
                 {/* Info */}
@@ -264,6 +392,7 @@ export default function Biblioteca() {
                         {copiado === item.id ? "✓" : "📋"}
                       </button>
                     )}
+                    <button onClick={() => setModalMover(item.id)} className="bg-[#111] border border-[#1a1a1a] text-zinc-400 text-[9px] font-bold px-2 py-1.5 rounded-lg">📁</button>
                     <button onClick={() => eliminar(item.id)} className="bg-[#111] border border-red-500/20 text-red-400 text-[9px] font-bold px-2 py-1.5 rounded-lg">✕</button>
                   </div>
                 </div>
