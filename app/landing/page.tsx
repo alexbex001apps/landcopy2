@@ -54,6 +54,7 @@ export default function Landing() {
   const [sinCampaña, setSinCampaña] = useState(false);
   const [paso, setPaso] = useState(1);
   const [estilo, setEstilo] = useState("oscuro");
+  const [seccionesSeleccionadas, setSeccionesSeleccionadas] = useState<string[]>([]);
   const [vistaMovil, setVistaMovil] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState("hero");
   const [contenido, setContenido] = useState<Record<string, string>>({});
@@ -62,7 +63,6 @@ export default function Landing() {
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string | null>(null);
 
-  // Formulario sin campaña
   const [fNombre, setFNombre] = useState("");
   const [fProducto, setFProducto] = useState("");
   const [fProblema, setFProblema] = useState("");
@@ -87,6 +87,12 @@ export default function Landing() {
   }, []);
 
   const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+
+  const toggleSeccion = (id: string) => {
+    setSeccionesSeleccionadas(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2 | 3) => {
     const file = e.target.files?.[0];
@@ -150,7 +156,10 @@ export default function Landing() {
   const generarLanding = async () => {
     setGenerando(true);
     setPaso(2);
-    const seccionesAGenerar = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+    const todasSecciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+    const seccionesAGenerar = seccionesSeleccionadas.length > 0
+      ? todasSecciones.filter(s => seccionesSeleccionadas.includes(s.id))
+      : todasSecciones;
     for (const s of seccionesAGenerar) {
       setSeccionGenerando(s.id);
       try {
@@ -174,16 +183,14 @@ export default function Landing() {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          seccion: seccionId,
-          ...datosActivos,
-        }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos }),
       });
       const data = await resp.json();
       if (data.imageUrl) setImagenes(prev => ({ ...prev, [seccionId]: data.imageUrl }));
     } catch {}
     setImagenGenerando(null);
   };
+
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
@@ -201,7 +208,6 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-[#050505] text-white">
 
-      {/* Header */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
           <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
@@ -231,11 +237,10 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Steps */}
       <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
         {[
           { n: 1, label: "Paso 1 — Tu producto", sub: "Datos o campaña" },
-          { n: 2, label: "Paso 2 — Generando", sub: "8 secciones con IA" },
+          { n: 2, label: "Paso 2 — Generando", sub: "Secciones con IA" },
           { n: 3, label: "Paso 3 — Resultado", sub: "Descarga o comparte" },
         ].map((s) => (
           <div key={s.n} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative">
@@ -253,7 +258,6 @@ export default function Landing() {
 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
 
-        {/* PASO 1 — Sin campaña: invitación */}
         {paso === 1 && !campaign && !sinCampaña && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-8 text-center mb-6">
@@ -280,7 +284,6 @@ export default function Landing() {
           </div>
         )}
 
-        {/* PASO 1 — Con campaña activa */}
         {paso === 1 && campaign && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0d1a0a] border border-[#22c55e30] rounded-xl p-4 flex items-center gap-3 mb-6">
@@ -308,18 +311,29 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div className="bg-[#111] border border-[#1a1a1a] rounded-xl p-3 mb-4 flex items-center gap-3">
-                <span className="text-yellow-400 text-[10px]">🖼️ {campaign.es_combo ? "9" : "8"} secciones · {campaign.es_combo ? "9" : "8"} imágenes con gpt-image-2</span>
-                <span className="ml-auto text-zinc-500 text-[9px]">Costo estimado: ~${campaign.es_combo ? "0.36" : "0.32"} USD</span>
+
+              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {secciones.map(s => (
+                  <div key={s.id} onClick={() => toggleSeccion(s.id)} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${seccionesSeleccionadas.includes(s.id) ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
+                    <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${seccionesSeleccionadas.includes(s.id) ? "bg-green-500 border-green-500" : "border-[#444]"}`}>
+                      {seccionesSeleccionadas.includes(s.id) && <span className="text-black text-[9px] font-black">✓</span>}
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-[#f0ead6] font-bold">{s.nombre}</p>
+                      <p className="text-[8px] text-zinc-600">{s.sub}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <button onClick={generarLanding} className="w-full bg-green-500 hover:bg-green-600 text-black font-black py-3 rounded-xl text-sm transition-colors">
-                ⚡ Generar landing completa ahora
+
+              <button onClick={generarLanding} disabled={seccionesSeleccionadas.length === 0} className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black py-3 rounded-xl text-sm transition-colors">
+                ⚡ Generar {seccionesSeleccionadas.length} sección{seccionesSeleccionadas.length !== 1 ? "es" : ""} seleccionada{seccionesSeleccionadas.length !== 1 ? "s" : ""}
               </button>
             </div>
           </div>
         )}
 
-        {/* PASO 1 — Sin campaña: formulario */}
         {paso === 1 && sinCampaña && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
@@ -393,7 +407,6 @@ export default function Landing() {
           </div>
         )}
 
-        {/* PASO 2 — Generando */}
         {paso === 2 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6">
@@ -417,11 +430,8 @@ export default function Landing() {
           </div>
         )}
 
-        {/* PASO 3 — Resultado */}
         {paso === 3 && (
           <div className="grid grid-cols-[220px_1fr_200px] gap-4">
-
-            {/* Panel izquierdo — secciones */}
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
               <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">{secciones.length} Secciones</p>
               <div className="space-y-1">
@@ -439,11 +449,10 @@ export default function Landing() {
               </div>
               <div className="mt-3 space-y-1.5">
                 <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-2 rounded-lg">↻ Regenerar todo</button>
-                <button onClick={() => { setContenido({}); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
+                <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[9px] font-bold py-2 rounded-lg">🗑️ Borrar todo</button>
               </div>
             </div>
 
-            {/* Preview central */}
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl overflow-hidden">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-[#1a1a1a]">
                 <div className="flex gap-1">
@@ -463,6 +472,7 @@ export default function Landing() {
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[8px] text-zinc-600 uppercase tracking-widest mb-1">{s.nombre}</p>
+                    {imagenes[s.id] && <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 object-cover max-h-32" />}
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
                     ) : (
@@ -473,9 +483,7 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Panel derecho */}
             <div className="space-y-3">
-              {/* Sección activa — acciones */}
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">{secciones.find(s => s.id === seccionActiva)?.nombre}</p>
                 <div className="space-y-1.5">
@@ -491,7 +499,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* Estilo */}
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Estilo visual</p>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -503,7 +510,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* Publicar */}
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
                 <div className="space-y-1.5">
