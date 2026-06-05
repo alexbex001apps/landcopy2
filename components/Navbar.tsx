@@ -50,6 +50,19 @@ const LogoAnuncios = () => (
   </svg>
 );
 
+const LogoCampanas = () => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+    <rect x="4" y="8" width="24" height="16" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
+    <line x1="4" y1="13" x2="28" y2="13" stroke="white" strokeWidth="1" opacity="0.3"/>
+    <rect x="7" y="16" width="6" height="4" rx="1" fill="white" fillOpacity="0.5"/>
+    <line x1="16" y1="16" x2="25" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="16" y1="19" x2="22" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="24" cy="9" r="3" fill="#22c55e"/>
+    <line x1="24" y1="7.5" x2="24" y2="10.5" stroke="white" strokeWidth="1" strokeLinecap="round"/>
+    <line x1="22.5" y1="9" x2="25.5" y2="9" stroke="white" strokeWidth="1" strokeLinecap="round"/>
+  </svg>
+);
+
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,6 +87,7 @@ export default function Navbar() {
   const inicial = user?.email?.[0].toUpperCase();
 
   const modulos = [
+    { href: "/campaigns", label: "Campañas", Icon: LogoCampanas },
     { href: "/copy", label: "Copy", Icon: LogoCopy },
     { href: "/redes", label: "Redes", Icon: LogoRedes },
     { href: "/landing", label: "Landing", Icon: LogoLanding },
