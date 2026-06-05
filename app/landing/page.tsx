@@ -377,6 +377,11 @@ export default function Landing() {
 
               <button onClick={generarLanding} disabled={seccionesSeleccionadas.length === 0} className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black py-3 rounded-xl text-sm transition-colors">
                 ⚡ Generar {seccionesSeleccionadas.length} sección{seccionesSeleccionadas.length !== 1 ? "es" : ""} seleccionada{seccionesSeleccionadas.length !== 1 ? "s" : ""}
+                {Object.keys(contenido).length > 0 && (
+                <button onClick={() => setPaso(3)} className="w-full mt-2 border border-green-500/40 text-green-400 text-sm font-bold py-2.5 rounded-xl active:scale-95 transition-transform">
+                  → Ver resultado generado
+                </button>
+              )}
               </button>
             </div>
           </div>
