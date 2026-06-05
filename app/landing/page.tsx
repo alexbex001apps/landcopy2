@@ -321,7 +321,7 @@ export default function Landing() {
                     </div>
                     <div>
                       <p className="text-[10px] text-[#f0ead6] font-bold">{s.nombre}</p>
-                     text-[10px] text-yellow-400
+                      <p className="text-[10px] text-yellow-400">{s.sub}</p>
                     </div>
                   </div>
                 ))}
