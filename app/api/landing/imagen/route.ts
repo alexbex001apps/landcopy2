@@ -13,7 +13,7 @@ const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
 
   como_funciona: (p) => `Simple step-by-step illustration showing how to use ${p.producto}. 3 clear steps with icons. Clean modern flat design. Latin American style. Professional infographic quality.`,
 
-  testimonios: (p) => `Happy Latin American customer holding or using ${p.producto} with a big smile. Natural lifestyle photo. Authentic and trustworthy. Warm lighting. UGC style photography.`,
+  testimonios: (p) => `Social proof testimonial image for ${p.producto}. Include 3 customer review cards with 5 stars, photos of happy Latin American customers, and short quotes about results. Bold headline text: "Lo que dicen nuestros clientes". Orange accent colors. Clean white background. Professional marketing design. Commercial quality.`,
 
   oferta: (p) => `${p.producto} product with price tag showing ${p.precioOferta}. Urgency visual elements — red accents, sale badge, limited time feeling. Dark dramatic background. High contrast commercial advertising.`,
 
