@@ -46,6 +46,21 @@ export default function Copy() {
   useEffect(() => {
     const ss = sessionStorage;
     const ls = localStorage;
+    const campaign = ss.getItem("campaign_activa");
+    if (campaign) {
+      const c = JSON.parse(campaign);
+      setProducto(c.producto || "");
+      setCaracteristicas(c.beneficio || "");
+      setProblema(c.problema || "");
+      setBeneficio(c.beneficio || "");
+      setPrecioOferta(c.precio_oferta || "");
+      setPrecioAnterior(c.precio_anterior || "");
+      setPais(c.pais || "Colombia");
+      setTono(c.tono || "Urgente");
+      if (c.imagen_url) setImagen(c.imagen_url);
+      ss.removeItem("campaign_activa");
+      return;
+    }
     setProducto(ss.getItem("lc_producto") || "");
     setCaracteristicas(ss.getItem("lc_caracteristicas") || "");
     setProblema(ss.getItem("lc_problema") || "");
