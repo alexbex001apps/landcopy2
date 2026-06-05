@@ -249,7 +249,7 @@ export default function Landing() {
             </div>
             <div>
               <div className={`text-[10px] font-bold tracking-widest uppercase ${paso === s.n ? "text-orange-500" : paso > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
-              <div className="text-[9px] text-zinc-500 mt-0.5">{s.sub}</div>
+              <div className="text-[9px] text-green-400 mt-0.5">{s.sub}</div>
             </div>
             {paso === s.n && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
           </div>
