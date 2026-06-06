@@ -55,7 +55,7 @@ export default function Landing() {
   const [generando, setGenerando] = useState(false);
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
-  const [imagenGenerando, setImagenGenerando] = useState<string | null>(null);
+  const [imagenGenerando, setImagenGenerando] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -81,22 +81,29 @@ export default function Landing() {
     });
     const c = sessionStorage.getItem("campaign_activa");
     if (c) setCampaign(JSON.parse(c));
-   const savedImagenes = sessionStorage.getItem("landing_imagenes");
+    const savedImagenes = sessionStorage.getItem("landing_imagenes");
     if (savedImagenes) setImagenes(JSON.parse(savedImagenes));
     const savedContenido = sessionStorage.getItem("landing_contenido");
     if (savedContenido) { setContenido(JSON.parse(savedContenido)); setPaso(3); }
-    const generandoSeccion = sessionStorage.getItem("landing_generando");
-    if (generandoSeccion) {
-      setImagenGenerando(generandoSeccion);
-      setPaso(3);
-      const intervalo = setInterval(() => {
-        if (!sessionStorage.getItem("landing_generando")) {
+    const generandoRaw = sessionStorage.getItem("landing_generando");
+    if (generandoRaw) {
+      let lista: string[] = [];
+      try { lista = JSON.parse(generandoRaw); } catch { lista = [generandoRaw]; }
+      if (!Array.isArray(lista)) lista = [String(lista)];
+      if (lista.length > 0) {
+        setImagenGenerando(lista);
+        setPaso(3);
+        const intervalo = setInterval(() => {
+          const raw = sessionStorage.getItem("landing_generando");
+          let actual: string[] = [];
+          try { actual = raw ? JSON.parse(raw) : []; } catch { actual = raw ? [raw] : []; }
+          if (!Array.isArray(actual)) actual = [String(actual)];
           const imgs = sessionStorage.getItem("landing_imagenes");
           if (imgs) setImagenes(JSON.parse(imgs));
-          setImagenGenerando(null);
-          clearInterval(intervalo);
-        }
-      }, 1000);
+          setImagenGenerando(actual);
+          if (actual.length === 0) clearInterval(intervalo);
+        }, 1000);
+      }
     }
   }, []);
 
@@ -191,9 +198,32 @@ export default function Landing() {
     setPaso(3);
   };
 
-    const generarImagen = async (seccionId: string) => {
-    setImagenGenerando(seccionId);
-    sessionStorage.setItem("landing_generando", seccionId);
+  const marcarGenerando = (seccionId: string) => {
+    try {
+      const raw = sessionStorage.getItem("landing_generando");
+      let lista: string[] = [];
+      try { lista = raw ? JSON.parse(raw) : []; } catch { lista = raw ? [raw] : []; }
+      if (!Array.isArray(lista)) lista = [String(lista)];
+      if (!lista.includes(seccionId)) lista.push(seccionId);
+      sessionStorage.setItem("landing_generando", JSON.stringify(lista));
+    } catch {}
+  };
+
+  const desmarcarGenerando = (seccionId: string) => {
+    try {
+      const raw = sessionStorage.getItem("landing_generando");
+      let lista: string[] = [];
+      try { lista = raw ? JSON.parse(raw) : []; } catch { lista = raw ? [raw] : []; }
+      if (!Array.isArray(lista)) lista = [String(lista)];
+      lista = lista.filter(x => x !== seccionId);
+      if (lista.length > 0) sessionStorage.setItem("landing_generando", JSON.stringify(lista));
+      else sessionStorage.removeItem("landing_generando");
+    } catch {}
+  };
+
+  const generarImagen = async (seccionId: string) => {
+    setImagenGenerando(prev => prev.includes(seccionId) ? prev : [...prev, seccionId]);
+    marcarGenerando(seccionId);
     try {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
@@ -221,8 +251,8 @@ export default function Landing() {
         setImagenes(prev => ({ ...prev, [seccionId]: urlFinal }));
       }
     } catch {}
-    sessionStorage.removeItem("landing_generando");
-    setImagenGenerando(null);
+    desmarcarGenerando(seccionId);
+    setImagenGenerando(prev => prev.filter(x => x !== seccionId));
   };
 
   const showToast = (msg: string) => {
@@ -590,7 +620,7 @@ export default function Landing() {
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest mb-1">{s.nombre}</p>
-                    {imagenGenerando === s.id ? (
+                    {imagenGenerando.includes(s.id) ? (
                       <div className="w-full h-48 rounded-lg mb-2 overflow-hidden relative">
                         <div className="absolute inset-0 bg-[#1a1a1a]"></div>
                         <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-[#ffffff08] to-transparent" style={{backgroundSize:"200% 100%", animation:"shimmer 1.5s infinite"}}></div>
@@ -620,13 +650,15 @@ export default function Landing() {
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
-                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 relative overflow-hidden" style={{backgroundImage: imagenGenerando !== seccionActiva ? "linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.15) 50%, transparent 100%)" : "none", backgroundSize:"200% 100%", animation: imagenGenerando !== seccionActiva ? "shimmerBtn 2.5s infinite" : "none"}}>
-                    {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
+                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando.includes(seccionActiva)} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 relative overflow-hidden" style={{backgroundImage: !imagenGenerando.includes(seccionActiva) ? "linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.15) 50%, transparent 100%)" : "none", backgroundSize:"200% 100%", animation: !imagenGenerando.includes(seccionActiva) ? "shimmerBtn 2.5s infinite" : "none"}}>
+                    {imagenGenerando.includes(seccionActiva) ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
                   <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
                     {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
-                    {imagenes[seccionActiva] && <button onClick={() => setImagenes(prev => { const n = {...prev}; delete n[seccionActiva]; return n; })} className="w-full bg-[#111] border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Quitar imagen</button>}
                   </button>
+                  {imagenes[seccionActiva] && (
+                    <button onClick={() => { setImagenes(prev => { const n = {...prev}; delete n[seccionActiva]; sessionStorage.setItem("landing_imagenes", JSON.stringify(n)); return n; }); }} className="w-full bg-[#111] border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Quitar imagen</button>
+                  )}
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
