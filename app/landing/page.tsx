@@ -275,7 +275,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
+      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } } @keyframes shimmerBtn { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
@@ -566,7 +566,7 @@ export default function Landing() {
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
-                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
+                  <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 relative overflow-hidden" style={{backgroundImage: imagenGenerando !== seccionActiva ? "linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.15) 50%, transparent 100%)" : "none", backgroundSize:"200% 100%", animation: imagenGenerando !== seccionActiva ? "shimmerBtn 2.5s infinite" : "none"}}>
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
                   <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
