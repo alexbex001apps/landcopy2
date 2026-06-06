@@ -49,7 +49,7 @@ export default function Biblioteca() {
   const [loading, setLoading] = useState(true);
   const [tabActivo, setTabActivo] = useState("todos");
   const [filtroModulo, setFiltroModulo] = useState("todos");
-  const [carpetaActiva, setCarpetaActiva] = useState<string | null>(null);
+  const [carpetaActiva, setCarpetaActiva] = useState<string | null>("sin_carpeta");
   const [busqueda, setBusqueda] = useState("");
   const [copiado, setCopiado] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -186,7 +186,8 @@ export default function Biblioteca() {
   };
 
   const itemsFiltrados = items.filter(item => {
-    if (carpetaActiva !== null && item.carpeta_id !== carpetaActiva) return false;
+    if (carpetaActiva === "sin_carpeta" && item.carpeta_id !== null) return false;
+    if (carpetaActiva !== null && carpetaActiva !== "sin_carpeta" && item.carpeta_id !== carpetaActiva) return false;
     if (tabActivo === "favoritos" && !item.favorito) return false;
     if (tabActivo === "imagenes" && item.tipo !== "imagen") return false;
     if (tabActivo === "copys" && item.tipo !== "copy") return false;
@@ -374,6 +375,9 @@ export default function Biblioteca() {
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => setCarpetaActiva(null)} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all ${carpetaActiva === null ? "border-orange-500 bg-orange-500/10 text-orange-500" : "border-[#1a1a1a] text-zinc-500"}`}>
                 📁 Todos
+              </button>
+              <button onClick={() => setCarpetaActiva("sin_carpeta")} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all ${carpetaActiva === "sin_carpeta" ? "border-yellow-500 bg-yellow-500/10 text-yellow-400" : "border-[#1a1a1a] text-zinc-500"}`}>
+                📥 Sin clasificar
               </button>
               {carpetas.map(c => (
                 <div key={c.id} className="flex items-center gap-1">
