@@ -8,8 +8,18 @@ const TAMANIOS: Record<string, string> = {
 };
 
 async function generarImagenBase64(prompt: string, size: string, apiKey: string, imagen?: string): Promise<string> {
-  if (imagen && imagen.startsWith("data:")) {
-    const imageBuffer = Buffer.from(imagen.split(",")[1], "base64");
+  let imagenFinal = imagen;
+  if (imagen && imagen.startsWith("http")) {
+    try {
+      const resp = await fetch(imagen);
+      const blob = await resp.arrayBuffer();
+      const b64 = Buffer.from(blob).toString("base64");
+      const ct = resp.headers.get("content-type") || "image/jpeg";
+      imagenFinal = `data:${ct};base64,${b64}`;
+    } catch {}
+  }
+  if (imagenFinal && imagenFinal.startsWith("data:")) {
+    const imageBuffer = Buffer.from(imagenFinal.split(",")[1], "base64");
     const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
     const parts = [
       `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
