@@ -99,6 +99,8 @@ export default function Anuncios() {
       setPrecioAnterior(c.precio_anterior || "");
       if (c.imagen_url) setImagenProducto(c.imagen_url);
       setDescripcion(c.problema || c.beneficio || "");
+      const imgGen = sessionStorage.getItem("anuncios_img_generada");
+      if (imgGen) { setImagenGenerada(imgGen); setPantalla(3); }
       setHydrated(true);
       return;
     }
@@ -582,7 +584,8 @@ export default function Anuncios() {
                     {guardando ? "⏳ Guardando..." : "💾 Guardar en Biblioteca"}
                   </button>
                 </div>
-                <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); sessionStorage.removeItem(SS_KEY); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+                <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); sessionStorage.removeItem(SS_KEY); sessionStorage.removeItem("anuncios_img_generada"); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
+                <button onClick={() => { setImagenGenerada(null); sessionStorage.removeItem("anuncios_img_generada"); }} className="w-full border border-red-500/30 text-red-400 text-xs font-bold py-2 rounded-xl hover:border-red-500 transition-colors">🗑️ Quitar imagen</button>
                 <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 space-y-3">
                   <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">✏️ Editar imagen</p>
                   <textarea value={instruccionEdicion} onChange={e => setInstruccionEdicion(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Ej: Pon el precio más grande · Cambia el badge a verde · Más luz al producto..." />
