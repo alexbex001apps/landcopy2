@@ -203,6 +203,20 @@ export default function Anuncios() {
     setDolorSel(prev => prev.includes(texto) ? prev.filter(d => d !== texto) : [...prev, texto]);
   };
 
+  const subirImagenAStorage = async (base64: string): Promise<string> => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      const blob = await fetch(base64).then(r => r.blob());
+      const path = `${user?.id}/${Date.now()}_anuncio_gen.png`;
+      const { error } = await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+      if (error) return base64;
+      const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+      return urlData.publicUrl;
+    } catch {
+      return base64;
+    }
+  };
   const generarAnuncio = async () => {
     setGenerando(true);
     setImagenGenerada(null);
@@ -219,7 +233,7 @@ export default function Anuncios() {
         }),
       });
       const data = await resp.json();
-      if (data.imageUrl) { setImagenGenerada(data.imageUrl); }
+      if (data.imageUrl) { const url = await subirImagenAStorage(data.imageUrl); setImagenGenerada(url); }
       else setErrorGeneracion(data.error || "Error desconocido");
     } catch (err: any) {
       setErrorGeneracion(err.message);
@@ -247,7 +261,7 @@ export default function Anuncios() {
       const data = await resp.json();
       if (data.imageUrl) {
         setImagenOriginal(imagenGenerada);
-        setImagenGenerada(data.imageUrl);
+        setImagenGenerada(await subirImagenAStorage(data.imageUrl));
         setInstruccionEdicion("");
       } else setErrorGeneracion(data.error || "Error al editar");
     } catch (err: any) {
