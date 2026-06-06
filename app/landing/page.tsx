@@ -275,6 +275,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
+      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
@@ -535,7 +536,18 @@ export default function Landing() {
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest mb-1">{s.nombre}</p>
-                    {imagenes[s.id] && <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 max-h-96 object-contain" />}
+                    {imagenGenerando === s.id ? (
+                      <div className="w-full h-48 rounded-lg mb-2 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-[#1a1a1a]"></div>
+                        <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-[#ffffff08] to-transparent" style={{backgroundSize:"200% 100%", animation:"shimmer 1.5s infinite"}}></div>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                          <p className="text-orange-400 text-[9px] font-bold">Creando imagen con IA...</p>
+                        </div>
+                      </div>
+                    ) : imagenes[s.id] ? (
+                      <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 max-h-96 object-contain" />
+                    ) : null}
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
                     ) : (
