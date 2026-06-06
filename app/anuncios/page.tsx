@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
@@ -79,9 +80,15 @@ export default function Anuncios() {
   const [instruccionEdicion, setInstruccionEdicion] = useState("");
   const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   useEffect(() => {
-    // Campaña activa tiene prioridad sobre todo
     const campaign = sessionStorage.getItem("campaign_activa");
     if (campaign) {
       const c = JSON.parse(campaign);
@@ -171,7 +178,7 @@ export default function Anuncios() {
       const chips = [...(json.dolores || []), json.antesdespues || ""].filter(Boolean);
       setDolorChips(chips);
       setDolorSel(chips.slice(0, 3));
-    } catch (err) {
+    } catch {
       setDolorChips(["Dolor constante", "Sin solución efectiva", "Cansado de sufrir", "Calidad de vida afectada", "Antes: sufriendo el problema → Después: viviendo la solución"]);
       setDolorSel(["Dolor constante", "Sin solución efectiva"]);
     } finally {
@@ -245,6 +252,33 @@ export default function Anuncios() {
     }
   };
 
+  const guardarEnBiblioteca = async () => {
+    if (!imagenGenerada) return;
+    setGuardando(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      let imageUrl = imagenGenerada;
+      if (imagenGenerada.startsWith("data:")) {
+        const blob = await fetch(imagenGenerada).then(r => r.blob());
+        const path = `${user?.id}/${Date.now()}_anuncio.png`;
+        await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+        const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+        imageUrl = urlData.publicUrl;
+      }
+      await fetch("/api/biblioteca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tipo: "imagen", modulo: "anuncios", nombre: `Anuncio — ${nombre}`, producto: nombre, imagen_url: imageUrl }),
+      });
+      sessionStorage.removeItem("biblioteca_items");
+      showToast("✓ Guardado en Biblioteca");
+    } catch {
+      showToast("Error al guardar");
+    }
+    setGuardando(false);
+  };
+
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -258,7 +292,12 @@ export default function Anuncios() {
   return (
     <div className="min-h-screen bg-[#050505] text-white">
 
-      {/* Header */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
+          {toast}
+        </div>
+      )}
+
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
           <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
@@ -286,7 +325,6 @@ export default function Anuncios() {
         </div>
       </div>
 
-      {/* Steps bar full width */}
       <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
         {[
           { n: 1, label: "Paso 1 — Producto", sub: "Tu producto" },
@@ -309,7 +347,6 @@ export default function Anuncios() {
 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
 
-        {/* PANTALLA 1 */}
         {pantalla === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -382,7 +419,6 @@ export default function Anuncios() {
           </div>
         )}
 
-        {/* PANTALLA 2 */}
         {pantalla === 2 && (
           <div className="space-y-6">
             {(dolorChips.length > 0 || generandoDolor) && (
@@ -460,7 +496,6 @@ export default function Anuncios() {
           </div>
         )}
 
-        {/* PANTALLA 3 */}
         {pantalla === 3 && (
           <div className="space-y-6">
             {!imagenGenerada && !generando && (
@@ -508,10 +543,13 @@ export default function Anuncios() {
                     <img src={imagenGenerada} alt="anuncio generado" className="max-w-full max-h-[500px] object-contain rounded-xl" />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <button onClick={generarAnuncio} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-yellow-400 text-xs font-bold py-3 rounded-xl transition-colors">↻ Regenerar</button>
                   <button onClick={() => setPantalla(2)} className="bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] text-yellow-400 text-xs font-bold py-3 rounded-xl transition-colors">← Editar frases</button>
                   <a href={imagenGenerada} download={`anuncio-${formatoSeleccionado.id}.png`} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition-colors flex items-center justify-center">⬇ Descargar</a>
+                  <button onClick={guardarEnBiblioteca} disabled={guardando} className="bg-purple-500/10 border border-purple-500/40 text-purple-400 text-xs font-bold py-3 rounded-xl flex items-center justify-center disabled:opacity-40 active:scale-95 transition-transform">
+                    {guardando ? "⏳ Guardando..." : "💾 Guardar en Biblioteca"}
+                  </button>
                 </div>
                 <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); sessionStorage.removeItem(SS_KEY); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
                 <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 space-y-3">
