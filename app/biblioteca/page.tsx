@@ -445,7 +445,7 @@ export default function Biblioteca() {
                 {/* Preview */}
                 <div className={`h-[100px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
                   {item.imagen_url ? (
-                    <img src={item.imagen_url} loading="lazy" className="w-full h-full object-contain" alt={item.nombre} />
+                    <img src={item.imagen_url} className="w-full h-full object-contain" alt={item.nombre} />
                   ) : (
                     <div className="text-4xl opacity-20">
                       {item.tipo === "copy" ? "📝" : item.tipo === "landing" ? "🖥️" : "🖼️"}
