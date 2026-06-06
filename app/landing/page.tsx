@@ -58,6 +58,7 @@ export default function Landing() {
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [guardandoSeccion, setGuardandoSeccion] = useState(false);
   const [fNombre, setFNombre] = useState("");
   const [fProducto, setFProducto] = useState("");
   const [fProblema, setFProblema] = useState("");
@@ -189,6 +190,42 @@ export default function Landing() {
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
+  };
+
+  const guardarSeccionEnBiblioteca = async (seccionId: string) => {
+    const imagenBase64 = imagenes[seccionId];
+    const textoSeccion = contenido[seccionId];
+    if (!imagenBase64 && !textoSeccion) return;
+    setGuardandoSeccion(true);
+    const producto = datosActivos.producto || "Producto";
+    const seccionNombre = secciones.find(s => s.id === seccionId)?.nombre || seccionId;
+    const nombre = `${producto} — ${seccionNombre}`;
+    const { data: { user } } = await supabase.auth.getUser();
+    let imageUrl: string | null = null;
+    if (imagenBase64 && imagenBase64.startsWith("data:")) {
+      try {
+        const blob = await fetch(imagenBase64).then(r => r.blob());
+        const path = `${user?.id}/${Date.now()}_${seccionId}.png`;
+        await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+        const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+        imageUrl = urlData.publicUrl;
+      } catch {}
+    }
+    await fetch("/api/biblioteca", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "imagen",
+        modulo: "landing",
+        nombre,
+        producto,
+        contenido: textoSeccion || null,
+        imagen_url: imageUrl,
+        metadata: { seccion: seccionId, fondo: fondoSeleccionado },
+      }),
+    });
+    setGuardandoSeccion(false);
+    showToast(`✓ ${seccionNombre} guardada en Biblioteca`);
   };
 
   const guardarEnBiblioteca = async () => {
@@ -520,7 +557,9 @@ export default function Landing() {
                   <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
                     {imagenGenerando === seccionActiva ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">💾 Guardar sección</button>
+                  <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
+                    {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
+                  </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
