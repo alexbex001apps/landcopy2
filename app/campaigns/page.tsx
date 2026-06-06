@@ -204,7 +204,7 @@ export default function Campaigns() {
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleImagen(e, slot as 1|2|3)} />
                   </label>
                   {slot === 1 && imagen1 && (
-                    <button onClick={identificarProducto} disabled={identifying} className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-bold px-4 py-2 py-1 rounded-full whitespace-nowrap">
+                    <button onClick={identificarProducto} disabled={identifying} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white text-[10px] font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform">
                       {identifying ? "⏳ Identificando..." : "🔍 Identificar producto"}
                     </button>
                   )}
