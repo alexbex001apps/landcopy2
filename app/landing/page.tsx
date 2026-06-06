@@ -604,6 +604,7 @@ export default function Landing() {
                   </button>
                   <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
                     {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
+                    {imagenes[seccionActiva] && <button onClick={() => setImagenes(prev => { const n = {...prev}; delete n[seccionActiva]; return n; })} className="w-full bg-[#111] border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Quitar imagen</button>}
                   </button>
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
