@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
+
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
   { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
@@ -81,9 +82,9 @@ export default function Anuncios() {
   const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [mostrarFondos, setMostrarFondos] = useState(false);
-  const [guardando, setGuardando] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -101,6 +102,7 @@ export default function Anuncios() {
       setDescripcion(c.problema || c.beneficio || "");
       const imgGen = sessionStorage.getItem("anuncios_img_generada");
       if (imgGen) { setImagenGenerada(imgGen); setPantalla(3); }
+      if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); setPantalla(3); }
       setHydrated(true);
       return;
     }
@@ -146,8 +148,23 @@ export default function Anuncios() {
         setPrecioAnterior(data.precioAnterior || "");
       }
     }
+    if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); setPantalla(3); }
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!generando) return;
+    const intervalo = setInterval(() => {
+      if (sessionStorage.getItem("anuncios_generando") !== "1") {
+        const img = sessionStorage.getItem("anuncios_img_generada");
+        const err = sessionStorage.getItem("anuncios_error_gen");
+        if (img) setImagenGenerada(img);
+        if (err) { setErrorGeneracion(err); sessionStorage.removeItem("anuncios_error_gen"); }
+        setGenerando(false);
+      }
+    }, 1000);
+    return () => clearInterval(intervalo);
+  }, [generando]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -217,10 +234,14 @@ export default function Anuncios() {
       return base64;
     }
   };
+
   const generarAnuncio = async () => {
     setGenerando(true);
     setImagenGenerada(null);
     setErrorGeneracion(null);
+    sessionStorage.setItem("anuncios_generando", "1");
+    sessionStorage.removeItem("anuncios_img_generada");
+    sessionStorage.removeItem("anuncios_error_gen");
     try {
       const resp = await fetch("/api/anuncios/generar", {
         method: "POST",
@@ -233,19 +254,30 @@ export default function Anuncios() {
         }),
       });
       const data = await resp.json();
-      if (data.imageUrl) { const url = await subirImagenAStorage(data.imageUrl); setImagenGenerada(url); }
-      else setErrorGeneracion(data.error || "Error desconocido");
+      if (data.imageUrl) {
+        const url = await subirImagenAStorage(data.imageUrl);
+        try { sessionStorage.setItem("anuncios_img_generada", url); } catch {}
+        setImagenGenerada(url);
+      } else {
+        sessionStorage.setItem("anuncios_error_gen", data.error || "Error desconocido");
+        setErrorGeneracion(data.error || "Error desconocido");
+      }
     } catch (err: any) {
+      sessionStorage.setItem("anuncios_error_gen", err.message);
       setErrorGeneracion(err.message);
     } finally {
+      sessionStorage.removeItem("anuncios_generando");
       setGenerando(false);
     }
   };
 
   const editarAnuncio = async () => {
     if (!imagenGenerada || !instruccionEdicion.trim()) return;
+    const imagenPrevia = imagenGenerada;
     setEditando(true);
     setErrorGeneracion(null);
+    sessionStorage.setItem("anuncios_generando", "1");
+    sessionStorage.removeItem("anuncios_error_gen");
     try {
       const resp = await fetch("/api/anuncios/generar", {
         method: "POST",
@@ -254,19 +286,26 @@ export default function Anuncios() {
           producto: nombre, headline, temperatura, frasesSeleccionadas,
           dolorSel, precioOferta, precioAnterior,
           formato: formatoSeleccionado.id,
-          imagen: imagenGenerada,
+          imagen: imagenPrevia,
           promptPropio: instruccionEdicion,
         }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
-        setImagenOriginal(imagenGenerada);
-        setImagenGenerada(await subirImagenAStorage(data.imageUrl));
+        const url = await subirImagenAStorage(data.imageUrl);
+        try { sessionStorage.setItem("anuncios_img_generada", url); } catch {}
+        setImagenOriginal(imagenPrevia);
+        setImagenGenerada(url);
         setInstruccionEdicion("");
-      } else setErrorGeneracion(data.error || "Error al editar");
+      } else {
+        sessionStorage.setItem("anuncios_error_gen", data.error || "Error al editar");
+        setErrorGeneracion(data.error || "Error al editar");
+      }
     } catch (err: any) {
+      sessionStorage.setItem("anuncios_error_gen", err.message);
       setErrorGeneracion(err.message);
     } finally {
+      sessionStorage.removeItem("anuncios_generando");
       setEditando(false);
     }
   };
@@ -512,6 +551,7 @@ export default function Anuncios() {
                 </div>
               )}
             </div>
+
             <div className="bg-[#111] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center justify-between">
               <span className="text-yellow-400 text-xs">Frases seleccionadas</span>
               <span className={`text-sm font-black ${frasesSeleccionadas.length >= 7 ? "text-red-400" : "text-orange-500"}`}>{frasesSeleccionadas.length} / 7</span>
@@ -561,6 +601,7 @@ export default function Anuncios() {
                       </div>
                     </div>
                   )}
+                  {fondoSeleccionado && <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Fondo:</span> {FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre}</p>}
                   <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Formato:</span> {formatoSeleccionado.nombre}</p>
                 </div>
                 <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
@@ -575,7 +616,7 @@ export default function Anuncios() {
                 <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
                 <p className="text-white font-bold">Generando tu anuncio {tempActual.icon}...</p>
                 <p className="text-yellow-400 text-sm">Esto toma entre 15 y 30 segundos</p>
-                <p className="text-xs font-bold" style={{color:"#00ff88"}}>⚠️ No salgas de esta pantalla hasta que se genere tu imagen</p>
+                <p className="text-xs font-bold" style={{color:"#00ff88"}}>✓ Puedes navegar por la app — tu imagen seguirá generándose y estará aquí al volver</p>
               </div>
             )}
 
@@ -604,7 +645,7 @@ export default function Anuncios() {
                   <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">✏️ Editar imagen</p>
                   <textarea value={instruccionEdicion} onChange={e => setInstruccionEdicion(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Ej: Pon el precio más grande · Cambia el badge a verde · Más luz al producto..." />
                   <button onClick={editarAnuncio} disabled={editando || !instruccionEdicion.trim()} className="w-full bg-[#111] border border-yellow-400/30 hover:border-yellow-400 text-yellow-400 text-xs font-bold py-2.5 rounded-xl transition-colors disabled:opacity-40">
-                    {editando ? "⏳ Aplicando cambios..." : "✏️ Aplicar cambios"}
+                    {editando ? "⏳ Aplicando cambios... (puedes navegar)" : "✏️ Aplicar cambios"}
                   </button>
                   {imagenOriginal && <button onClick={() => { setImagenGenerada(imagenOriginal); setImagenOriginal(null); }} className="w-full text-yellow-400/50 text-[10px] font-bold py-1">↩ Deshacer último cambio</button>}
                 </div>
