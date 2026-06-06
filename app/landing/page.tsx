@@ -80,10 +80,10 @@ export default function Landing() {
     });
     const c = sessionStorage.getItem("campaign_activa");
     if (c) setCampaign(JSON.parse(c));
-    const savedImagenes = sessionStorage.getItem("landing_imagenes");
+   const savedImagenes = sessionStorage.getItem("landing_imagenes");
     if (savedImagenes) setImagenes(JSON.parse(savedImagenes));
     const savedContenido = sessionStorage.getItem("landing_contenido");
-    if (savedContenido) setContenido(JSON.parse(savedContenido));
+    if (savedContenido) { setContenido(JSON.parse(savedContenido)); setPaso(3); }
   }, []);
 
   const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
