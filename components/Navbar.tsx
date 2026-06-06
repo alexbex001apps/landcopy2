@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -98,15 +99,15 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-900 bg-black/90 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="/" className="font-bold text-xl text-white">Land<span className="text-orange-500">Copy</span></a>
+        <Link href="/" className="font-bold text-xl text-white">Land<span className="text-orange-500">Copy</span></Link>
         <div className="flex items-center gap-1 text-sm text-zinc-400">
           {modulos.map(m => (
-            <a key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group">
+            <Link key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group">
               <div className="w-11 h-11 rounded-full bg-[#0d0d0d] border border-[#1a1a1a] group-hover:border-orange-500 flex items-center justify-center transition-colors">
                 <m.Icon />
               </div>
               <span className="text-[9px] font-bold text-white group-hover:text-orange-500 transition-colors">{m.label}</span>
-            </a>
+            </Link>
           ))}
           <a href="/precios" className="px-3 py-2 text-xs text-zinc-400 hover:text-white transition-colors ml-1">Precios</a>
           {user ? (
