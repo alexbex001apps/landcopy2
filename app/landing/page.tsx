@@ -299,7 +299,7 @@ export default function Landing() {
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Landing</p>
             {datosActivos.imagen_url && (
-              <img src={datosActivos.imagen_url} className="w-12 h-12 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] mt-1" />
+              <img src={datosActivos.imagen_url} className="w-20 h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] mt-2 ml-3" />
             )}
           </div>
           <div className="flex-1 text-center px-5">
