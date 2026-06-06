@@ -35,6 +35,7 @@ export default function Copy() {
   const [modalCompartir, setModalCompartir] = useState<string | null>(null);
   const [headlinesSeleccionados, setHeadlinesSeleccionados] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [identificando, setIdentificando] = useState(false);
  
   useEffect(() => {
     const supabase = createClient();
@@ -58,7 +59,7 @@ export default function Copy() {
       setPais(c.pais || "Colombia");
       setTono(c.tono || "Urgente");
       if (c.imagen_url) setImagen(c.imagen_url);
-      ss.removeItem("campaign_activa");
+      
       return;
     }
     setProducto(ss.getItem("lc_producto") || "");
@@ -141,6 +142,23 @@ export default function Copy() {
     "Esto tomaría 2-3 días a un copywriter profesional...",
   ];
  
+  async function identificarProducto() {
+    if (!imagen) return;
+    setIdentificando(true);
+    try {
+      const resp = await fetch("/api/campaigns/identificar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagen }),
+      });
+      const data = await resp.json();
+      if (data.nombre) setProducto(data.nombre);
+      if (data.producto) setProducto(data.producto);
+      if (data.problema) setProblema(data.problema);
+      if (data.beneficio) setBeneficio(data.beneficio);
+    } catch {}
+    setIdentificando(false);
+  }
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -346,6 +364,11 @@ export default function Copy() {
                 )}
               </div>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleImagen} className="hidden" />
+              {imagen && (
+                <button onClick={identificarProducto} disabled={identificando} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white text-[11px] font-bold py-2 rounded-lg active:scale-95 transition-transform">
+                  {identificando ? "⏳ Identificando..." : "🔍 Identificar producto"}
+                </button>
+              )}
             </div>
  
             <div className="mb-3">
