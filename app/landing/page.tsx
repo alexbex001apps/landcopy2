@@ -579,7 +579,10 @@ export default function Landing() {
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo de imagen</p>
                 <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
-                  <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
+                  <div className="flex items-center gap-2">
+                    {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
+                    <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
+                  </div>
                   <span className="text-yellow-400 text-[10px]">{mostrarFondos ? "▲" : "▼"}</span>
                 </button>
                 {mostrarFondos && (
@@ -588,7 +591,7 @@ export default function Landing() {
                       <div className="w-5 h-5 rounded border border-[#333] flex-shrink-0"></div>
                       <span className="text-[10px] text-zinc-500">Sin fondo específico</span>
                     </div>
-                    {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil"].map(cat => (
+                   {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil","Decorativo","Lifestyle","Ocasiones"].map(cat => (
                       <div key={cat}>
                         <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest px-3 py-1 bg-[#080808]">{cat}</p>
                         {FONDOS_DISPONIBLES.filter(f => f.categoria === cat).map(f => (
