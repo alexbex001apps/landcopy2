@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
   { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
@@ -81,6 +81,8 @@ export default function Anuncios() {
   const [imagenOriginal, setImagenOriginal] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
+  const [mostrarFondos, setMostrarFondos] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const showToast = (msg: string) => {
@@ -122,6 +124,7 @@ export default function Anuncios() {
         setDolorSel(s.dolorSel || []);
         setPromptPropio(s.promptPropio || "");
         setFormatoSeleccionado(FORMATOS.find(f => f.id === s.formatoId) || FORMATOS[0]);
+        setFondoSeleccionado(s.fondoSeleccionado || null);
         setImagenProducto(sessionStorage.getItem("anuncios_img_producto") || null);
         setImagenGenerada(sessionStorage.getItem("anuncios_img_generada") || null);
         setHeadlines(s.headlines || []);
@@ -149,14 +152,14 @@ export default function Anuncios() {
     const estado = {
       pantalla, nombre, descripcion, precioOferta, precioAnterior,
       headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
-      promptPropio, formatoId: formatoSeleccionado.id, headlines,
+      promptPropio, formatoId: formatoSeleccionado.id, headlines, fondoSeleccionado,
     };
     try { sessionStorage.setItem(SS_KEY, JSON.stringify(estado)); } catch {}
     try { if (imagenProducto) sessionStorage.setItem("anuncios_img_producto", imagenProducto); } catch {}
     try { if (imagenGenerada) sessionStorage.setItem("anuncios_img_generada", imagenGenerada); } catch {}
   }, [hydrated, pantalla, nombre, descripcion, precioOferta, precioAnterior,
     headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
-    promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines]);
+    promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines, fondoSeleccionado]);
 
   const generarDolor = async () => {
     if (!nombre) return;
@@ -210,7 +213,7 @@ export default function Anuncios() {
           producto: nombre, headline, temperatura, frasesSeleccionadas,
           dolorSel, precioOferta, precioAnterior,
           formato: formatoSeleccionado.id,
-          imagen: imagenProducto, promptPropio,
+          imagen: imagenProducto, promptPropio, fondoId: fondoSeleccionado,
         }),
       });
       const data = await resp.json();
@@ -465,6 +468,34 @@ export default function Anuncios() {
               </div>
             </div>
 
+            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-4 space-y-2">
+              <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">🎨 Fondo de la imagen — opcional</p>
+              <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center gap-2 bg-[#111] border border-[#1a1a1a] rounded-lg px-3 py-2 hover:border-[#333] transition-colors">
+                {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
+                <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
+                <span className="text-yellow-400 text-[10px] ml-auto">{mostrarFondos ? "▲" : "▼"}</span>
+              </button>
+              {mostrarFondos && (
+                <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+                  <div onClick={() => { setFondoSeleccionado(null); setMostrarFondos(false); }} className="flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer border-b border-[#1a1a1a]">
+                    <div className="w-5 h-5 rounded border border-[#333] flex-shrink-0"></div>
+                    <span className="text-[10px] text-zinc-500">Sin fondo específico</span>
+                  </div>
+                  {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil","Decorativo","Lifestyle","Ocasiones"].map(cat => (
+                    <div key={cat}>
+                      <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest px-3 py-1 bg-[#080808]">{cat}</p>
+                      {FONDOS_DISPONIBLES.filter(f => f.categoria === cat).map(f => (
+                        <div key={f.id} onClick={() => { setFondoSeleccionado(f.id); setMostrarFondos(false); }} className={`flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer ${fondoSeleccionado === f.id ? "bg-[#1a1a1a]" : ""}`}>
+                          <div className="w-5 h-5 rounded flex-shrink-0" style={{ background: f.color }}></div>
+                          <span className="text-[10px] text-[#f0ead6]">{f.nombre}</span>
+                          {fondoSeleccionado === f.id && <span className="ml-auto text-yellow-400 text-[9px]">✓</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="bg-[#111] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center justify-between">
               <span className="text-yellow-400 text-xs">Frases seleccionadas</span>
               <span className={`text-sm font-black ${frasesSeleccionadas.length >= 7 ? "text-red-400" : "text-orange-500"}`}>{frasesSeleccionadas.length} / 7</span>
