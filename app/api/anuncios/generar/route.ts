@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { FONDOS_DISPONIBLES } from "../../landing/imagen/route";
 const TAMANIOS: Record<string, string> = {
   facebook: "1536x1024",
   instagram: "1024x1024",
@@ -188,7 +188,7 @@ QUALITY: Ultra detailed, 4K, commercial advertising quality, lifestyle photograp
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { producto, headline, temperatura = "hot", frasesSeleccionadas = [], dolorSel = [], precioOferta, precioAnterior, formato = "instagram", imagen, promptPropio } = body;
+    const { producto, headline, temperatura = "hot", frasesSeleccionadas = [], dolorSel = [], precioOferta, precioAnterior, formato = "instagram", imagen, promptPropio, fondoId } = body;
 
     if (!producto || !headline) {
       return NextResponse.json({ error: "Producto y headline requeridos" }, { status: 400 });
@@ -206,10 +206,11 @@ export async function POST(req: NextRequest) {
     const frasesAccion = frasesSeleccionadas.filter((f: string) => ["COMPRAR AHORA", "PEDIR AHORA", "QUIERO EL MÍO", "QUIERO SABER MÁS", "VER RESULTADOS", "DESCUBRIR", "APRENDE MÁS"].includes(f));
 
     const params = { producto, headline, frasesUrgencia, frasesConfianza, frasesDescubrimiento, frasesAccion, dolorSel, precioOferta, precioAnterior };
-
+    const fondoPrompt = fondoId ? FONDOS_DISPONIBLES.find((f: any) => f.id === fondoId)?.prompt : null;
+    const extraFondo = fondoPrompt ? `\n\nBACKGROUND: ${fondoPrompt}` : "";
     const promptFinal = promptPropio?.trim()
       ? `${promptPropio}\n\nPRODUCT: ${producto}\nHEADLINE: "${headline}"\n${precioOferta ? `PRICE: ${precioAnterior ? `BEFORE ${precioAnterior}` : ""} NOW ${precioOferta}` : ""}\nFRASES: ${frasesSeleccionadas.join(", ")}\nQUALITY: Ultra detailed, 4K, commercial advertising quality, high conversion layout.`
-      : PROMPTS_MAESTROS[temperatura as keyof typeof PROMPTS_MAESTROS](params);
+      : PROMPTS_MAESTROS[temperatura as keyof typeof PROMPTS_MAESTROS](params) + extraFondo;
 
     const imageUrl = await generarImagenBase64(promptFinal, size, process.env.OPENAI_API_KEY!, imagen);
 
