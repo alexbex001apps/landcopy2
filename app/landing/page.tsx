@@ -80,6 +80,10 @@ export default function Landing() {
     });
     const c = sessionStorage.getItem("campaign_activa");
     if (c) setCampaign(JSON.parse(c));
+    const savedImagenes = sessionStorage.getItem("landing_imagenes");
+    if (savedImagenes) setImagenes(JSON.parse(savedImagenes));
+    const savedContenido = sessionStorage.getItem("landing_contenido");
+    if (savedContenido) setContenido(JSON.parse(savedContenido));
   }, []);
 
   const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
@@ -173,7 +177,7 @@ export default function Landing() {
     setPaso(3);
   };
 
-  const generarImagen = async (seccionId: string) => {
+    const generarImagen = async (seccionId: string) => {
     setImagenGenerando(seccionId);
     try {
       const resp = await fetch("/api/landing/imagen", {
@@ -182,7 +186,20 @@ export default function Landing() {
         body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado }),
       });
       const data = await resp.json();
-      if (data.imageUrl) setImagenes(prev => ({ ...prev, [seccionId]: data.imageUrl }));
+      if (data.imageUrl) {
+        let urlFinal = data.imageUrl;
+        if (data.imageUrl.startsWith("data:")) {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const blob = await fetch(data.imageUrl).then(r => r.blob());
+            const path = `${user?.id}/${Date.now()}_${seccionId}.png`;
+            await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+            const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+            urlFinal = urlData.publicUrl;
+          } catch { urlFinal = data.imageUrl; }
+        }
+        setImagenes(prev => ({ ...prev, [seccionId]: urlFinal }));
+      }
     } catch {}
     setImagenGenerando(null);
   };
@@ -259,6 +276,17 @@ export default function Landing() {
     showToast("✓ Landing guardada en Biblioteca");
   };
 
+  useEffect(() => {
+    if (Object.keys(imagenes).length > 0) {
+      sessionStorage.setItem("landing_imagenes", JSON.stringify(imagenes));
+    }
+  }, [imagenes]);
+
+  useEffect(() => {
+    if (Object.keys(contenido).length > 0) {
+      sessionStorage.setItem("landing_contenido", JSON.stringify(contenido));
+    }
+  }, [contenido]);
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
