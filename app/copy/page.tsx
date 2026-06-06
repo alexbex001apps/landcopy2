@@ -156,6 +156,7 @@ export default function Copy() {
       if (data.producto) setProducto(data.producto);
       if (data.problema) setProblema(data.problema);
       if (data.beneficio) setBeneficio(data.beneficio);
+      if (data.beneficio) setCaracteristicas(data.beneficio);
     } catch {}
     setIdentificando(false);
   }
