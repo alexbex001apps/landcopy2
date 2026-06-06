@@ -219,7 +219,9 @@ export default function Landing() {
     const nombre = `${producto} — ${seccionNombre}`;
     const { data: { user } } = await supabase.auth.getUser();
     let imageUrl: string | null = null;
-    if (imagenBase64 && imagenBase64.startsWith("data:")) {
+    if (imagenBase64 && imagenBase64.startsWith("http")) {
+      imageUrl = imagenBase64;
+    } else if (imagenBase64 && imagenBase64.startsWith("data:")) {
       try {
         const blob = await fetch(imagenBase64).then(r => r.blob());
         const path = `${user?.id}/${Date.now()}_${seccionId}.png`;
