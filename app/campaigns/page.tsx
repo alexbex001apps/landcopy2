@@ -191,7 +191,10 @@ export default function Campaigns() {
                 <div key={slot} className="relative">
                   <label className={`flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
                     {(slot === 1 ? imagen1 : slot === 2 ? imagen2 : imagen3) ? (
-                      <img src={slot === 1 ? imagen1! : slot === 2 ? imagen2! : imagen3!} className="w-full h-full object-contain rounded-xl" />
+                      <div className="relative w-full h-full">
+                        <img src={slot === 1 ? imagen1! : slot === 2 ? imagen2! : imagen3!} className="w-full h-full object-contain rounded-xl" />
+                        <button onClick={e => { e.stopPropagation(); e.preventDefault(); if (slot === 1) setImagen1(null); if (slot === 2) setImagen2(null); if (slot === 3) setImagen3(null); }} className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">✕</button>
+                      </div>
                     ) : (
                       <>
                         <span className="text-2xl mb-1">📷</span>
