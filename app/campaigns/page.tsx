@@ -189,7 +189,7 @@ export default function Campaigns() {
             <div className="flex gap-4 mb-6">
               {[1,2,3].map(slot => (
                 <div key={slot} className="relative">
-                  <label className={`flex flex-col items-center justify-center w-[120px] h-[100px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
+                  <label className={`flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
                     {(slot === 1 ? imagen1 : slot === 2 ? imagen2 : imagen3) ? (
                       <img src={slot === 1 ? imagen1! : slot === 2 ? imagen2! : imagen3!} className="w-full h-full object-contain rounded-xl" />
                     ) : (
