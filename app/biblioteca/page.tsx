@@ -76,11 +76,19 @@ export default function Biblioteca() {
     cargarCarpetas();
   }, []);
 
-  const cargar = async () => {
+  const cargar = async (forzar = false) => {
+    const cached = sessionStorage.getItem("biblioteca_items");
+    if (cached && !forzar) {
+      setItems(JSON.parse(cached));
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const resp = await fetch("/api/biblioteca");
     const data = await resp.json();
-    setItems(data.items || []);
+    const items = data.items || [];
+    setItems(items);
+    sessionStorage.setItem("biblioteca_items", JSON.stringify(items));
     setLoading(false);
   };
 
@@ -144,7 +152,7 @@ export default function Biblioteca() {
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i));
     setModalMover(null);
     showToast("Movido a carpeta");
-    await cargar();
+    await cargar(true);
   };
 
   const toggleFavorito = async (item: BibliotecaItem) => {
@@ -163,6 +171,7 @@ export default function Biblioteca() {
       body: JSON.stringify({ id }),
     });
     setItems(prev => prev.filter(i => i.id !== id));
+    sessionStorage.removeItem("biblioteca_items");
     showToast("Eliminado");
   };
 
