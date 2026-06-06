@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
 
+
 interface Campaign {
   id: string;
   nombre: string;
@@ -84,6 +85,19 @@ export default function Landing() {
     if (savedImagenes) setImagenes(JSON.parse(savedImagenes));
     const savedContenido = sessionStorage.getItem("landing_contenido");
     if (savedContenido) { setContenido(JSON.parse(savedContenido)); setPaso(3); }
+    const generandoSeccion = sessionStorage.getItem("landing_generando");
+    if (generandoSeccion) {
+      setImagenGenerando(generandoSeccion);
+      setPaso(3);
+      const intervalo = setInterval(() => {
+        if (!sessionStorage.getItem("landing_generando")) {
+          const imgs = sessionStorage.getItem("landing_imagenes");
+          if (imgs) setImagenes(JSON.parse(imgs));
+          setImagenGenerando(null);
+          clearInterval(intervalo);
+        }
+      }, 1000);
+    }
   }, []);
 
   const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
@@ -179,6 +193,7 @@ export default function Landing() {
 
     const generarImagen = async (seccionId: string) => {
     setImagenGenerando(seccionId);
+    sessionStorage.setItem("landing_generando", seccionId);
     try {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
@@ -198,9 +213,15 @@ export default function Landing() {
             urlFinal = urlData.publicUrl;
           } catch { urlFinal = data.imageUrl; }
         }
+        try {
+          const guardadas = JSON.parse(sessionStorage.getItem("landing_imagenes") || "{}");
+          guardadas[seccionId] = urlFinal;
+          sessionStorage.setItem("landing_imagenes", JSON.stringify(guardadas));
+        } catch {}
         setImagenes(prev => ({ ...prev, [seccionId]: urlFinal }));
       }
     } catch {}
+    sessionStorage.removeItem("landing_generando");
     setImagenGenerando(null);
   };
 
