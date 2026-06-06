@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
                 text: `Analiza esta imagen de producto y responde SOLO con JSON sin markdown:
 {
   "nombre": "nombre comercial corto del producto",
-  "producto": "descripción de características en máximo 10 palabras",
+  "producto": "4 características principales del producto separadas por punto y coma",
   "problema": "problema principal que resuelve en máximo 6 palabras",
   "beneficio": "beneficio principal en máximo 6 palabras",
   "categoria": "categoría del producto"
