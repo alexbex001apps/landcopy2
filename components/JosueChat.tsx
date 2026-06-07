@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type EspId = "josue" | "caleb" | "nehemias";
 type Mensaje = { de: "user" | EspId; texto: string };
@@ -102,6 +103,7 @@ export default function JosueChat() {
   const [cargando, setCargando] = useState(false);
   const [campana, setCampana] = useState<any>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,14 +129,73 @@ export default function JosueChat() {
         role: m.de === "user" ? "user" : "assistant",
         content: m.de === "user" ? m.texto : `[${ESPECIALISTAS[m.de as EspId]?.nombre || "Josué"}]: ${m.texto}`,
       }));
-      let contexto = null;
+
+      // ===== RECOLECTAR TODO LO QUE EL CONSEJO PUEDE VER =====
+      const partes: string[] = [];
+      const imagenes: string[] = [];
+
+      // 1. Campaña activa (datos + foto del producto)
       if (campana) {
-        contexto = `Producto: ${campana.producto || "?"} | Problema: ${campana.problema || "?"} | Beneficio: ${campana.beneficio || "?"} | Precio oferta: ${campana.precio_oferta || "?"} | Precio anterior: ${campana.precio_anterior || "?"} | País: ${campana.pais || "?"} | Tono: ${campana.tono || "?"} | Headline: ${campana.headline || "?"}`;
+        partes.push(`CAMPAÑA ACTIVA → Producto: ${campana.producto || "?"} | Problema: ${campana.problema || "?"} | Beneficio: ${campana.beneficio || "?"} | Precio oferta: ${campana.precio_oferta || "?"} | Precio anterior: ${campana.precio_anterior || "?"} | País: ${campana.pais || "?"} | Tono: ${campana.tono || "?"} | Headline: ${campana.headline || "?"}`);
+        if (typeof campana.imagen_url === "string" && campana.imagen_url.startsWith("http")) imagenes.push(campana.imagen_url);
       }
+
+      // 2. Landing: textos por sección
+      try {
+        const lc = sessionStorage.getItem("landing_contenido");
+        if (lc) {
+          const cont = JSON.parse(lc);
+          const textos = Object.entries(cont)
+            .filter(([, v]) => typeof v === "string" && (v as string).trim())
+            .map(([seccion, v]) => `[${seccion}]: ${(v as string).slice(0, 400)}`);
+          if (textos.length > 0) partes.push(`LANDING GENERADA (textos reales por sección):\n${textos.join("\n")}`);
+        }
+      } catch {}
+
+      // 3. Landing: imágenes por sección (URLs Supabase)
+      try {
+        const li = sessionStorage.getItem("landing_imagenes");
+        if (li) {
+          const imgs = JSON.parse(li);
+          const secciones: string[] = [];
+          Object.entries(imgs).forEach(([seccion, url]) => {
+            if (typeof url === "string" && url.startsWith("http")) {
+              imagenes.push(url);
+              secciones.push(seccion);
+            }
+          });
+          if (secciones.length > 0) partes.push(`IMÁGENES DE LANDING ADJUNTAS (en orden): ${secciones.join(", ")}`);
+        }
+      } catch {}
+
+      // 4. Resultado de Copy
+      try {
+        const res = sessionStorage.getItem("landcopy_resultado");
+        if (res) {
+          const r = JSON.parse(res);
+          const resumen = ["hero", "problema", "solucion", "beneficios", "cta"]
+            .filter(k => typeof r[k] === "string" && r[k].trim())
+            .map(k => `[${k}]: ${r[k].slice(0, 300)}`);
+          if (Array.isArray(r.headlines) && r.headlines.length) resumen.push(`[headlines]: ${r.headlines.slice(0, 6).join(" | ")}`);
+          if (resumen.length > 0) partes.push(`COPY GENERADO:\n${resumen.join("\n")}`);
+        }
+      } catch {}
+
+      // 5. Headlines enviados a Anuncios
+      try {
+        const hl = sessionStorage.getItem("anuncios_headlines");
+        if (hl) {
+          const arr = JSON.parse(hl);
+          if (Array.isArray(arr) && arr.length) partes.push(`HEADLINES SELECCIONADOS PARA ANUNCIOS: ${arr.slice(0, 7).join(" | ")}`);
+        }
+      } catch {}
+
+      const contexto = partes.length > 0 ? partes.join("\n\n") : null;
+
       const resp = await fetch("/api/josue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pregunta, especialista: activo, historial, contexto }),
+        body: JSON.stringify({ pregunta, especialista: activo, historial, contexto, imagenes: imagenes.slice(0, 5), pagina: pathname }),
       });
       const data = await resp.json();
       setMensajes(prev => [...prev, { de: activo, texto: data.respuesta || "No pude responder eso. Intenta de nuevo." }]);
