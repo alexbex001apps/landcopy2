@@ -1,20 +1,20 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-const PREGUNTAS_RAPIDAS = [
-  "¿Cómo genero un anuncio?",
-  "¿Qué es Hot Traffic?",
-  "¿Cómo funciona el módulo Copy?",
-  "¿Qué es Warm Traffic?",
-  "¿Cuántas frases puedo elegir?",
-  "¿Puedo editar la imagen?",
-  "¿Qué genera el módulo Redes?",
-  "¿LandCopy está terminado?",
-  "¿Para qué productos funciona?",
-  "¿Qué es Cold Traffic?",
-];
+type EspId = "josue" | "caleb" | "nehemias";
+type Mensaje = { de: "user" | EspId; texto: string };
 
-type Mensaje = { de: "josue" | "user"; texto: string };
+const ESPECIALISTAS: Record<EspId, { nombre: string; color: string; colorSuave: string; rol: string }> = {
+  josue: { nombre: "Josué", color: "#ff5000", colorSuave: "rgba(255,80,0,0.12)", rol: "Especialista en LandCopy" },
+  caleb: { nombre: "Caleb", color: "#22c55e", colorSuave: "rgba(34,197,94,0.12)", rol: "Director Estratégico" },
+  nehemias: { nombre: "Nehemías", color: "#38bdf8", colorSuave: "rgba(56,189,248,0.12)", rol: "Análisis y Optimización" },
+};
+
+const PREGUNTAS_RAPIDAS: Record<EspId, string[]> = {
+  josue: ["¿Cómo creo una campaña?", "¿Cómo genero una landing?", "¿Cómo funciona la Biblioteca?"],
+  caleb: ["¿Cómo mejoro mi anuncio frío?", "Dame 3 ángulos de venta", "¿Cómo armo una oferta irresistible?"],
+  nehemias: ["Analiza mi campaña activa", "Puntúa mi headline 1-10", "Diagnostica mi oferta"],
+};
 
 function JosueRobot({ size = 60 }: { size?: number }) {
   return (
@@ -59,18 +59,63 @@ function JosueRobot({ size = 60 }: { size?: number }) {
   );
 }
 
+function CalebFace({ size = 26 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40">
+      <circle cx="20" cy="22" r="12" fill="#22c55e"/>
+      <path d="M8 20 Q8 8 20 8 Q32 8 32 20 L32 22 L28 22 L28 16 L12 16 L12 22 L8 22 Z" fill="#15803d"/>
+      <rect x="14" y="20" width="4" height="4" rx="2" fill="#0a0a0a"/>
+      <rect x="22" y="20" width="4" height="4" rx="2" fill="#0a0a0a"/>
+      <path d="M13 28 Q20 36 27 28 L27 31 Q20 37 13 31 Z" fill="#15803d"/>
+      <path d="M15 27 Q20 31 25 27" stroke="#0a0a0a" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function NehemiasFace({ size = 26 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40">
+      <circle cx="20" cy="21" r="12" fill="#38bdf8"/>
+      <circle cx="15" cy="21" r="5" fill="none" stroke="#0a0a0a" strokeWidth="2"/>
+      <circle cx="25" cy="21" r="5" fill="none" stroke="#0a0a0a" strokeWidth="2"/>
+      <line x1="19" y1="20.5" x2="21" y2="20.5" stroke="#0a0a0a" strokeWidth="2"/>
+      <circle cx="15" cy="21" r="2" fill="#0a0a0a"/>
+      <circle cx="25" cy="21" r="2" fill="#0a0a0a"/>
+      <path d="M16 29 L24 29" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function Avatar({ esp, size = 26 }: { esp: EspId; size?: number }) {
+  if (esp === "caleb") return <CalebFace size={size} />;
+  if (esp === "nehemias") return <NehemiasFace size={size} />;
+  return <JosueRobot size={size * 0.85} />;
+}
+
 export default function JosueChat() {
   const [abierto, setAbierto] = useState(false);
+  const [activo, setActivo] = useState<EspId>("josue");
   const [mensajes, setMensajes] = useState<Mensaje[]>([
-    { de: "josue", texto: "¡Hola! Soy Josué 👋 La mascota de LandCopy. ¿En qué te puedo ayudar hoy?" }
+    { de: "josue", texto: "¡Hola! Soy Josué 👋 Bienvenido al Consejo IA de LandCopy. Pregúntame de la plataforma, o toca arriba a Caleb (estrategia) o Nehemías (análisis)." }
   ]);
   const [input, setInput] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [campana, setCampana] = useState<any>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensajes]);
+  }, [mensajes, abierto]);
+
+  useEffect(() => {
+    if (!abierto) return;
+    try {
+      const c = sessionStorage.getItem("campaign_activa");
+      setCampana(c ? JSON.parse(c) : null);
+    } catch { setCampana(null); }
+  }, [abierto]);
+
+  const esp = ESPECIALISTAS[activo];
 
   const enviar = async (pregunta: string) => {
     if (!pregunta.trim() || cargando) return;
@@ -78,15 +123,23 @@ export default function JosueChat() {
     setInput("");
     setCargando(true);
     try {
+      const historial = mensajes.slice(-10).map(m => ({
+        role: m.de === "user" ? "user" : "assistant",
+        content: m.de === "user" ? m.texto : `[${ESPECIALISTAS[m.de as EspId]?.nombre || "Josué"}]: ${m.texto}`,
+      }));
+      let contexto = null;
+      if (campana) {
+        contexto = `Producto: ${campana.producto || "?"} | Problema: ${campana.problema || "?"} | Beneficio: ${campana.beneficio || "?"} | Precio oferta: ${campana.precio_oferta || "?"} | Precio anterior: ${campana.precio_anterior || "?"} | País: ${campana.pais || "?"} | Tono: ${campana.tono || "?"} | Headline: ${campana.headline || "?"}`;
+      }
       const resp = await fetch("/api/josue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pregunta }),
+        body: JSON.stringify({ pregunta, especialista: activo, historial, contexto }),
       });
       const data = await resp.json();
-      setMensajes(prev => [...prev, { de: "josue", texto: data.respuesta || "No pude responder eso. Intenta de nuevo." }]);
+      setMensajes(prev => [...prev, { de: activo, texto: data.respuesta || "No pude responder eso. Intenta de nuevo." }]);
     } catch {
-      setMensajes(prev => [...prev, { de: "josue", texto: "Hubo un error. Intenta de nuevo 🙏" }]);
+      setMensajes(prev => [...prev, { de: activo, texto: "Hubo un error. Intenta de nuevo 🙏" }]);
     } finally {
       setCargando(false);
     }
@@ -99,47 +152,78 @@ export default function JosueChat() {
         <JosueRobot size={50} />
       </button>
 
-      {/* Panel de chat */}
+      {/* Panel del Consejo IA */}
       {abierto && (
-        <div style={{ position: "fixed", bottom: "100px", right: "24px", width: "340px", maxHeight: "520px", background: "#0a0a0a", border: "1px solid #ff5000", borderRadius: "20px", zIndex: 1000, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ position: "fixed", bottom: "100px", right: "24px", width: "360px", maxHeight: "560px", background: "#0a0a0a", border: `1px solid ${esp.color}`, borderRadius: "20px", zIndex: 1000, display: "flex", flexDirection: "column", overflow: "hidden", transition: "border-color 0.3s" }}>
 
           {/* Header */}
-          <div style={{ background: "#111", borderBottom: "1px solid #1a1a1a", padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
-            <JosueRobot size={32} />
-            <div>
-              <p style={{ color: "#ff5000", fontSize: "13px", fontWeight: 700, margin: 0, fontFamily: "sans-serif" }}>Josué</p>
-              <p style={{ color: "#555", fontSize: "10px", margin: 0, fontFamily: "sans-serif" }}>Asistente LandCopy · En construcción 🚧</p>
-            </div>
-            <button onClick={() => setAbierto(false)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#555", fontSize: "18px", cursor: "pointer" }}>✕</button>
+          <div style={{ background: "#111", borderBottom: "1px solid #1a1a1a", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ color: "#fff", fontSize: "13px", fontWeight: 700, fontFamily: "sans-serif" }}>⚡ Consejo IA</span>
+            <button onClick={() => setAbierto(false)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#facc15", fontSize: "18px", cursor: "pointer" }}>✕</button>
+          </div>
+
+          {/* Pestañas de especialistas */}
+          <div style={{ display: "flex", gap: "4px", padding: "8px", background: "#070707", borderBottom: "1px solid #151515" }}>
+            {(Object.keys(ESPECIALISTAS) as EspId[]).map(id => {
+              const e = ESPECIALISTAS[id];
+              const on = activo === id;
+              return (
+                <button key={id} onClick={() => setActivo(id)} style={{ flex: 1, textAlign: "center", padding: "6px 4px", borderRadius: "9px", background: on ? e.colorSuave : "#0d0d0d", border: `1px solid ${on ? e.color : "#1a1a1a"}`, cursor: "pointer", opacity: on ? 1 : 0.6 }}>
+                  <div style={{ display: "flex", justifyContent: "center" }}><Avatar esp={id} size={22} /></div>
+                  <div style={{ color: on ? e.color : "#facc15", fontSize: "9px", fontWeight: 700, fontFamily: "sans-serif", marginTop: "2px" }}>{e.nombre}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Chip campaña activa */}
+          <div style={{ padding: "6px 12px", background: campana ? "#081308" : "#130d08", borderBottom: campana ? "1px solid #14301a" : "1px solid #2a1d0d", display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: campana ? "#22c55e" : "#f97316", flexShrink: 0 }}></div>
+            <span style={{ color: campana ? "#22c55e" : "#facc15", fontSize: "9px", fontWeight: 700, fontFamily: "sans-serif" }}>
+              {campana ? `CAMPAÑA ACTIVA: ${campana.producto || campana.nombre || "Sin nombre"}` : "Sin campaña activa — activa una en Mis Campañas"}
+            </span>
           </div>
 
           {/* Mensajes */}
           <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-            {mensajes.map((m, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: m.de === "user" ? "flex-end" : "flex-start", gap: "8px", alignItems: "flex-end" }}>
-                {m.de === "josue" && <JosueRobot size={24} />}
-                <div style={{
-                  maxWidth: "75%", padding: "8px 12px", borderRadius: m.de === "josue" ? "12px 12px 12px 4px" : "12px 12px 4px 12px",
-                  background: m.de === "josue" ? "#1a1a1a" : "#ff5000",
-                  border: m.de === "josue" ? "1px solid #2a2a2a" : "none",
-                  color: "#f0ead6", fontSize: "11px", lineHeight: 1.5, fontFamily: "sans-serif"
-                }}>
-                  {m.texto}
+            {mensajes.map((m, i) => {
+              if (m.de === "user") {
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <div style={{ maxWidth: "75%", padding: "8px 12px", borderRadius: "12px 12px 4px 12px", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#f0ead6", fontSize: "11px", lineHeight: 1.5, fontFamily: "sans-serif" }}>{m.texto}</div>
+                  </div>
+                );
+              }
+              const e = ESPECIALISTAS[m.de as EspId] || ESPECIALISTAS.josue;
+              return (
+                <div key={i} style={{ display: "flex", justifyContent: "flex-start", gap: "8px", alignItems: "flex-end" }}>
+                  <div style={{ flexShrink: 0 }}><Avatar esp={m.de as EspId} size={24} /></div>
+                  <div style={{ maxWidth: "78%" }}>
+                    <div style={{ color: e.color, fontSize: "9px", fontWeight: 700, fontFamily: "sans-serif", marginBottom: "2px" }}>{e.nombre}</div>
+                    <div style={{ padding: "8px 12px", borderRadius: "4px 12px 12px 12px", background: "#111", border: `1px solid ${e.color}40`, color: "#f0ead6", fontSize: "11px", lineHeight: 1.5, fontFamily: "sans-serif", whiteSpace: "pre-wrap" }}>{m.texto}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {cargando && (
               <div style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
-                <JosueRobot size={24} />
-                <div style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", padding: "8px 12px", borderRadius: "12px 12px 12px 4px", color: "#ff5000", fontSize: "11px", fontFamily: "sans-serif" }}>
-                  Josué está pensando...
+                <div style={{ flexShrink: 0 }}><Avatar esp={activo} size={24} /></div>
+                <div style={{ background: "#111", border: `1px solid ${esp.color}40`, padding: "8px 12px", borderRadius: "4px 12px 12px 12px", color: esp.color, fontSize: "11px", fontFamily: "sans-serif" }}>
+                  {esp.nombre} está pensando...
                 </div>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
 
-          
+          {/* Preguntas rápidas */}
+          <div style={{ padding: "6px 10px", borderTop: "1px solid #151515", display: "flex", gap: "5px", overflowX: "auto" }}>
+            {PREGUNTAS_RAPIDAS[activo].map((q, i) => (
+              <button key={i} onClick={() => enviar(q)} disabled={cargando} style={{ flexShrink: 0, background: esp.colorSuave, border: `1px solid ${esp.color}50`, color: esp.color, fontSize: "9px", fontWeight: 600, fontFamily: "sans-serif", borderRadius: "99px", padding: "4px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                {q}
+              </button>
+            ))}
+          </div>
 
           {/* Banner construccion */}
           <div style={{ padding: "6px 12px", background: "#0d0d0d", borderTop: "1px solid #1a1a1a", textAlign: "center" }}>
@@ -152,10 +236,10 @@ export default function JosueChat() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && enviar(input)}
-              placeholder="Pregúntale a Josué..."
+              placeholder={`Pregúntale a ${esp.nombre}...`}
               style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: "8px", padding: "8px 10px", color: "#f0ead6", fontSize: "11px", outline: "none", fontFamily: "sans-serif" }}
             />
-            <button onClick={() => enviar(input)} disabled={!input.trim() || cargando} style={{ background: "#ff5000", border: "none", borderRadius: "8px", padding: "8px 12px", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer", opacity: !input.trim() || cargando ? 0.5 : 1 }}>
+            <button onClick={() => enviar(input)} disabled={!input.trim() || cargando} style={{ background: esp.color, border: "none", borderRadius: "8px", padding: "8px 12px", color: "#0a0a0a", fontSize: "12px", fontWeight: 700, cursor: "pointer", opacity: !input.trim() || cargando ? 0.5 : 1 }}>
               →
             </button>
           </div>
