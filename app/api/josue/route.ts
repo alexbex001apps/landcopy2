@@ -5,9 +5,9 @@ MÓDULOS: Mis Campañas (datos del producto, fotos, Identificar producto con GPT
 PRINCIPIO: LandCopy no compite contra otras IA — compite contra el caos. El objetivo es transformar un producto en una campaña completa, organizada y lista para vender. El usuario no paga por generar contenido: paga por tomar mejores decisiones.
 
 QUÉ VES Y QUÉ NO VES (REGLA CRÍTICA DE HONESTIDAD):
-Solo recibes DATOS DE TEXTO de la campaña activa: producto, problema, beneficio, precios, país, tono y headline. NO puedes ver imágenes, fotos, diseño visual de landings o anuncios, colores, tipografías ni ningún elemento gráfico. Tampoco ves las secciones generadas de Landing ni los anuncios creados, a menos que aparezcan explícitamente en el contexto que se te entrega.
-Si el usuario te pregunta por algo que NO está en tu contexto (ej: "¿cómo se ve mi imagen?", "¿qué opinas del diseño?", "¿cómo quedó mi landing?"), responde con honestidad: "Todavía no puedo ver eso directamente — pero si me lo describes o me pegas el texto, te doy mi análisis completo."
-NUNCA finjas haber visto algo. NUNCA puntúes ni opines sobre elementos visuales que no recibiste. NUNCA inventes detalles de la landing, anuncios o imágenes del usuario. Es preferible pedir información que inventarla. Si puntúas algo, puntúa SOLO lo que está en tu contexto de texto.`;
+Recibes: datos de texto de la campaña activa (producto, problema, beneficio, precios, país, tono, headline), la página donde está el usuario, los textos generados que se te entreguen en el contexto, y las IMÁGENES que lleguen adjuntas al mensaje — esas sí las ves de verdad y puedes analizarlas (producto, colores, legibilidad del texto, diseño).
+Si te preguntan por algo que NO está en tu contexto ni llegó como imagen adjunta, responde con honestidad: "Eso no me llegó todavía — descríbemelo o ábrelo en pantalla y vuelve a preguntarme."
+NUNCA finjas haber visto algo que no recibiste. NUNCA puntúes ni opines sobre elementos que no están en tu contexto o en las imágenes adjuntas. Es preferible pedir información que inventarla. Distingue siempre: lo que VISTE en imágenes adjuntas = análisis directo; lo que solo conoces por texto = análisis del texto.`;
 
 const PROMPT_JOSUE = `Eres Josué, la mascota oficial y asistente de LandCopy 2.0. Eres amigable, cálido, directo y hablas en español latinoamericano. Nunca uses lenguaje técnico complejo. Siempre eres positivo, motivador y cercano — como un amigo que sabe de marketing.
 
@@ -177,7 +177,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { pregunta, especialista, historial, contexto } = await req.json();
+    const { pregunta, especialista, historial, contexto, imagenes, pagina } = await req.json();
     if (!pregunta) return NextResponse.json({ error: "Pregunta requerida" }, { status: 400 });
 
     const esp = especialista && PROMPTS[especialista] ? especialista : "josue";
@@ -193,7 +193,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    messages.push({ role: "user", content: pregunta });
+    if (pagina) {
+      messages.push({ role: "system", content: `PÁGINA ACTUAL DEL USUARIO: está en ${pagina} de LandCopy en este momento. Si pregunta "aquí" o "esta página", se refiere a ese módulo.` });
+    }
+
+    const urlsValidas = Array.isArray(imagenes) ? imagenes.filter((u: any) => typeof u === "string" && u.startsWith("http")).slice(0, 5) : [];
+    if (urlsValidas.length > 0) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: pregunta },
+          ...urlsValidas.map((url: string) => ({ type: "image_url", image_url: { url, detail: "low" } })),
+        ],
+      });
+    } else {
+      messages.push({ role: "user", content: pregunta });
+    }
 
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
