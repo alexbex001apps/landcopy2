@@ -308,6 +308,7 @@ export default function Landing() {
       }),
     });
     setGuardandoSeccion(false);
+    showToast("✓ Landing guardada en Biblioteca");
     showToast(`✓ ${seccionNombre} guardada en Biblioteca`);
   };
 
@@ -339,6 +340,7 @@ export default function Landing() {
         metadata: { secciones: Object.keys(contenido) },
       }),
     });
+    sessionStorage.removeItem("biblioteca_items");
     showToast("✓ Landing guardada en Biblioteca");
   };
 
