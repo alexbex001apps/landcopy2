@@ -56,6 +56,7 @@ export default function Landing() {
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string[]>([]);
+  const [seccionesParaImagen, setSeccionesParaImagen] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -113,6 +114,18 @@ export default function Landing() {
     setSeccionesSeleccionadas(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+  };
+
+  const toggleSeccionParaImagen = (id: string) => {
+    setSeccionesParaImagen(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const generarImagenesSeleccionadas = () => {
+    const lista = [...seccionesParaImagen];
+    setSeccionesParaImagen([]);
+    lista.forEach(id => { generarImagen(id); });
   };
 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2 | 3) => {
@@ -581,10 +594,16 @@ export default function Landing() {
         {paso === 3 && (
           <div className="grid grid-cols-[220px_1fr_200px] gap-4">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-              <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">{secciones.length} Secciones</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase">{secciones.length} Secciones</p>
+                <p className="text-zinc-600 text-[8px]">🖼 marca para imagen</p>
+              </div>
               <div className="space-y-1">
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500/40 bg-orange-500/5" : "border-transparent hover:border-[#1a1a1a]"}`}>
+                    <div onClick={(e) => { e.stopPropagation(); toggleSeccionParaImagen(s.id); }} className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${seccionesParaImagen.includes(s.id) ? "bg-orange-500 border-orange-500" : "border-[#333] hover:border-orange-500/60"}`}>
+                      {seccionesParaImagen.includes(s.id) && <span className="text-white text-[9px] font-black">✓</span>}
+                    </div>
                     <div className={`w-4 h-4 rounded text-[8px] font-bold flex items-center justify-center flex-shrink-0 ${contenido[s.id] ? "bg-green-500 text-white" : "bg-[#1a1a1a] text-zinc-600"}`}>
                       {contenido[s.id] ? "✓" : "·"}
                     </div>
@@ -596,6 +615,11 @@ export default function Landing() {
                 ))}
               </div>
               <div className="mt-3 space-y-1.5">
+                {seccionesParaImagen.length > 0 && (
+                  <button onClick={generarImagenesSeleccionadas} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[12px] font-black py-2.5 rounded-lg active:scale-95 transition-transform">
+                    ⚡ Generar imágenes ({seccionesParaImagen.length})
+                  </button>
+                )}
                 <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">↻ Regenerar todo</button>
                 <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
               </div>
