@@ -370,6 +370,9 @@ export default function Anuncios() {
               </svg>
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Anuncios</p>
+            {imagenProducto && (
+              <img src={imagenProducto} className="w-20 h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] mt-2 ml-3" />
+            )}
           </div>
           <div className="flex-1 text-center px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
