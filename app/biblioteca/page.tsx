@@ -47,6 +47,7 @@ export default function Biblioteca() {
   const [items, setItems] = useState<BibliotecaItem[]>([]);
   const [carpetas, setCarpetas] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sincronizando, setSincronizando] = useState(false);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [total, setTotal] = useState(0);
   const [pagina, setPagina] = useState(1);
@@ -79,43 +80,61 @@ export default function Biblioteca() {
     cargarCarpetas();
   }, []);
 
-  const cargar = async (forzar = false) => {
+  const guardarCache = (lista: BibliotecaItem[], totalNuevo?: number) => {
+    try {
+      sessionStorage.setItem("biblioteca_items", JSON.stringify(lista));
+      if (totalNuevo !== undefined) sessionStorage.setItem("biblioteca_total", String(totalNuevo));
+    } catch {}
+  };
+
+  const cargar = async () => {
     const cached = sessionStorage.getItem("biblioteca_items");
     const cachedTotal = sessionStorage.getItem("biblioteca_total");
-    const cachedPagina = sessionStorage.getItem("biblioteca_pagina");
-    if (cached && cachedTotal !== null && !forzar) {
+
+    if (cached && cachedTotal !== null) {
       setItems(JSON.parse(cached));
       setTotal(parseInt(cachedTotal || "0"));
-      setPagina(parseInt(cachedPagina || "1"));
       setLoading(false);
-      return;
+      setSincronizando(true);
+    } else {
+      setLoading(true);
     }
-    setLoading(true);
-    const resp = await fetch("/api/biblioteca?page=1");
-    const data = await resp.json();
-    const nuevos = data.items || [];
-    setItems(nuevos);
-    setTotal(data.total || 0);
-    setPagina(1);
+
     try {
-      sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos));
-      sessionStorage.setItem("biblioteca_total", String(data.total || 0));
-      sessionStorage.setItem("biblioteca_pagina", "1");
+      const resp = await fetch("/api/biblioteca?page=1", { cache: "no-store" });
+      const data = await resp.json();
+      const frescos: BibliotecaItem[] = data.items || [];
+      setItems(prev => {
+        const idsFrescos = new Set(frescos.map(f => f.id));
+        const resto = prev.filter(i => !idsFrescos.has(i.id));
+        const combinados = [...frescos, ...resto].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        guardarCache(combinados, data.total || 0);
+        return combinados;
+      });
+      setTotal(data.total || 0);
+      setPagina(1);
     } catch {}
     setLoading(false);
+    setSincronizando(false);
   };
 
   const cargarMas = async () => {
     setCargandoMas(true);
     const siguiente = pagina + 1;
-    const resp = await fetch(`/api/biblioteca?page=${siguiente}`);
-    const data = await resp.json();
-    const nuevos = [...items, ...(data.items || [])];
-    setItems(nuevos);
-    setPagina(siguiente);
     try {
-      sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos));
-      sessionStorage.setItem("biblioteca_pagina", String(siguiente));
+      const resp = await fetch(`/api/biblioteca?page=${siguiente}`, { cache: "no-store" });
+      const data = await resp.json();
+      const frescos: BibliotecaItem[] = data.items || [];
+      setItems(prev => {
+        const idsPrev = new Set(prev.map(i => i.id));
+        const nuevos = [...prev, ...frescos.filter(f => !idsPrev.has(f.id))];
+        guardarCache(nuevos, data.total);
+        return nuevos;
+      });
+      setTotal(data.total || 0);
+      setPagina(siguiente);
     } catch {}
     setCargandoMas(false);
   };
@@ -169,7 +188,7 @@ export default function Biblioteca() {
     });
     setItems(prev => {
       const nuevos = prev.map(i => i.id === modalNotas ? { ...i, notas: notasTexto } : i);
-      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      guardarCache(nuevos);
       return nuevos;
     });
     setModalNotas(null);
@@ -183,7 +202,7 @@ export default function Biblioteca() {
     });
     setItems(prev => {
       const nuevos = prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i);
-      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      guardarCache(nuevos);
       return nuevos;
     });
     setModalMover(null);
@@ -198,7 +217,7 @@ export default function Biblioteca() {
     });
     setItems(prev => {
       const nuevos = prev.map(i => i.id === item.id ? { ...i, favorito: !i.favorito } : i);
-      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      guardarCache(nuevos);
       return nuevos;
     });
   };
@@ -211,10 +230,14 @@ export default function Biblioteca() {
     });
     setItems(prev => {
       const nuevos = prev.filter(i => i.id !== id);
-      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      guardarCache(nuevos);
       return nuevos;
     });
-    setTotal(prev => Math.max(0, prev - 1));
+    setTotal(prev => {
+      const t = Math.max(0, prev - 1);
+      try { sessionStorage.setItem("biblioteca_total", String(t)); } catch {}
+      return t;
+    });
     showToast("Eliminado");
   };
 
@@ -274,6 +297,13 @@ export default function Biblioteca() {
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
           ✓ {toast}
+        </div>
+      )}
+
+      {sincronizando && (
+        <div className="fixed bottom-6 left-6 flex items-center gap-2 bg-[#0d0d0d] border border-[#1e1e1e] text-yellow-400 text-[10px] font-bold px-3 py-2 rounded-xl z-50">
+          <div className="w-3 h-3 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin"></div>
+          Sincronizando...
         </div>
       )}
 

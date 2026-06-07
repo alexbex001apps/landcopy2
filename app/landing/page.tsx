@@ -308,7 +308,7 @@ export default function Landing() {
       }),
     });
     setGuardandoSeccion(false);
-    showToast("✓ Landing guardada en Biblioteca");
+    sessionStorage.removeItem("biblioteca_items");
     showToast(`✓ ${seccionNombre} guardada en Biblioteca`);
   };
 
