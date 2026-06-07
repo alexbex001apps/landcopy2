@@ -198,6 +198,27 @@ export default function Copy() {
       const nuevoGuardado: any = { texto, tipo, producto, hora, id: Date.now().toString() };
       setGuardados(prev => [nuevoGuardado, ...prev]);
     }
+    // NUEVO: guardar también en Biblioteca (Supabase)
+    try {
+      let campanaId = null;
+      try {
+        const c = sessionStorage.getItem("campaign_activa");
+        if (c) campanaId = JSON.parse(c).id || null;
+      } catch {}
+      await fetch("/api/biblioteca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "copy",
+          modulo: "copy",
+          nombre: `${producto || "Producto"} — ${tipo}`,
+          contenido: texto,
+          producto: producto || null,
+          campana_id: campanaId,
+        }),
+      });
+      sessionStorage.removeItem("biblioteca_items");
+    } catch {}
     setToastGuardado(true);
     setTimeout(() => setToastGuardado(false), 2000);
   }
