@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -56,6 +56,9 @@ const LogoAnuncios = () => (
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const fotoRef = useRef<HTMLInputElement>(null);
   const LogoCampanas = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="4" y="8" width="24" height="16" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
@@ -72,9 +75,11 @@ export default function Navbar() {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setAvatarUrl(session?.user?.user_metadata?.avatar_url ?? null);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setAvatarUrl(session?.user?.user_metadata?.avatar_url ?? null);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -83,6 +88,37 @@ export default function Navbar() {
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/login";
+  }
+
+  function elegirFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = document.createElement("canvas");
+      const lado = Math.min(img.width, img.height);
+      const max = 400;
+      canvas.width = max; canvas.height = max;
+      // recorte cuadrado centrado
+      const sx = (img.width - lado) / 2;
+      const sy = (img.height - lado) / 2;
+      canvas.getContext("2d")!.drawImage(img, sx, sy, lado, lado, 0, 0, max, max);
+      const base64 = canvas.toDataURL("image/jpeg", 0.85);
+      setSubiendoFoto(true);
+      try {
+        const resp = await fetch("/api/perfil", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imagen: base64 }),
+        });
+        const data = await resp.json();
+        if (data.avatar_url) setAvatarUrl(data.avatar_url);
+      } catch {}
+      setSubiendoFoto(false);
+      setMenuOpen(false);
+      if (fotoRef.current) fotoRef.current.value = "";
+    };
+    img.src = URL.createObjectURL(file);
   }
 
   const inicial = user?.email?.[0].toUpperCase();
@@ -99,7 +135,7 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-900 bg-black/90 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl text-white">Land<span className="text-orange-500">Copy</span></Link>
+        
         <div className="flex items-center gap-1 text-sm text-zinc-400">
           {modulos.map(m => (
             <Link key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group">
@@ -112,8 +148,12 @@ export default function Navbar() {
           <a href="/precios" className="px-3 py-2 text-xs text-zinc-400 hover:text-white transition-colors ml-1">Precios</a>
           {user ? (
             <div className="relative ml-2">
-              <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm hover:bg-orange-600 transition-colors">
-                {inicial}
+              <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm hover:bg-orange-600 transition-colors overflow-hidden border border-orange-500">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="perfil" className="w-full h-full object-cover" />
+                ) : (
+                  inicial
+                )}
               </button>
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl overflow-hidden">
@@ -121,7 +161,10 @@ export default function Navbar() {
                     <p className="text-xs text-zinc-500">Conectado como</p>
                     <p className="text-sm text-white truncate">{user.email}</p>
                   </div>
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors">
+                  <button onClick={() => fotoRef.current?.click()} disabled={subiendoFoto} className="w-full text-left px-4 py-3 text-sm text-cyan-400 hover:bg-zinc-800 transition-colors disabled:opacity-50">
+                    {subiendoFoto ? "⏳ Subiendo foto..." : "📷 Cambiar foto"}
+                  </button>
+                  <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors border-t border-zinc-800">
                     Cerrar sesión
                   </button>
                   <button onClick={async () => {
@@ -133,6 +176,7 @@ export default function Navbar() {
                   </button>
                 </div>
               )}
+              <input ref={fotoRef} type="file" accept="image/*" onChange={elegirFoto} className="hidden" />
             </div>
           ) : (
             <a href="/login" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ml-2">Entrar</a>
