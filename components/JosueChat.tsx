@@ -180,7 +180,7 @@ export default function JosueChat() {
           <div style={{ padding: "6px 12px", background: campana ? "#081308" : "#130d08", borderBottom: campana ? "1px solid #14301a" : "1px solid #2a1d0d", display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: campana ? "#22c55e" : "#f97316", flexShrink: 0 }}></div>
             <span style={{ color: campana ? "#22c55e" : "#facc15", fontSize: "9px", fontWeight: 700, fontFamily: "sans-serif" }}>
-              {campana ? `CAMPAÑA ACTIVA: ${campana.producto || campana.nombre || "Sin nombre"}` : "Sin campaña activa — activa una en Mis Campañas"}
+              {campana ? `CAMPAÑA ACTIVA: ${String(campana.nombre || campana.producto || "Sin nombre").slice(0, 30)}` : "Sin campaña activa — activa una en Mis Campañas"}
             </span>
           </div>
 
