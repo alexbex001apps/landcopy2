@@ -544,7 +544,7 @@ export default function Biblioteca() {
           <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {itemsFiltrados.map(item => (
-              <div key={item.id} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden hover:border-[#333] transition-colors">
+              <div key={item.id} className="bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-2xl overflow-hidden hover:border-orange-500/40 transition-colors">
 
                 {/* Preview */}
                 <div className={`h-[100px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
