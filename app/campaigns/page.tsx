@@ -285,7 +285,7 @@ export default function Campaigns() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {campaigns.map(c => (
-              <div key={c.id} className="bg-[#0d0d0d] border border-[#222] rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.8)] hover:border-orange-500/40 hover:-translate-y-0.5 transition-all">
+              <div key={c.id} className="bg-[#141414] border border-[#222] rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.8)] hover:border-orange-500/40 hover:-translate-y-0.5 transition-all">
                 <div className="p-4 flex items-center gap-3">
                   <div className="flex gap-2">
                     {c.imagen_url ? (
