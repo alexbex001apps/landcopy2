@@ -135,6 +135,15 @@ export default function Campaigns() {
     setSaving(false);
   };
 
+  const formatFechaHora = (fecha: string) => {
+    const d = new Date(fecha);
+    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    let h = d.getHours();
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()} · ${h}:${min} ${ampm}`;
+  };
   const usarCampaign = (c: Campaign, destino: string = "/copy") => {
     sessionStorage.setItem("campaign_activa", JSON.stringify(c));
     router.push(destino);
@@ -276,7 +285,7 @@ export default function Campaigns() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {campaigns.map(c => (
-              <div key={c.id} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden hover:border-[#333] transition-colors">
+              <div key={c.id} className="bg-[#0d0d0d] border border-[#222] rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.8)] hover:border-orange-500/40 hover:-translate-y-0.5 transition-all">
                 <div className="p-4 flex items-center gap-3">
                   <div className="flex gap-2">
                     {c.imagen_url ? (
@@ -293,6 +302,7 @@ export default function Campaigns() {
                       {c.es_combo && <span className="bg-orange-500/20 text-orange-400 text-[8px] font-bold px-2 py-0.5 rounded-full border border-orange-500/30 flex-shrink-0">COMBO</span>}
                     </div>
                     <p className="text-yellow-400 text-[10px] truncate">{c.precio_oferta && `$${c.precio_oferta}`} · {c.pais} · {c.tono}</p>
+                    <p className="text-zinc-500 text-[9px] mt-0.5">📅 {formatFechaHora(c.created_at)}</p>
                   </div>
                 </div>
                 <div className="border-t border-[#1a1a1a] grid grid-cols-4">
