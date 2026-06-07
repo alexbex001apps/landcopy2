@@ -11,20 +11,25 @@ export async function GET(req: NextRequest) {
     const tipo = searchParams.get("tipo");
     const modulo = searchParams.get("modulo");
     const favorito = searchParams.get("favorito");
+    const page = parseInt(searchParams.get("page") || "1");
+    const PAGE_SIZE = 20;
+    const desde = (page - 1) * PAGE_SIZE;
+    const hasta = desde + PAGE_SIZE - 1;
 
     let query = supabase
       .from("biblioteca")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(desde, hasta);
 
     if (tipo) query = query.eq("tipo", tipo);
     if (modulo) query = query.eq("modulo", modulo);
     if (favorito === "true") query = query.eq("favorito", true);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw error;
-    return NextResponse.json({ items: data || [] });
+    return NextResponse.json({ items: data || [], total: count || 0, page });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

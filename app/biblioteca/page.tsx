@@ -47,6 +47,9 @@ export default function Biblioteca() {
   const [items, setItems] = useState<BibliotecaItem[]>([]);
   const [carpetas, setCarpetas] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [pagina, setPagina] = useState(1);
   const [tabActivo, setTabActivo] = useState("todos");
   const [filtroModulo, setFiltroModulo] = useState("todos");
   const [carpetaActiva, setCarpetaActiva] = useState<string | null>("sin_carpeta");
@@ -78,18 +81,43 @@ export default function Biblioteca() {
 
   const cargar = async (forzar = false) => {
     const cached = sessionStorage.getItem("biblioteca_items");
+    const cachedTotal = sessionStorage.getItem("biblioteca_total");
+    const cachedPagina = sessionStorage.getItem("biblioteca_pagina");
     if (cached && !forzar) {
       setItems(JSON.parse(cached));
+      setTotal(parseInt(cachedTotal || "0"));
+      setPagina(parseInt(cachedPagina || "1"));
       setLoading(false);
       return;
     }
     setLoading(true);
-    const resp = await fetch("/api/biblioteca");
+    const resp = await fetch("/api/biblioteca?page=1");
     const data = await resp.json();
-    const items = data.items || [];
-    setItems(items);
-    sessionStorage.setItem("biblioteca_items", JSON.stringify(items));
+    const nuevos = data.items || [];
+    setItems(nuevos);
+    setTotal(data.total || 0);
+    setPagina(1);
+    try {
+      sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos));
+      sessionStorage.setItem("biblioteca_total", String(data.total || 0));
+      sessionStorage.setItem("biblioteca_pagina", "1");
+    } catch {}
     setLoading(false);
+  };
+
+  const cargarMas = async () => {
+    setCargandoMas(true);
+    const siguiente = pagina + 1;
+    const resp = await fetch(`/api/biblioteca?page=${siguiente}`);
+    const data = await resp.json();
+    const nuevos = [...items, ...(data.items || [])];
+    setItems(nuevos);
+    setPagina(siguiente);
+    try {
+      sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos));
+      sessionStorage.setItem("biblioteca_pagina", String(siguiente));
+    } catch {}
+    setCargandoMas(false);
   };
 
   const cargarCarpetas = async () => {
@@ -139,7 +167,11 @@ export default function Biblioteca() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: modalNotas, notas: notasTexto }),
     });
-    setItems(prev => prev.map(i => i.id === modalNotas ? { ...i, notas: notasTexto } : i));
+    setItems(prev => {
+      const nuevos = prev.map(i => i.id === modalNotas ? { ...i, notas: notasTexto } : i);
+      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      return nuevos;
+    });
     setModalNotas(null);
     showToast("Nota guardada");
   };
@@ -149,10 +181,13 @@ export default function Biblioteca() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: itemId, carpeta_id: carpetaId }),
     });
-    setItems(prev => prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i));
+    setItems(prev => {
+      const nuevos = prev.map(i => i.id === itemId ? { ...i, carpeta_id: carpetaId } : i);
+      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      return nuevos;
+    });
     setModalMover(null);
     showToast("Movido a carpeta");
-    await cargar(true);
   };
 
   const toggleFavorito = async (item: BibliotecaItem) => {
@@ -161,7 +196,11 @@ export default function Biblioteca() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: item.id, favorito: !item.favorito }),
     });
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, favorito: !i.favorito } : i));
+    setItems(prev => {
+      const nuevos = prev.map(i => i.id === item.id ? { ...i, favorito: !i.favorito } : i);
+      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      return nuevos;
+    });
   };
 
   const eliminar = async (id: string) => {
@@ -170,8 +209,12 @@ export default function Biblioteca() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    setItems(prev => prev.filter(i => i.id !== id));
-    sessionStorage.removeItem("biblioteca_items");
+    setItems(prev => {
+      const nuevos = prev.filter(i => i.id !== id);
+      try { sessionStorage.setItem("biblioteca_items", JSON.stringify(nuevos)); } catch {}
+      return nuevos;
+    });
+    setTotal(prev => Math.max(0, prev - 1));
     showToast("Eliminado");
   };
 
@@ -208,7 +251,7 @@ export default function Biblioteca() {
   });
 
   const stats = {
-    total: items.length,
+    total: total,
     imagenes: items.filter(i => i.tipo === "imagen").length,
     copys: items.filter(i => i.tipo === "copy").length,
     landings: items.filter(i => i.tipo === "landing").length,
@@ -226,6 +269,7 @@ export default function Biblioteca() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
+      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
@@ -433,7 +477,23 @@ export default function Biblioteca() {
 
         {/* Grid */}
         {loading ? (
-          <div className="text-center py-20 text-yellow-400 text-sm">Cargando biblioteca...</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden">
+                <div className="h-[100px] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[#141414]"></div>
+                  <div className="absolute inset-0" style={{background:"linear-gradient(90deg, transparent, #ffffff0a, transparent)", backgroundSize:"200% 100%", animation:"shimmer 1.5s infinite"}}></div>
+                </div>
+                <div className="p-3 space-y-2">
+                  <div className="h-3 w-3/4 rounded bg-[#141414] relative overflow-hidden">
+                    <div className="absolute inset-0" style={{background:"linear-gradient(90deg, transparent, #ffffff0a, transparent)", backgroundSize:"200% 100%", animation:"shimmer 1.5s infinite"}}></div>
+                  </div>
+                  <div className="h-2 w-1/2 rounded bg-[#141414]"></div>
+                  <div className="h-6 w-full rounded bg-[#141414]"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : itemsFiltrados.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">📁</div>
@@ -451,6 +511,7 @@ export default function Biblioteca() {
             )}
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {itemsFiltrados.map(item => (
               <div key={item.id} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden hover:border-[#333] transition-colors">
@@ -458,7 +519,7 @@ export default function Biblioteca() {
                 {/* Preview */}
                 <div className={`h-[100px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
                   {item.imagen_url ? (
-                    <img src={item.imagen_url} className="w-full h-full object-contain" alt={item.nombre} />
+                    <img src={item.imagen_url} className="w-full h-full object-contain" alt={item.nombre} loading="lazy" />
                   ) : (
                     <div className="text-4xl opacity-20">
                       {item.tipo === "copy" ? "📝" : item.tipo === "landing" ? "🖥️" : "🖼️"}
@@ -501,6 +562,14 @@ export default function Biblioteca() {
               </div>
             ))}
           </div>
+          {items.length < total && (
+            <div className="text-center mt-6">
+              <button onClick={cargarMas} disabled={cargandoMas} className="bg-[#111] border border-orange-500/40 hover:border-orange-500 text-orange-400 text-xs font-bold px-8 py-3 rounded-xl transition-colors disabled:opacity-40">
+                {cargandoMas ? "⏳ Cargando..." : `⬇ Cargar más (${total - items.length} restantes)`}
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>
