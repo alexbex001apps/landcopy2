@@ -10,9 +10,9 @@ const FORMATOS = [
 ];
 
 const TEMPERATURAS = [
-  { id: "hot", icon: "🔥", nombre: "Hot Traffic", desc: "Urgencia, precio, escasez. Cierra la venta.", color: "#cc0000", bg: "#1a0000", border: "#cc0000" },
-  { id: "warm", icon: "🌡️", nombre: "Warm Traffic", desc: "Beneficios, confianza, prueba social.", color: "#ff8800", bg: "#1a0e00", border: "#ff8800" },
-  { id: "cold", icon: "❄️", nombre: "Cold Traffic", desc: "Presentación, curiosidad, enganche.", color: "#0088cc", bg: "#00101a", border: "#0088cc" },
+  { id: "hot", icon: "🔥", nombre: "Hot Traffic", desc: "Urgencia, precio, escasez. Cierra la venta.", color: "#cc0000", bg: "#1a0000", border: "#cc0000", grad: "linear-gradient(90deg,#cc0000,#f97316)", glow: "rgba(220,40,0,0.45)" },
+  { id: "warm", icon: "🌡️", nombre: "Warm Traffic", desc: "Beneficios, confianza, prueba social.", color: "#ff8800", bg: "#1a0e00", border: "#ff8800", grad: "linear-gradient(90deg,#ff8800,#eab308)", glow: "rgba(255,136,0,0.4)" },
+  { id: "cold", icon: "❄️", nombre: "Cold Traffic", desc: "Presentación, curiosidad, enganche.", color: "#0088cc", bg: "#00101a", border: "#0088cc", grad: "linear-gradient(90deg,#0066aa,#00aadd)", glow: "rgba(0,136,204,0.4)" },
 ];
 
 const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]> = {
@@ -349,6 +349,7 @@ export default function Anuncios() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
+      <style>{`@keyframes shimmerGen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } } @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } } @keyframes blinkCursor { 0%, 49% { opacity: 0.8; } 50%, 100% { opacity: 0; } }`}</style>
 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
@@ -523,61 +524,91 @@ export default function Anuncios() {
               </div>
             </div>
 
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-4 space-y-2">
-              <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">🎨 Fondo de la imagen — opcional</p>
-              <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center gap-2 bg-[#111] border border-[#1a1a1a] rounded-lg px-3 py-2 hover:border-[#333] transition-colors">
-                {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
-                <span className="text-[10px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
-                <span className="text-yellow-400 text-[10px] ml-auto">{mostrarFondos ? "▲" : "▼"}</span>
-              </button>
-              {mostrarFondos && (
-                <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg overflow-hidden max-h-48 overflow-y-auto">
-                  <div onClick={() => { setFondoSeleccionado(null); setMostrarFondos(false); }} className="flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer border-b border-[#1a1a1a]">
-                    <div className="w-5 h-5 rounded border border-[#333] flex-shrink-0"></div>
-                    <span className="text-[10px] text-zinc-500">Sin fondo específico</span>
-                  </div>
-                  {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil","Decorativo","Lifestyle","Ocasiones"].map(cat => (
-                    <div key={cat}>
-                      <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest px-3 py-1 bg-[#080808]">{cat}</p>
-                      {FONDOS_DISPONIBLES.filter(f => f.categoria === cat).map(f => (
-                        <div key={f.id} onClick={() => { setFondoSeleccionado(f.id); setMostrarFondos(false); }} className={`flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer ${fondoSeleccionado === f.id ? "bg-[#1a1a1a]" : ""}`}>
-                          <div className="w-5 h-5 rounded flex-shrink-0" style={{ background: f.color }}></div>
-                          <span className="text-[10px] text-[#f0ead6]">{f.nombre}</span>
-                          {fondoSeleccionado === f.id && <span className="ml-auto text-yellow-400 text-[9px]">✓</span>}
+            <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]" style={{ border: `1px solid ${tempActual.color}66`, boxShadow: `0 0 24px ${tempActual.glow.replace("0.45", "0.12").replace("0.4", "0.12")}` }}>
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1a1a1a]" style={{ background: "linear-gradient(90deg, #0d0d0d 0%, #0a0a0a 100%)" }}>
+                <span className="text-orange-500 text-[10px] font-bold tracking-[0.2em] uppercase">⚙ Configuración del anuncio</span>
+                <span className="inline-flex items-center gap-2 text-[9px] font-black tracking-widest px-3 py-1 rounded-full" style={{ background: `${tempActual.color}26`, border: `1px solid ${tempActual.color}80`, color: tempActual.color }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: tempActual.color, boxShadow: `0 0 6px ${tempActual.color}`, animation: "pulseDot 1.6s infinite" }}></span>
+                  {tempActual.nombre.toUpperCase()} {tempActual.icon}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 pb-3">
+                <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4">
+                  <p className="text-yellow-400 text-[9px] font-bold tracking-[0.18em] uppercase mb-2.5">🎨 Fondo de la imagen</p>
+                  <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center gap-2 bg-[#111] border border-[#2a2a2a] rounded-lg px-3 py-2.5 hover:border-[#444] transition-colors">
+                    {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
+                    <span className="text-[11px] text-white">{fondoSeleccionado ? FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre : "Sin fondo específico"}</span>
+                    <span className="text-yellow-400 text-[10px] ml-auto">{mostrarFondos ? "▲" : "▼"}</span>
+                  </button>
+                  {mostrarFondos && (
+                    <div className="mt-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+                      <div onClick={() => { setFondoSeleccionado(null); setMostrarFondos(false); }} className="flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer border-b border-[#1a1a1a]">
+                        <div className="w-5 h-5 rounded border border-[#333] flex-shrink-0"></div>
+                        <span className="text-[10px] text-zinc-500">Sin fondo específico</span>
+                      </div>
+                      {["Universal","Belleza","Tecnología","Hogar","Deporte","Infantil","Decorativo","Lifestyle","Ocasiones"].map(cat => (
+                        <div key={cat}>
+                          <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest px-3 py-1 bg-[#080808]">{cat}</p>
+                          {FONDOS_DISPONIBLES.filter(f => f.categoria === cat).map(f => (
+                            <div key={f.id} onClick={() => { setFondoSeleccionado(f.id); setMostrarFondos(false); }} className={`flex items-center gap-2 px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer ${fondoSeleccionado === f.id ? "bg-[#1a1a1a]" : ""}`}>
+                              <div className="w-5 h-5 rounded flex-shrink-0" style={{ background: f.color }}></div>
+                              <span className="text-[10px] text-[#f0ead6]">{f.nombre}</span>
+                              {fondoSeleccionado === f.id && <span className="ml-auto text-yellow-400 text-[9px]">✓</span>}
+                            </div>
+                          ))}
                         </div>
                       ))}
                     </div>
-                  ))}
+                  )}
+                  <p className="text-zinc-600 text-[9px] mt-2.5">40 fondos · 9 categorías</p>
                 </div>
-              )}
-            </div>
 
-            <div className="bg-[#111] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center justify-between">
-              <span className="text-yellow-400 text-xs">Frases seleccionadas</span>
-              <span className={`text-sm font-black ${frasesSeleccionadas.length >= 7 ? "text-red-400" : "text-orange-500"}`}>{frasesSeleccionadas.length} / 7</span>
-            </div>
-
-            {frasesSeleccionadas.length > 0 && (
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl px-4 py-3">
-                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">Seleccionadas</p>
-                <div className="flex flex-wrap gap-2">
-                  {frasesSeleccionadas.map((f, i) => {
-                    const tempId = Object.keys(FRASES).find(k => FRASES[k as keyof typeof FRASES].some(fr => fr.texto === f)) as keyof typeof COLORES_TEMP;
-                    return <span key={i} className="text-[9px] font-black px-2 py-1 rounded text-white" style={{ background: COLORES_TEMP[tempId] || "#ff5000" }}>{f}</span>;
-                  })}
+                <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4">
+                  <div className="flex items-baseline justify-between mb-2.5">
+                    <p className="text-yellow-400 text-[9px] font-bold tracking-[0.18em] uppercase">Frases</p>
+                    <span className="text-sm font-black" style={{ color: frasesSeleccionadas.length >= 7 ? "#f87171" : tempActual.color }}>{frasesSeleccionadas.length} <span className="text-zinc-600 font-normal">/ 7</span></span>
+                  </div>
+                  <div className="h-[5px] bg-[#1a1a1a] rounded-full overflow-hidden mb-3">
+                    <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(frasesSeleccionadas.length / 7) * 100}%`, background: tempActual.grad, boxShadow: `0 0 8px ${tempActual.glow}` }}></div>
+                  </div>
+                  {frasesSeleccionadas.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {frasesSeleccionadas.map((f, i) => {
+                        const tempId = Object.keys(FRASES).find(k => FRASES[k as keyof typeof FRASES].some(fr => fr.texto === f)) as keyof typeof COLORES_TEMP;
+                        return (
+                          <span key={i} className="inline-flex items-center gap-1.5 text-[8px] font-black px-2 py-1 rounded-md text-white" style={{ background: COLORES_TEMP[tempId] || "#ff5000" }}>
+                            {f}
+                            <button onClick={() => toggleFrase(f)} className="opacity-70 hover:opacity-100">✕</button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-600 text-[10px]">Selecciona frases en las columnas de arriba</p>
+                  )}
                 </div>
               </div>
-            )}
 
-            <div className="bg-[#0a0a0a] border border-dashed border-[#333] rounded-xl p-4">
-              <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2">✏️ Prompt propio — opcional, para usuarios avanzados</p>
-              <textarea value={promptPropio} onChange={e => setPromptPropio(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-xs px-3 py-2 rounded-lg outline-none resize-none" placeholder="Escribe tu instrucción directa aquí..." />
+              <div className="px-5 pb-5">
+                <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <p className="text-yellow-400 text-[9px] font-bold tracking-[0.18em] uppercase">⌨ Prompt propio · modo avanzado</p>
+                    <span className="text-zinc-700 text-[10px] font-mono">&lt;/&gt;</span>
+                  </div>
+                  <div className="flex gap-2 items-start bg-[#080808] border border-[#161616] rounded-lg px-3 py-2.5 focus-within:border-green-500/40 transition-colors">
+                    <span className="text-green-500 font-mono text-[12px] leading-relaxed select-none">&gt;</span>
+                    <textarea value={promptPropio} onChange={e => setPromptPropio(e.target.value)} rows={2} className="w-full bg-transparent text-green-400/90 font-mono text-[11px] leading-relaxed outline-none resize-none placeholder-zinc-700" placeholder="escribe tu instrucción directa aquí_" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3">
               <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-yellow-400 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
-              <button onClick={() => setPantalla(3)} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
-                Generar anuncio {tempActual.icon} {tempActual.nombre} →
+              <button onClick={() => setPantalla(3)} className="flex-1 relative overflow-hidden text-white font-black py-3.5 rounded-xl text-sm tracking-wide transition-transform active:scale-[0.98]" style={{ background: tempActual.grad, boxShadow: `0 0 28px ${tempActual.glow}` }}>
+                <span className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.22) 50%, transparent 70%)", animation: "shimmerGen 2.8s infinite" }}></span>
+                ⚡ GENERAR ANUNCIO · {tempActual.icon} {tempActual.nombre.toUpperCase()} →
               </button>
             </div>
           </div>
@@ -604,7 +635,8 @@ export default function Anuncios() {
                   {fondoSeleccionado && <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Fondo:</span> {FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.nombre}</p>}
                   <p className="text-[#f0ead6] text-xs"><span className="text-yellow-400">Formato:</span> {formatoSeleccionado.nombre}</p>
                 </div>
-                <button onClick={generarAnuncio} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors">
+                <button onClick={generarAnuncio} className="relative overflow-hidden text-white font-black px-10 py-3.5 rounded-xl text-sm transition-transform active:scale-[0.98]" style={{ background: tempActual.grad, boxShadow: `0 0 28px ${tempActual.glow}` }}>
+                  <span className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.22) 50%, transparent 70%)", animation: "shimmerGen 2.8s infinite" }}></span>
                   ⚡ Generar imagen ahora
                 </button>
                 <div><button onClick={() => setPantalla(2)} className="text-yellow-400 text-xs border border-[#1e1e1e] px-4 py-2 rounded-lg">← Editar frases</button></div>
