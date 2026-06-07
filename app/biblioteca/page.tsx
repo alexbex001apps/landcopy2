@@ -83,7 +83,7 @@ export default function Biblioteca() {
     const cached = sessionStorage.getItem("biblioteca_items");
     const cachedTotal = sessionStorage.getItem("biblioteca_total");
     const cachedPagina = sessionStorage.getItem("biblioteca_pagina");
-    if (cached && !forzar) {
+    if (cached && cachedTotal !== null && !forzar) {
       setItems(JSON.parse(cached));
       setTotal(parseInt(cachedTotal || "0"));
       setPagina(parseInt(cachedPagina || "1"));
