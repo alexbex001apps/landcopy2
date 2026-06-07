@@ -192,13 +192,19 @@ export default function JosueChat() {
 
       const contexto = partes.length > 0 ? partes.join("\n\n") : null;
 
-      const resp = await fetch("/api/josue", {
+     const payload = JSON.stringify({ pregunta, especialista: activo, historial, contexto, imagenes: imagenes.slice(0, 5), pagina: pathname });
+      const llamar = () => fetch("/api/josue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pregunta, especialista: activo, historial, contexto, imagenes: imagenes.slice(0, 5), pagina: pathname }),
-      });
-      const data = await resp.json();
-      setMensajes(prev => [...prev, { de: activo, texto: data.respuesta || "No pude responder eso. Intenta de nuevo." }]);
+        body: payload,
+      }).then(r => r.json());
+
+      let data = await llamar().catch(() => null);
+      if (!data?.respuesta) {
+        // Reintento automático: 1 vez, silencioso
+        data = await llamar().catch(() => null);
+      }
+      setMensajes(prev => [...prev, { de: activo, texto: data?.respuesta || "Me llegó mucha información de golpe 😅 — pregúntame de nuevo." }]);
     } catch {
       setMensajes(prev => [...prev, { de: activo, texto: "Hubo un error. Intenta de nuevo 🙏" }]);
     } finally {
