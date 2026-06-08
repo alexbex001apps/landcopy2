@@ -472,6 +472,7 @@ export default function Landing() {
               <div className="flex gap-2 items-center">
                 {Object.keys(contenido).length > 0 && <button onClick={() => setPaso(3)} className="text-[9px] bg-green-500 text-black font-bold px-3 py-1.5 rounded-lg">→ Ver resultado</button>}
                 <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
+                <button onClick={() => { sessionStorage.removeItem("campaign_activa"); sessionStorage.removeItem("landing_contenido"); sessionStorage.removeItem("landing_imagenes"); sessionStorage.removeItem("landing_generando"); window.location.reload(); }} className="text-[9px] text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:border-red-500">✕ Quitar campaña</button>
               </div>
             </div>
 
