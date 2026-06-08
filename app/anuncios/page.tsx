@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
+import SinCampana from "@/components/SinCampana";
 
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
@@ -59,6 +60,7 @@ const SS_KEY = "anuncios_estado";
 
 export default function Anuncios() {
   const [pantalla, setPantalla] = useState(1);
+  const [hayCampana, setHayCampana] = useState(true);
   const [productoData, setProductoData] = useState<any>(null);
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [imagenProducto, setImagenProducto] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export default function Anuncios() {
 
   useEffect(() => {
     const campaign = sessionStorage.getItem("campaign_activa");
+    setHayCampana(!!campaign);
     if (campaign) {
       const c = JSON.parse(campaign);
       setNombre(c.producto || "");
@@ -409,7 +412,9 @@ export default function Anuncios() {
 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
 
-        {pantalla === 1 && (
+        {pantalla === 1 && !hayCampana && <SinCampana />}
+
+        {pantalla === 1 && hayCampana && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
