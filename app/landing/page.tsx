@@ -450,6 +450,9 @@ export default function Landing() {
                 <p className="text-[9px] text-green-400 uppercase tracking-widest mb-0.5">Campaña activa {campaign.es_combo && <span className="bg-orange-500/20 text-orange-400 px-1 rounded ml-1">COMBO</span>}</p>
                 <p className="text-white text-base font-bold">{campaign.nombre}</p>
                 <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
+                {campaign.beneficio && <p className="text-yellow-400 text-[11px] mt-1 leading-snug">✓ {campaign.beneficio}</p>}
+                {campaign.problema && <p className="text-zinc-400 text-[10px] mt-0.5 leading-snug">Resuelve: {campaign.problema}</p>}
+                {campaign.precio_anterior && <p className="text-zinc-500 text-[10px] mt-0.5">Antes: <s>${campaign.precio_anterior}</s>{campaign.precio_oferta && ` → Ahora: $${campaign.precio_oferta}`}</p>}
               </div>
               <div className="flex gap-2 items-center">
                 {Object.keys(contenido).length > 0 && <button onClick={() => setPaso(3)} className="text-[9px] bg-green-500 text-black font-bold px-3 py-1.5 rounded-lg">→ Ver resultado</button>}
