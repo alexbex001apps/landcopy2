@@ -66,7 +66,7 @@ const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, imagen_url, fondoId } = body;
+    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, imagen_url, fondoId, soloTitulos } = body;
 
     if (!seccion || !producto) {
       return NextResponse.json({ error: "Sección y producto requeridos" }, { status: 400 });
@@ -80,7 +80,8 @@ export async function POST(req: NextRequest) {
     const fondoSeleccionado = FONDOS_DISPONIBLES.find(f => f.id === fondoId);
     const fondo = fondoSeleccionado?.prompt || null;
 
-    const prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, fondo });
+    let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, fondo });
+    if (soloTitulos) prompt += ` CRITICAL TEXT RULE: Include ONLY short bold TITLES/headlines on the image. Absolutely NO paragraphs, NO descriptive sentences, NO body text under the titles. Keep text minimal — just a few large impactful words. Clean visual with lots of empty space.`;
 
     let imageUrl = "";
 

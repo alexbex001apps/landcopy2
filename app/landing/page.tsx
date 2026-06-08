@@ -235,14 +235,14 @@ export default function Landing() {
     } catch {}
   };
 
-  const generarImagen = async (seccionId: string) => {
+  const generarImagen = async (seccionId: string, soloTitulos = false) => {
     setImagenGenerando(prev => prev.includes(seccionId) ? prev : [...prev, seccionId]);
     marcarGenerando(seccionId);
     try {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, soloTitulos }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -661,6 +661,9 @@ export default function Landing() {
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
                   <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando.includes(seccionActiva)} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 relative overflow-hidden" style={{backgroundImage: !imagenGenerando.includes(seccionActiva) ? "linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.15) 50%, transparent 100%)" : "none", backgroundSize:"200% 100%", animation: !imagenGenerando.includes(seccionActiva) ? "shimmerBtn 2.5s infinite" : "none"}}>
                     {imagenGenerando.includes(seccionActiva) ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
+                  </button>
+                  <button onClick={() => generarImagen(seccionActiva, true)} disabled={imagenGenerando.includes(seccionActiva)} className="w-full bg-[#0d0d0d] border border-orange-500/30 text-orange-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
+                    🏷️ Generar solo títulos
                   </button>
                   <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
                     {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
