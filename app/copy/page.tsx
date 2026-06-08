@@ -59,7 +59,11 @@ export default function Copy() {
       setPais(c.pais || "Colombia");
       setTono(c.tono || "Urgente");
       if (c.imagen_url) setImagen(c.imagen_url);
-      
+      const resCamp = ss.getItem("landcopy_resultado");
+      if (resCamp) setResultado(JSON.parse(resCamp));
+      const guardCamp = ls.getItem("landcopy_guardados");
+      if (guardCamp) setGuardados(JSON.parse(guardCamp));
+      setHydrated(true);
       return;
     }
     setProducto(ss.getItem("lc_producto") || "");
