@@ -94,7 +94,7 @@ export default function Anuncios() {
   };
 
   useEffect(() => {
-    const campaign = sessionStorage.getItem("campaign_activa");
+   const campaign = sessionStorage.getItem("campaign_activa");
     setHayCampana(!!campaign);
     if (campaign) {
       const c = JSON.parse(campaign);
@@ -103,6 +103,14 @@ export default function Anuncios() {
       setPrecioAnterior(c.precio_anterior || "");
       if (c.imagen_url) setImagenProducto(c.imagen_url);
       setDescripcion(c.problema || c.beneficio || "");
+      const hCamp = sessionStorage.getItem("anuncios_headlines");
+      if (hCamp) {
+        const parsed = JSON.parse(hCamp);
+        setHeadlines(parsed);
+        if (parsed.length > 0) setHeadline(parsed[0]);
+        sessionStorage.removeItem("anuncios_headlines");
+        setPantalla(1);
+      }
       const imgGen = sessionStorage.getItem("anuncios_img_generada");
       if (imgGen) { setImagenGenerada(imgGen); setPantalla(3); }
       if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); setPantalla(3); }
