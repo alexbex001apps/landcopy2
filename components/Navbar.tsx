@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
+ 
 const LogoCopy = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="6" y="4" width="14" height="18" rx="2" fill="white" opacity="0.2" stroke="white" strokeWidth="1.5"/>
@@ -13,7 +13,7 @@ const LogoCopy = () => (
     <line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
-
+ 
 const LogoRedes = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
@@ -25,7 +25,7 @@ const LogoRedes = () => (
     <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
-
+ 
 const LogoLanding = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="4" y="6" width="24" height="18" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
@@ -39,7 +39,7 @@ const LogoLanding = () => (
     <line x1="18" y1="20" x2="22" y2="20" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
-
+ 
 const LogoAnuncios = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <path d="M6 14 L20 8 L20 24 L6 18 Z" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -50,9 +50,9 @@ const LogoAnuncios = () => (
     <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
-
-
-
+ 
+ 
+ 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,15 +78,15 @@ export default function Navbar() {
     });
     return () => subscription.unsubscribe();
   }, []);
-
+ 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/login";
   }
-
+ 
   const inicial = user?.email?.[0].toUpperCase();
-
+ 
   const modulos = [
     { href: "/campaigns", label: "Campañas", Icon: LogoCampanas },
     { href: "/copy", label: "Copy", Icon: LogoCopy },
@@ -95,23 +95,32 @@ export default function Navbar() {
     { href: "/anuncios", label: "Anuncios", Icon: LogoAnuncios },
     { href: "/biblioteca", label: "Biblioteca", Icon: LogoCopy },
   ];
-
+ 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-900 bg-black/90 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl text-white">Land<span className="text-orange-500">Copy</span></Link>
-        <div className="flex items-center gap-1 text-sm text-zinc-400">
-          {modulos.map(m => (
-            <Link key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group">
-              <div className="w-11 h-11 rounded-full bg-[#0d0d0d] border border-[#1a1a1a] group-hover:border-orange-500 flex items-center justify-center transition-colors">
-                <m.Icon />
-              </div>
-              <span className="text-[9px] font-bold text-white group-hover:text-orange-500 transition-colors">{m.label}</span>
-            </Link>
-          ))}
-          <a href="/precios" className="px-3 py-2 text-xs text-zinc-400 hover:text-white transition-colors ml-1">Precios</a>
+      <div className="max-w-7xl mx-auto px-3 md:px-6 h-16 flex items-center gap-2">
+        {/* Logo — fijo a la izquierda */}
+        <Link href="/" className="font-bold text-base md:text-xl text-white flex-shrink-0">Land<span className="text-orange-500">Copy</span></Link>
+ 
+        {/* Módulos — en móvil fila deslizable, en desktop centrados */}
+        <div className="flex-1 min-w-0 overflow-x-auto md:overflow-visible scrollbar-hide">
+          <div className="flex items-center gap-1 md:justify-center w-max md:w-full">
+            {modulos.map(m => (
+              <Link key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-2 md:px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group flex-shrink-0">
+                <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#0d0d0d] border border-[#1a1a1a] group-hover:border-orange-500 flex items-center justify-center transition-colors">
+                  <m.Icon />
+                </div>
+                <span className="text-[8px] md:text-[9px] font-bold text-white group-hover:text-orange-500 transition-colors whitespace-nowrap">{m.label}</span>
+              </Link>
+            ))}
+            <a href="/precios" className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-zinc-400 hover:text-white transition-colors flex-shrink-0 whitespace-nowrap">Precios</a>
+          </div>
+        </div>
+ 
+        {/* Perfil — fijo a la derecha */}
+        <div className="flex-shrink-0">
           {user ? (
-            <div className="relative ml-2">
+            <div className="relative">
               <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm hover:bg-orange-600 transition-colors">
                 {inicial}
               </button>
@@ -135,10 +144,11 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <a href="/login" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ml-2">Entrar</a>
+            <a href="/login" className="bg-orange-500 hover:bg-orange-600 text-white text-xs md:text-sm font-medium px-3 md:px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Entrar</a>
           )}
         </div>
       </div>
+      <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
     </nav>
   );
 }
