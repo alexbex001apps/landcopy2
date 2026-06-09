@@ -423,10 +423,10 @@ export default function Landing() {
       )}
  
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
-        <div className="flex items-center mb-0">
-          <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
-            <div className="w-[72px] h-[72px] rounded-full bg-[#001a0a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
-              <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <div className="flex flex-col md:flex-row items-center mb-0">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#001a0a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="md:w-[38px] md:h-[38px]">
                 <rect x="4" y="6" width="24" height="18" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
                 <rect x="4" y="6" width="24" height="5" rx="2" fill="white" fillOpacity="0.4"/>
                 <circle cx="8" cy="8.5" r="1" fill="white"/>
@@ -438,19 +438,19 @@ export default function Landing() {
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Landing</p>
             {datosActivos.imagen_url && (
-              <img src={datosActivos.imagen_url} className="w-20 h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] mt-2 ml-3" />
+              <img src={datosActivos.imagen_url} className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] ml-2" />
             )}
           </div>
-          <div className="flex-1 text-center px-5">
+          <div className="flex-1 text-center md:px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · LANDING DE VENTAS
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Crea páginas que <span style={{color:"#f97316"}}>venden</span> y <span style={{color:"#22c55e"}}>convierten</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · sección · fondo · la IA genera la landing completa lista para publicar</p>
+            <p className="text-yellow-400 text-[11px] px-2">Producto · sección · fondo · la IA genera la landing completa lista para publicar</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}></div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"160px"}}></div>
         </div>
       </div>
  
@@ -460,13 +460,13 @@ export default function Landing() {
           { n: 2, label: "Paso 2 — Generando", sub: "Secciones con IA" },
           { n: 3, label: "Paso 3 — Resultado", sub: "Descarga o comparte" },
         ].map((s) => (
-          <div key={s.n} onClick={() => { if (s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0))) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0)) ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
+          <div key={s.n} onClick={() => { if (s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0))) setPaso(s.n); }} className={`flex-1 flex items-center justify-center gap-1 md:gap-2 px-1 md:px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 relative ${s.n < paso || (s.n === 3 && Object.keys(contenido).length > 0) || (s.n === 2 && (seccionesSeleccionadas.length > 0 || Object.keys(contenido).length > 0)) ? "cursor-pointer hover:bg-[#1a1a1a]" : ""}`}>
             <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${paso === s.n ? "bg-orange-500 text-white" : paso > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
             <div>
-              <div className={`text-[10px] font-bold tracking-widest uppercase ${paso === s.n ? "text-orange-500" : paso > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
-              <div className="text-[9px] text-yellow-400 mt-0.5">{s.sub}</div>
+              <div className={`text-[9px] md:text-[10px] font-bold tracking-widest uppercase ${paso === s.n ? "text-orange-500" : paso > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
+              <div className="text-[8px] md:text-[9px] text-yellow-400 mt-0.5 hidden sm:block">{s.sub}</div>
             </div>
             {paso === s.n && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
           </div>
@@ -481,14 +481,14 @@ export default function Landing() {
  
         {paso === 1 && campaign && (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-[#0d1a0a] border border-[#22c55e30] rounded-xl p-4 flex items-center gap-3 mb-6">
-              <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+            <div className="bg-[#0d1a0a] border border-[#22c55e30] rounded-xl p-4 flex flex-col sm:flex-row items-center gap-3 mb-6">
+              <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 hidden sm:block"></div>
               <div className="flex gap-2">
                 {campaign.imagen_url && <img src={campaign.imagen_url} className="w-16 h-16 object-contain rounded-lg bg-[#111]" />}
                 {campaign.imagen_url_2 && <img src={campaign.imagen_url_2} className="w-8 h-8 object-contain rounded-lg bg-[#111]" />}
                 {campaign.imagen_url_3 && <img src={campaign.imagen_url_3} className="w-8 h-8 object-contain rounded-lg bg-[#111]" />}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 text-center sm:text-left">
                 <p className="text-[9px] text-green-400 uppercase tracking-widest mb-0.5">Campaña activa {campaign.es_combo && <span className="bg-orange-500/20 text-orange-400 px-1 rounded ml-1">COMBO</span>}</p>
                 <p className="text-white text-base font-bold">{campaign.nombre}</p>
                 <p className="text-zinc-500 text-[10px]">{campaign.precio_oferta && `$${campaign.precio_oferta}`} · {campaign.pais} · {campaign.tono}</p>
@@ -496,16 +496,16 @@ export default function Landing() {
                 {campaign.problema && <p className="text-zinc-400 text-[10px] mt-0.5 leading-snug">Resuelve: {campaign.problema}</p>}
                 {campaign.precio_anterior && <p className="text-zinc-500 text-[10px] mt-0.5">Antes: <s>${campaign.precio_anterior}</s>{campaign.precio_oferta && ` → Ahora: $${campaign.precio_oferta}`}</p>}
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap justify-center gap-2 items-center">
                 {Object.keys(contenido).length > 0 && <button onClick={() => setPaso(3)} className="text-[9px] bg-green-500 text-black font-bold px-3 py-1.5 rounded-lg">→ Ver resultado</button>}
                 <a href="/campaigns" className="text-[9px] text-zinc-500 border border-[#333] px-3 py-1.5 rounded-lg hover:border-[#555]">Cambiar</a>
                 <button onClick={() => { sessionStorage.removeItem("campaign_activa"); sessionStorage.removeItem("landing_contenido"); sessionStorage.removeItem("landing_imagenes"); sessionStorage.removeItem("landing_generando"); window.location.reload(); }} className="text-[9px] text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:border-red-500">✕ Quitar campaña</button>
               </div>
             </div>
  
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
+            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-6">
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => toggleSeccion(s.id)} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${seccionesSeleccionadas.includes(s.id) ? "border-green-500 bg-green-500/10" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${seccionesSeleccionadas.includes(s.id) ? "bg-green-500 border-green-500" : "border-[#444]"}`}>
@@ -527,22 +527,22 @@ export default function Landing() {
  
         {paso === 1 && sinCampaña && (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
+            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Datos del producto</p>
                 <p className="text-zinc-600 text-[9px]">Al terminar puedes guardar como campaña</p>
               </div>
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Foto del producto</p>
-              <div className="flex gap-4 mb-6">
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
                 {[1,2,3].map(slot => (
                   <div key={slot} className="relative">
-                    <label className={`flex flex-col items-center justify-center w-[110px] h-[90px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
+                    <label className={`flex flex-col items-center justify-center w-full h-[90px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
                       {(slot === 1 ? fImagen1 : slot === 2 ? fImagen2 : fImagen3) ? (
                         <img src={slot === 1 ? fImagen1! : slot === 2 ? fImagen2! : fImagen3!} className="w-full h-full object-contain rounded-xl" />
                       ) : (
                         <>
                           <span className="text-xl mb-1">📷</span>
-                          <span className="text-[8px] text-zinc-500">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
+                          <span className="text-[8px] text-zinc-500 text-center px-1">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
                         </>
                       )}
                       <input type="file" accept="image/*" className="hidden" onChange={e => handleImagen(e, slot as 1|2|3)} />
@@ -555,7 +555,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div>
                   <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre del producto *</label>
                   <input value={fNombre} onChange={e => setFNombre(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Rodillax" />
@@ -583,7 +583,7 @@ export default function Landing() {
                   </select>
                 </div>
               </div>
-              <div className="flex gap-3 mt-4">
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <button onClick={generarLanding} disabled={!fNombre.trim()} className="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-black font-black py-3 rounded-xl text-sm transition-colors">
                   ⚡ Generar landing ahora
                 </button>
@@ -597,7 +597,7 @@ export default function Landing() {
  
         {paso === 2 && (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6">
+            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6">
               <p className="text-green-400 text-[10px] font-bold tracking-widest uppercase mb-4">Generando landing...</p>
               <div className="space-y-2">
                 {secciones.map(s => (
@@ -619,13 +619,13 @@ export default function Landing() {
         )}
  
         {paso === 3 && (
-          <div className="grid grid-cols-[220px_1fr_200px] gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_200px] gap-4">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase">{secciones.length} Secciones</p>
                 <p className="text-zinc-600 text-[8px]">🖼 marca para imagen</p>
               </div>
-              <div className="space-y-1">
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500/40 bg-orange-500/5" : "border-transparent hover:border-[#1a1a1a]"}`}>
                     <div onClick={(e) => { e.stopPropagation(); toggleSeccionParaImagen(s.id); }} className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${seccionesParaImagen.includes(s.id) ? "bg-orange-500 border-orange-500" : "border-[#333] hover:border-orange-500/60"}`}>
@@ -659,7 +659,7 @@ export default function Landing() {
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
                 </div>
-                <div className="flex-1 bg-[#111] border border-[#1a1a1a] rounded px-2 py-1 text-[9px] text-yellow-400">
+                <div className="flex-1 bg-[#111] border border-[#1a1a1a] rounded px-2 py-1 text-[9px] text-yellow-400 truncate">
                   landcopy2.vercel.app/p/{datosActivos.producto?.toLowerCase().replace(/\s+/g, '-') || 'landing'}
                 </div>
                 <div className="flex gap-1">
