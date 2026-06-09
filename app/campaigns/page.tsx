@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-
+ 
 interface Campaign {
   id: string;
   nombre: string;
@@ -20,18 +20,21 @@ interface Campaign {
   es_combo: boolean;
   created_at: string;
 }
-
+ 
 const PAISES = ["Colombia", "México", "Venezuela", "Ecuador", "Perú", "Costa Rica", "General"];
 const TONOS = ["Urgente", "Emocional", "Informativo", "Confianza", "Aspiracional"];
-
+ 
 export default function Campaigns() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showArchivo, setShowArchivo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [identifying, setIdentifying] = useState(false);
-
+  const [activa, setActiva] = useState<Campaign | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+ 
   const [nombre, setNombre] = useState("");
   const [producto, setProducto] = useState("");
   const [problema, setProblema] = useState("");
@@ -44,18 +47,24 @@ export default function Campaigns() {
   const [imagen1, setImagen1] = useState<string | null>(null);
   const [imagen2, setImagen2] = useState<string | null>(null);
   const [imagen3, setImagen3] = useState<string | null>(null);
-
+ 
   const supabase = createClient();
-
-  useEffect(() => { cargarCampaigns(); }, []);
-
+ 
+  useEffect(() => {
+    cargarCampaigns();
+    try {
+      const a = sessionStorage.getItem("campaign_activa");
+      if (a) setActiva(JSON.parse(a));
+    } catch {}
+  }, []);
+ 
   const cargarCampaigns = async () => {
     setLoading(true);
     const { data } = await supabase.from("campaigns").select("*").order("created_at", { ascending: false });
     setCampaigns(data || []);
     setLoading(false);
   };
-
+ 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2 | 3) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -68,7 +77,7 @@ export default function Campaigns() {
     };
     reader.readAsDataURL(file);
   };
-
+ 
   const identificarProducto = async () => {
     if (!imagen1) return;
     setIdentifying(true);
@@ -87,17 +96,17 @@ export default function Campaigns() {
     } catch {}
     setIdentifying(false);
   };
-
+ 
   const guardarCampaign = async () => {
     if (!nombre.trim()) return;
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
-
+ 
     let imagen_url = null;
     let imagen_url_2 = null;
     let imagen_url_3 = null;
-
+ 
     if (imagen1) {
       const blob = await fetch(imagen1).then(r => r.blob());
       const path = `${user.id}/${Date.now()}_1.jpg`;
@@ -119,22 +128,28 @@ export default function Campaigns() {
       const { data: urlData } = supabase.storage.from("campaign-images").getPublicUrl(path);
       imagen_url_3 = urlData.publicUrl;
     }
-
-    await supabase.from("campaigns").insert({
+ 
+    const { data: inserted } = await supabase.from("campaigns").insert({
       user_id: user.id, nombre, producto, problema, beneficio,
       precio_anterior: precioAnterior, precio_oferta: precioOferta,
       pais, tono, headline, imagen_url, imagen_url_2, imagen_url_3,
       es_combo: !!(imagen2 || imagen3),
-    });
-
+    }).select().single();
+ 
+    if (inserted) {
+      sessionStorage.setItem("campaign_activa", JSON.stringify(inserted));
+      setActiva(inserted as Campaign);
+    }
+ 
     setShowForm(false);
+    setShowArchivo(false);
     setNombre(""); setProducto(""); setProblema(""); setBeneficio("");
     setPrecioOferta(""); setPrecioAnterior(""); setHeadline("");
     setImagen1(null); setImagen2(null); setImagen3(null);
     cargarCampaigns();
     setSaving(false);
   };
-
+ 
   const formatFechaHora = (fecha: string) => {
     const d = new Date(fecha);
     const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -144,19 +159,44 @@ export default function Campaigns() {
     const min = String(d.getMinutes()).padStart(2, "0");
     return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()} · ${h}:${min} ${ampm}`;
   };
-  const usarCampaign = (c: Campaign, destino: string = "/copy") => {
+ 
+  const activarCampaign = (c: Campaign) => {
     sessionStorage.setItem("campaign_activa", JSON.stringify(c));
+    setActiva(c);
+    setShowArchivo(false);
+    setShowForm(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+ 
+  const irAModulo = (destino: string) => {
+    if (activa) sessionStorage.setItem("campaign_activa", JSON.stringify(activa));
     router.push(destino);
   };
-
+ 
+  const cancelarActiva = () => {
+    sessionStorage.removeItem("campaign_activa");
+    setActiva(null);
+  };
+ 
   const eliminarCampaign = async (id: string) => {
     await supabase.from("campaigns").delete().eq("id", id);
+    if (activa && activa.id === id) cancelarActiva();
     cargarCampaigns();
   };
-
+ 
+  const abrirNueva = () => { setShowForm(true); setShowArchivo(false); };
+  const abrirArchivo = () => { setShowArchivo(true); setShowForm(false); };
+ 
+  const campañasFiltradas = campaigns.filter(c => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (c.producto || "").toLowerCase().includes(q) || (c.nombre || "").toLowerCase().includes(q);
+  });
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-
+      <style>{`@keyframes latidoCampana { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }`}</style>
+ 
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
@@ -180,20 +220,38 @@ export default function Campaigns() {
             </h1>
             <p className="text-yellow-400 text-[11px]">Producto · fotos · precios · la IA identifica todo automáticamente</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}>
-            <button onClick={() => setShowForm(!showForm)} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold py-2 px-4 rounded-xl transition-colors">
-              + Nueva campaña
+          <div className="flex-shrink-0" style={{width:"160px"}}></div>
+        </div>
+      </div>
+ 
+      <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
+ 
+        {/* Buscador + 2 botones (siempre visibles) */}
+        <div className="max-w-3xl mx-auto mb-6">
+          <div className="flex items-center gap-2 bg-[#f0ead6] rounded-xl px-4 py-2.5 mb-3">
+            <span className="text-orange-500">🔍</span>
+            <input
+              value={busqueda}
+              onChange={e => { setBusqueda(e.target.value); if (e.target.value.trim()) setShowArchivo(true); }}
+              placeholder="Escribe el nombre de un producto para buscar tus campañas..."
+              className="flex-1 bg-transparent text-black text-sm outline-none placeholder-[#888]"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button onClick={abrirNueva} className={`flex-1 font-bold py-3 rounded-xl text-sm transition-colors ${showForm ? "bg-orange-500 text-white" : "bg-transparent border border-[#333] text-[#f0ead6] hover:border-orange-500/50"}`}>
+              ➕ Nueva campaña
+            </button>
+            <button onClick={abrirArchivo} className={`flex-1 font-bold py-3 rounded-xl text-sm transition-colors ${showArchivo ? "bg-orange-500 text-white" : "bg-transparent border border-[#333] text-[#f0ead6] hover:border-orange-500/50"}`}>
+              📁 Campañas ya hechas
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
-
+ 
+        {/* FORMULARIO NUEVA CAMPAÑA */}
         {showForm && (
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-8">
             <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Nueva campaña</p>
-
+ 
             <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fotos del producto (hasta 3)</p>
             <div className="flex gap-4 mb-6">
               {[1,2,3].map(slot => (
@@ -220,7 +278,7 @@ export default function Campaigns() {
                 </div>
               ))}
             </div>
-
+ 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre de la campaña *</label>
@@ -263,7 +321,7 @@ export default function Campaigns() {
               <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Headline principal</label>
               <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
             </div>
-
+ 
             <div className="flex gap-3">
               <button onClick={() => setShowForm(false)} className="px-6 py-3 border border-[#1e1e1e] text-yellow-400 text-sm font-bold rounded-xl">Cancelar</button>
               <button onClick={guardarCampaign} disabled={saving || !nombre.trim()} className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold py-3 rounded-xl text-sm">
@@ -272,57 +330,98 @@ export default function Campaigns() {
             </div>
           </div>
         )}
-
-        {loading ? (
-          <div className="text-center py-20 text-yellow-400 text-sm">Cargando campañas...</div>
-        ) : campaigns.length === 0 && !showForm ? (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🚀</div>
-            <p className="text-white font-black text-xl mb-2">Crea tu primera campaña</p>
-            <p className="text-yellow-400 text-sm mb-6">Llena los datos una vez y todos los módulos los usarán automáticamente</p>
-            <button onClick={() => setShowForm(true)} className="bg-orange-500 text-white font-bold px-8 py-3 rounded-xl text-sm">+ Nueva campaña</button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {campaigns.map(c => (
-              <div key={c.id} className="bg-[#141414] border border-[#222] rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.8)] hover:border-orange-500/40 hover:-translate-y-0.5 transition-all">
-                <div className="p-4 flex items-center gap-3">
-                  <div className="flex gap-2">
-                    {c.imagen_url ? (
-                      <img src={c.imagen_url} className="w-14 h-14 object-contain rounded-xl bg-[#111]" />
-                    ) : (
-                      <div className="w-14 h-14 bg-[#111] rounded-xl flex items-center justify-center text-2xl">📦</div>
-                    )}
-                    {c.imagen_url_2 && <img src={c.imagen_url_2} className="w-10 h-10 object-contain rounded-lg bg-[#111]" />}
-                    {c.imagen_url_3 && <img src={c.imagen_url_3} className="w-10 h-10 object-contain rounded-lg bg-[#111]" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-white text-sm font-bold truncate">{c.nombre}</p>
-                      {c.es_combo && <span className="bg-orange-500/20 text-orange-400 text-[8px] font-bold px-2 py-0.5 rounded-full border border-orange-500/30 flex-shrink-0">COMBO</span>}
-                    </div>
-                    <p className="text-yellow-400 text-[10px] truncate">{c.precio_oferta && `$${c.precio_oferta}`} · {c.pais} · {c.tono}</p>
-                    <p className="text-zinc-500 text-[9px] mt-0.5">📅 {formatFechaHora(c.created_at)}</p>
-                  </div>
+ 
+        {/* CAMPAÑA ACTIVA EN EL CENTRO */}
+        {!showForm && activa && (
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="bg-[#0d1a0a] border border-[#22c55e66] rounded-2xl p-6">
+              <p className="text-green-400 text-[10px] font-bold tracking-widest uppercase mb-4 text-center">● Campaña activa</p>
+              <div className="flex items-center gap-5">
+                <div className="flex gap-2 flex-shrink-0">
+                  {activa.imagen_url ? (
+                    <img src={activa.imagen_url} className="w-24 h-24 object-contain rounded-xl bg-[#111]" />
+                  ) : (
+                    <div className="w-24 h-24 bg-[#111] rounded-xl flex items-center justify-center text-3xl">📦</div>
+                  )}
+                  {activa.imagen_url_2 && <img src={activa.imagen_url_2} className="w-12 h-12 object-contain rounded-lg bg-[#111]" />}
+                  {activa.imagen_url_3 && <img src={activa.imagen_url_3} className="w-12 h-12 object-contain rounded-lg bg-[#111]" />}
                 </div>
-                <div className="border-t border-[#1a1a1a] grid grid-cols-4">
-                  <button onClick={() => usarCampaign(c, "/copy")} className="py-2.5 text-[10px] font-bold text-orange-500 hover:bg-orange-500/10 transition-colors border-r border-[#1a1a1a]">
-                    → Copy
-                  </button>
-                  <button onClick={() => usarCampaign(c, "/anuncios")} className="py-2.5 text-[10px] font-bold text-yellow-400 hover:bg-yellow-400/10 transition-colors border-r border-[#1a1a1a]">
-                    → Anuncios
-                  </button>
-                  <button onClick={() => usarCampaign(c, "/landing")} className="py-2.5 text-[10px] font-bold text-green-400 hover:bg-green-400/10 transition-colors border-r border-[#1a1a1a]">
-                    → Landing
-                  </button>
-                  <button onClick={() => eliminarCampaign(c.id)} className="py-2.5 text-[10px] font-bold text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors">
-                    Eliminar
-                  </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-white text-2xl font-black truncate">{activa.nombre}</p>
+                    {activa.es_combo && <span className="bg-orange-500/20 text-orange-400 text-[8px] font-bold px-2 py-0.5 rounded-full border border-orange-500/30 flex-shrink-0">COMBO</span>}
+                  </div>
+                  {activa.beneficio && <p className="text-yellow-400 text-[12px] leading-snug">✓ {activa.beneficio}</p>}
+                  {activa.problema && <p className="text-zinc-400 text-[11px] mt-0.5 leading-snug">Resuelve: {activa.problema}</p>}
+                  <p className="text-zinc-500 text-[11px] mt-1">{activa.precio_oferta && `$${activa.precio_oferta}`} · {activa.pais} · {activa.tono}</p>
                 </div>
               </div>
-            ))}
+ 
+              <div className="grid grid-cols-4 gap-2 mt-5">
+                <button onClick={() => irAModulo("/copy")} className="py-2.5 text-[11px] font-bold text-orange-500 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-colors">→ Copy</button>
+                <button onClick={() => irAModulo("/redes")} className="py-2.5 text-[11px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/30 rounded-lg hover:bg-purple-500/20 transition-colors">→ Redes</button>
+                <button onClick={() => irAModulo("/anuncios")} className="py-2.5 text-[11px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors">→ Anuncios</button>
+                <button onClick={() => irAModulo("/landing")} className="py-2.5 text-[11px] font-bold text-green-400 bg-green-500/10 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-colors">→ Landing</button>
+              </div>
+ 
+              <div className="text-center mt-4">
+                <button onClick={cancelarActiva} className="text-red-400 text-[11px] font-bold border border-red-500/30 px-5 py-2 rounded-lg hover:border-red-500 transition-colors">✕ Cancelar campaña</button>
+              </div>
+            </div>
           </div>
         )}
+ 
+        {/* ESTADO VACÍO (sin form, sin activa, sin archivo) */}
+        {!showForm && !activa && !showArchivo && (
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4" style={{ animation: "latidoCampana 2s ease-in-out infinite" }}>💛</div>
+            <p className="text-white font-black text-2xl mb-2">Aquí empieza todo</p>
+            <p className="text-yellow-400 text-sm max-w-md mx-auto leading-relaxed">La campaña es el corazón de LandCopy. Crea una nueva o busca una que ya hiciste arriba.</p>
+          </div>
+        )}
+ 
+        {/* ARCHIVO DE CAMPAÑAS (grid pequeño) */}
+        {!showForm && showArchivo && (
+          <div className="mt-2">
+            <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">
+              📁 Tus campañas {busqueda.trim() && `· filtrando "${busqueda}"`}
+            </p>
+            {loading ? (
+              <div className="text-center py-12 text-yellow-400 text-sm">Cargando campañas...</div>
+            ) : campañasFiltradas.length === 0 ? (
+              <div className="text-center py-12 text-zinc-500 text-sm">
+                {busqueda.trim() ? `No hay campañas que coincidan con "${busqueda}"` : "Aún no tienes campañas guardadas"}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {campañasFiltradas.map(c => (
+                  <div key={c.id} className={`bg-[#141414] border rounded-xl overflow-hidden transition-all hover:-translate-y-0.5 ${activa && activa.id === c.id ? "border-green-500/60" : "border-[#222] hover:border-orange-500/40"}`}>
+                    <div onClick={() => activarCampaign(c)} className="p-3 cursor-pointer">
+                      <div className="flex items-center gap-2 mb-2">
+                        {c.imagen_url ? (
+                          <img src={c.imagen_url} className="w-12 h-12 object-contain rounded-lg bg-[#111] flex-shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 bg-[#111] rounded-lg flex items-center justify-center text-xl flex-shrink-0">📦</div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-[11px] font-bold truncate">{c.nombre}</p>
+                          <p className="text-yellow-400 text-[9px] truncate">{c.precio_oferta && `$${c.precio_oferta}`} · {c.pais}</p>
+                        </div>
+                      </div>
+                      <p className="text-zinc-600 text-[8px]">📅 {formatFechaHora(c.created_at)}</p>
+                      {activa && activa.id === c.id && <p className="text-green-400 text-[8px] font-bold mt-1">● Activa ahora</p>}
+                    </div>
+                    <div className="border-t border-[#1a1a1a] grid grid-cols-2">
+                      <button onClick={() => activarCampaign(c)} className="py-2 text-[9px] font-bold text-orange-500 hover:bg-orange-500/10 transition-colors border-r border-[#1a1a1a]">Activar</button>
+                      <button onClick={() => eliminarCampaign(c.id)} className="py-2 text-[9px] font-bold text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors">Eliminar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+ 
       </div>
     </div>
   );
