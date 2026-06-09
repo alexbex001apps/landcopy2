@@ -557,9 +557,7 @@ export default function Biblioteca() {
                       {item.tipo === "copy" ? "📝" : item.tipo === "landing" ? "🖥️" : "🖼️"}
                     </div>
                   )}
-                  <span className={`absolute top-2 left-2 text-[8px] font-bold px-2 py-0.5 rounded-full border ${MODULO_COLORS[item.modulo]}`}>
-                    {item.modulo.toUpperCase()}
-                  </span>
+                  
                   <button onClick={() => toggleFavorito(item)} className="absolute top-2 right-2 text-lg">
                     <span className={item.favorito ? "text-yellow-400" : "text-zinc-700"}>★</span>
                   </button>
@@ -570,7 +568,10 @@ export default function Biblioteca() {
  
                 {/* Info */}
                 <div className="p-3">
-                  <p className="text-white text-[11px] font-bold truncate mb-0.5">{item.nombre}</p>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0 ${MODULO_COLORS[item.modulo]}`}>{item.modulo.toUpperCase()}</span>
+                    <p className="text-white text-[11px] font-bold truncate">{item.nombre}</p>
+                  </div>
                   <p className="text-yellow-400 text-[9px] mb-3">{item.producto || "—"} · {formatFecha(item.created_at)}</p>
  
                   {item.tipo === "copy" && item.contenido && (
