@@ -352,7 +352,7 @@ export default function Copy() {
           </div>
           <div className="flex-1">
             <div className="text-white text-[26px] font-black tracking-wide">FÁBRICA DE IDEAS</div>
-            <div className="text-yellow-400 text-[14px] mt-2">Explora, genera y lleva tus mejores ideas a donde quieras · Campaña · Anuncios · Landing · Redes</div>
+           <div className="text-yellow-400 text-[14px] mt-2">Explora, genera y lleva tus mejores ideas a donde quieras · <span className="text-orange-400 font-bold">Campaña</span> · <span className="text-red-400 font-bold">Anuncios</span> · <span className="text-green-400 font-bold">Landing</span> · <span className="text-purple-400 font-bold">Redes</span></div>
           </div>
           <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-bold px-3 py-1.5 rounded-full flex-shrink-0">● LABORATORIO LIBRE</div>
         </div>
