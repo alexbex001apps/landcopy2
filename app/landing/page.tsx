@@ -235,6 +235,35 @@ export default function Landing() {
     } catch {}
   };
 
+  // Comprime una imagen (data:base64) a WebP ~100KB en el navegador, sin depender del servidor
+  const comprimirWebP = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      try {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { resolve(dataUrl); return; }
+          ctx.drawImage(img, 0, 0);
+          let calidad = 0.8;
+          let out = canvas.toDataURL("image/webp", calidad);
+          // baja la calidad hasta acercarse a ~100KB (sin pasar de 0.4)
+          while (out.length > 100 * 1024 * 1.37 && calidad > 0.4) {
+            calidad -= 0.1;
+            out = canvas.toDataURL("image/webp", calidad);
+          }
+          resolve(out);
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      } catch {
+        resolve(dataUrl);
+      }
+    });
+  };
+
   const generarImagen = async (seccionId: string, soloTitulos = false) => {
     setImagenGenerando(prev => prev.includes(seccionId) ? prev : [...prev, seccionId]);
     marcarGenerando(seccionId);
@@ -247,6 +276,7 @@ export default function Landing() {
       const data = await resp.json();
       if (data.imageUrl) {
         let urlFinal = data.imageUrl;
+        if (urlFinal && urlFinal.startsWith("data:")) { urlFinal = await comprimirWebP(urlFinal); }
         if (data.imageUrl.startsWith("data:")) {
           try {
             const { data: { user } } = await supabase.auth.getUser();
