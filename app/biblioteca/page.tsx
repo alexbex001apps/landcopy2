@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+ 
 interface BibliotecaItem {
   id: string;
   tipo: "imagen" | "copy" | "landing";
@@ -16,7 +16,7 @@ interface BibliotecaItem {
   metadata: any;
   notas: string | null;
 }
-
+ 
 interface Carpeta {
   id: string;
   nombre: string;
@@ -26,23 +26,23 @@ interface Carpeta {
   notas: string | null;
   created_at: string;
 }
-
+ 
 const MODULO_COLORS: Record<string, string> = {
   landing: "text-orange-500 border-orange-500/30 bg-orange-500/10",
   anuncios: "text-red-400 border-red-400/30 bg-red-400/10",
   redes: "text-green-400 border-green-400/30 bg-green-400/10",
   copy: "text-blue-400 border-blue-400/30 bg-blue-400/10",
 };
-
+ 
 const MODULO_BG: Record<string, string> = {
   landing: "from-[#1a0a00] to-[#2a1500]",
   anuncios: "from-[#1a0000] to-[#2a0a0a]",
   redes: "from-[#001a0a] to-[#003015]",
   copy: "from-[#000d1a] to-[#001a33]",
 };
-
+ 
 const COLORES_CARPETA = ["#f97316", "#22c55e", "#3b82f6", "#a855f7", "#ec4899", "#eab308", "#ef4444", "#14b8a6"];
-
+ 
 export default function Biblioteca() {
   const [items, setItems] = useState<BibliotecaItem[]>([]);
   const [carpetas, setCarpetas] = useState<Carpeta[]>([]);
@@ -69,9 +69,9 @@ export default function Biblioteca() {
   const [editCarpetaNotas, setEditCarpetaNotas] = useState("");
   const [editCarpetaColor, setEditCarpetaColor] = useState("#f97316");
   const [notasTexto, setNotasTexto] = useState("");
-
+ 
   const supabase = createClient();
-
+ 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = "/login";
@@ -79,18 +79,18 @@ export default function Biblioteca() {
     cargar();
     cargarCarpetas();
   }, []);
-
+ 
   const guardarCache = (lista: BibliotecaItem[], totalNuevo?: number) => {
     try {
       sessionStorage.setItem("biblioteca_items", JSON.stringify(lista));
       if (totalNuevo !== undefined) sessionStorage.setItem("biblioteca_total", String(totalNuevo));
     } catch {}
   };
-
+ 
   const cargar = async () => {
     const cached = sessionStorage.getItem("biblioteca_items");
     const cachedTotal = sessionStorage.getItem("biblioteca_total");
-
+ 
     if (cached && cachedTotal !== null) {
       setItems(JSON.parse(cached));
       setTotal(parseInt(cachedTotal || "0"));
@@ -99,7 +99,7 @@ export default function Biblioteca() {
     } else {
       setLoading(true);
     }
-
+ 
     try {
       const resp = await fetch("/api/biblioteca?page=1", { cache: "no-store" });
       const data = await resp.json();
@@ -119,7 +119,7 @@ export default function Biblioteca() {
     setLoading(false);
     setSincronizando(false);
   };
-
+ 
   const cargarMas = async () => {
     setCargandoMas(true);
     const siguiente = pagina + 1;
@@ -138,12 +138,12 @@ export default function Biblioteca() {
     } catch {}
     setCargandoMas(false);
   };
-
+ 
   const cargarCarpetas = async () => {
     const { data } = await supabase.from("carpetas").select("*").order("created_at", { ascending: true });
     setCarpetas(data || []);
   };
-
+ 
   const crearCarpeta = async () => {
     if (!nuevaCarpetaNombre.trim()) return;
     const { data: { user } } = await supabase.auth.getUser();
@@ -158,7 +158,7 @@ export default function Biblioteca() {
     setModalCarpeta(false);
     showToast("Carpeta creada");
   };
-
+ 
   const eliminarCarpeta = async (id: string) => {
     await supabase.from("carpetas").delete().eq("id", id);
     setCarpetas(prev => prev.filter(c => c.id !== id));
@@ -208,7 +208,7 @@ export default function Biblioteca() {
     setModalMover(null);
     showToast("Movido a carpeta");
   };
-
+ 
   const toggleFavorito = async (item: BibliotecaItem) => {
     await fetch("/api/biblioteca", {
       method: "PATCH",
@@ -221,7 +221,7 @@ export default function Biblioteca() {
       return nuevos;
     });
   };
-
+ 
   const eliminar = async (id: string) => {
     await fetch("/api/biblioteca", {
       method: "DELETE",
@@ -240,26 +240,26 @@ export default function Biblioteca() {
     });
     showToast("Eliminado");
   };
-
+ 
   const copiar = (texto: string, id: string) => {
     navigator.clipboard.writeText(texto);
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
     showToast("Copiado al portapapeles");
   };
-
+ 
   const descargar = (imageUrl: string, nombre: string) => {
     const a = document.createElement("a");
     a.href = imageUrl;
     a.download = `${nombre.replace(/\s+/g, "-")}.png`;
     a.click();
   };
-
+ 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2000);
   };
-
+ 
   const itemsFiltrados = items.filter(item => {
     if (carpetaActiva === "sin_carpeta" && item.carpeta_id !== null) return false;
     if (carpetaActiva !== null && carpetaActiva !== "sin_carpeta" && item.carpeta_id !== carpetaActiva) return false;
@@ -272,7 +272,7 @@ export default function Biblioteca() {
         !item.producto?.toLowerCase().includes(busqueda.toLowerCase())) return false;
     return true;
   });
-
+ 
   const stats = {
     total: total,
     imagenes: items.filter(i => i.tipo === "imagen").length,
@@ -280,7 +280,7 @@ export default function Biblioteca() {
     landings: items.filter(i => i.tipo === "landing").length,
     favoritos: items.filter(i => i.favorito).length,
   };
-
+ 
   const formatFecha = (fecha: string) => {
     const d = new Date(fecha);
     const ahora = new Date();
@@ -289,24 +289,24 @@ export default function Biblioteca() {
     if (diff < 1440) return `Hace ${Math.floor(diff / 60)}h`;
     return `Hace ${Math.floor(diff / 1440)} días`;
   };
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
-
+      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } } .scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+ 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
           ✓ {toast}
         </div>
       )}
-
+ 
       {sincronizando && (
         <div className="fixed bottom-6 left-6 flex items-center gap-2 bg-[#0d0d0d] border border-[#1e1e1e] text-yellow-400 text-[10px] font-bold px-3 py-2 rounded-xl z-50">
           <div className="w-3 h-3 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin"></div>
           Sincronizando...
         </div>
       )}
-
+ 
       {/* Modal nueva carpeta */}
       {modalCarpeta && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalCarpeta(false)}>
@@ -401,13 +401,13 @@ export default function Biblioteca() {
           </div>
         </div>
       )}
-
-      {/* Header */}
+ 
+      {/* Header — responsivo */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
-        <div className="flex items-center mb-0">
-          <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
-            <div className="w-[72px] h-[72px] rounded-full bg-[#0a0a1a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
-              <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <div className="flex flex-col md:flex-row items-center mb-0">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0a0a1a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="md:w-[38px] md:h-[38px]">
                 <rect x="4" y="4" width="10" height="10" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/>
                 <rect x="18" y="4" width="10" height="10" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/>
                 <rect x="4" y="18" width="10" height="10" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/>
@@ -416,27 +416,27 @@ export default function Biblioteca() {
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Biblioteca</p>
           </div>
-          <div className="flex-1 text-center px-5">
+          <div className="flex-1 text-center md:px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               TUS ACTIVOS DE MARKETING
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Todo tu contenido en un <span style={{color:"#f97316"}}>solo lugar</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Imágenes · Copys · Landings · Carpetas · Favoritos</p>
+            <p className="text-yellow-400 text-[11px] px-2">Imágenes · Copys · Landings · Carpetas · Favoritos</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}>
+          <div className="flex-shrink-0 mt-3 md:mt-0 w-full md:w-[160px]">
             <button onClick={() => setModalCarpeta(true)} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold py-2 px-4 rounded-xl transition-colors">
               + Nueva carpeta
             </button>
           </div>
         </div>
       </div>
-
+ 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
-
+ 
         {/* Stats */}
-        <div className="grid grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
           {[
             { label: "Total", valor: stats.total, color: "text-white" },
             { label: "Imágenes", valor: stats.imagenes, color: "text-orange-500" },
@@ -450,7 +450,7 @@ export default function Biblioteca() {
             </div>
           ))}
         </div>
-
+ 
         {/* Carpetas */}
         {carpetas.length > 0 && (
           <div className="mb-6">
@@ -476,9 +476,9 @@ export default function Biblioteca() {
             </div>
           </div>
         )}
-
+ 
         {/* Tabs */}
-        <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1">
+        <div className="flex gap-1 mb-4 bg-[#070707] border border-[#111] rounded-xl p-1 overflow-x-auto scrollbar-hide">
           {[
             { id: "todos", label: "Todos" },
             { id: "imagenes", label: "Imágenes" },
@@ -486,25 +486,27 @@ export default function Biblioteca() {
             { id: "landings", label: "Landings" },
             { id: "favoritos", label: "★ Favoritos" },
           ].map(t => (
-            <button key={t.id} onClick={() => setTabActivo(t.id)} className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-bold transition-all ${tabActivo === t.id ? "bg-orange-500 text-white" : "text-zinc-500"}`}>
+            <button key={t.id} onClick={() => setTabActivo(t.id)} className={`flex-1 min-w-[68px] text-center py-1.5 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ${tabActivo === t.id ? "bg-orange-500 text-white" : "text-zinc-500"}`}>
               {t.label}
             </button>
           ))}
         </div>
-
+ 
         {/* Filtros + busqueda */}
-        <div className="flex items-center gap-2 mb-6">
-          {["todos", "landing", "anuncios", "redes", "copy"].map(m => (
-            <button key={m} onClick={() => setFiltroModulo(m)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all ${filtroModulo === m ? "bg-orange-500/10 border-orange-500/40 text-orange-500" : "border-[#1a1a1a] text-zinc-500"}`}>
-              {m === "todos" ? "Todos los módulos" : m.charAt(0).toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center gap-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg px-3 py-1.5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
+            {["todos", "landing", "anuncios", "redes", "copy"].map(m => (
+              <button key={m} onClick={() => setFiltroModulo(m)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all whitespace-nowrap flex-shrink-0 ${filtroModulo === m ? "bg-orange-500/10 border-orange-500/40 text-orange-500" : "border-[#1a1a1a] text-zinc-500"}`}>
+                {m === "todos" ? "Todos los módulos" : m.charAt(0).toUpperCase() + m.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="sm:ml-auto flex items-center gap-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg px-3 py-1.5">
             <span className="text-zinc-500 text-[11px]">🔍</span>
-            <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por producto..." className="bg-transparent text-[11px] text-white outline-none w-40 placeholder-zinc-600" />
+            <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por producto..." className="bg-transparent text-[11px] text-white outline-none flex-1 sm:w-40 placeholder-zinc-600" />
           </div>
         </div>
-
+ 
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -534,7 +536,7 @@ export default function Biblioteca() {
               {items.length === 0 ? "Guarda imágenes, copys y landings desde cada módulo" : "Prueba con otros filtros"}
             </p>
             {items.length === 0 && (
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a href="/landing" className="bg-orange-500 text-white font-bold px-6 py-3 rounded-xl text-sm">→ Ir a Landing</a>
                 <a href="/anuncios" className="border border-[#333] text-white font-bold px-6 py-3 rounded-xl text-sm">→ Ir a Anuncios</a>
               </div>
@@ -545,7 +547,7 @@ export default function Biblioteca() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {itemsFiltrados.map(item => (
               <div key={item.id} className="bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-2xl overflow-hidden hover:border-orange-500/40 transition-colors">
-
+ 
                 {/* Preview */}
                 <div className={`h-[100px] bg-gradient-to-br ${MODULO_BG[item.modulo]} flex items-center justify-center relative`}>
                   {item.imagen_url ? (
@@ -565,16 +567,16 @@ export default function Biblioteca() {
                     <div className="absolute bottom-2 right-2 w-3 h-3 rounded" style={{ background: carpetas.find(c => c.id === item.carpeta_id)?.color || "#f97316" }}></div>
                   )}
                 </div>
-
+ 
                 {/* Info */}
                 <div className="p-3">
                   <p className="text-white text-[11px] font-bold truncate mb-0.5">{item.nombre}</p>
                   <p className="text-yellow-400 text-[9px] mb-3">{item.producto || "—"} · {formatFecha(item.created_at)}</p>
-
+ 
                   {item.tipo === "copy" && item.contenido && (
                     <p className="text-zinc-600 text-[9px] leading-relaxed mb-3 line-clamp-2">{item.contenido}</p>
                   )}
-
+ 
                   <div className="flex gap-1.5">
                     {item.imagen_url && (
                       <button onClick={() => descargar(item.imagen_url!, item.nombre)} className="flex-1 bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-1.5 rounded-lg">⬇</button>
