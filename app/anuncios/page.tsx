@@ -113,8 +113,8 @@ export default function Anuncios() {
         setPantalla(1);
       }
       const imgGen = sessionStorage.getItem("anuncios_img_generada");
-      if (imgGen) { setImagenGenerada(imgGen); setPantalla(3); }
-      if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); setPantalla(3); }
+      if (imgGen) { setImagenGenerada(imgGen); if (!hCamp) setPantalla(3); }
+      if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); if (!hCamp) setPantalla(3); }
       setHydrated(true);
       return;
     }
