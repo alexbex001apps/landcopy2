@@ -222,7 +222,7 @@ export default function JosueChat() {
 
       {/* Panel del Consejo IA */}
       {abierto && (
-        <div style={{ position: "fixed", bottom: "100px", right: "24px", width: "360px", maxHeight: "560px", background: "#0a0a0a", border: `1px solid ${esp.color}`, borderRadius: "20px", zIndex: 1000, display: "flex", flexDirection: "column", overflow: "hidden", transition: "border-color 0.3s" }}>
+        <div style={{ position: "fixed", bottom: "100px", right: "24px", width: "min(360px, calc(100vw - 32px))", maxHeight: "min(560px, calc(100vh - 130px))", background: "#0a0a0a", border: `1px solid ${esp.color}`, borderRadius: "20px", zIndex: 1000, display: "flex", flexDirection: "column", overflow: "hidden", transition: "border-color 0.3s" }}>
 
           {/* Header */}
           <div style={{ background: "#111", borderBottom: "1px solid #1a1a1a", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
