@@ -79,7 +79,7 @@ async function generarImagenBase64(prompt: string, size: string, apiKey: string,
       `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
       `--${boundary}\r\nContent-Disposition: form-data; name="n"\r\n\r\n1`,
       `--${boundary}\r\nContent-Disposition: form-data; name="size"\r\n\r\n${size}`,
-      `--${boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\nReproduce the exact product shown in the reference image in this scene: ${prompt}. Keep the product identical — same colors, same shape, same design.`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\nCRITICAL: Use the EXACT product from the reference image — do NOT redraw, redesign or imagine a different product. Keep its exact colors, shape, logo, label and design pixel-faithful. Only change the scene/background around it. Scene: ${prompt}`,
     ];
     const textParts = Buffer.from(parts.join("\r\n") + "\r\n");
     const fileHeader = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="product.png"\r\nContent-Type: image/jpeg\r\n\r\n`);
