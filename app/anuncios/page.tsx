@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
 import SinCampana from "@/components/SinCampana";
-
+ 
 const FORMATOS = [
   { id: "facebook", nombre: "Facebook Ad", size: "1200×628px" },
   { id: "instagram", nombre: "Instagram Ad", size: "1080×1080px" },
   { id: "stories", nombre: "Stories / TikTok", size: "1080×1920px" },
 ];
-
+ 
 const TEMPERATURAS = [
   { id: "hot", icon: "🔥", nombre: "Hot Traffic", desc: "Urgencia, precio, escasez. Cierra la venta.", color: "#cc0000", bg: "#1a0000", border: "#cc0000", grad: "linear-gradient(90deg,#cc0000,#f97316)", glow: "rgba(220,40,0,0.45)" },
   { id: "warm", icon: "🌡️", nombre: "Warm Traffic", desc: "Beneficios, confianza, prueba social.", color: "#ff8800", bg: "#1a0e00", border: "#ff8800", grad: "linear-gradient(90deg,#ff8800,#eab308)", glow: "rgba(255,136,0,0.4)" },
   { id: "cold", icon: "❄️", nombre: "Cold Traffic", desc: "Presentación, curiosidad, enganche.", color: "#0088cc", bg: "#00101a", border: "#0088cc", grad: "linear-gradient(90deg,#0066aa,#00aadd)", glow: "rgba(0,136,204,0.4)" },
 ];
-
+ 
 const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]> = {
   hot: [
     { texto: "¡ÚLTIMAS UNIDADES!", temp: "hot" },
@@ -53,11 +53,11 @@ const FRASES: Record<string, { texto: string; temp: "hot" | "warm" | "cold" }[]>
     { texto: "LO QUE NO TE CUENTAN", temp: "cold" },
   ],
 };
-
+ 
 const COLORES_TEMP = { hot: "#cc0000", warm: "#ff8800", cold: "#0088cc" };
-
+ 
 const SS_KEY = "anuncios_estado";
-
+ 
 export default function Anuncios() {
   const [pantalla, setPantalla] = useState(1);
   const [hayCampana, setHayCampana] = useState(true);
@@ -87,12 +87,12 @@ export default function Anuncios() {
   const [guardando, setGuardando] = useState(false);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [mostrarFondos, setMostrarFondos] = useState(false);
-
+ 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
-
+ 
   useEffect(() => {
    const campaign = sessionStorage.getItem("campaign_activa");
     setHayCampana(!!campaign);
@@ -118,13 +118,13 @@ export default function Anuncios() {
       setHydrated(true);
       return;
     }
-
+ 
     const h = sessionStorage.getItem("anuncios_headlines");
     const p = sessionStorage.getItem("anuncios_producto");
     const fromCopy = sessionStorage.getItem("anuncios_producto");
     if (fromCopy) sessionStorage.removeItem(SS_KEY);
     const saved = fromCopy ? null : sessionStorage.getItem(SS_KEY);
-
+ 
     if (saved) {
       try {
         const s = JSON.parse(saved);
@@ -163,7 +163,7 @@ export default function Anuncios() {
     if (sessionStorage.getItem("anuncios_generando") === "1") { setGenerando(true); setPantalla(3); }
     setHydrated(true);
   }, []);
-
+ 
   useEffect(() => {
     if (!generando) return;
     const intervalo = setInterval(() => {
@@ -177,7 +177,7 @@ export default function Anuncios() {
     }, 1000);
     return () => clearInterval(intervalo);
   }, [generando]);
-
+ 
   useEffect(() => {
     if (!hydrated) return;
     const estado = {
@@ -191,7 +191,7 @@ export default function Anuncios() {
   }, [hydrated, pantalla, nombre, descripcion, precioOferta, precioAnterior,
     headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
     promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines, fondoSeleccionado]);
-
+ 
   const generarDolor = async () => {
     if (!nombre) return;
     setGenerandoDolor(true);
@@ -219,7 +219,7 @@ export default function Anuncios() {
       setGenerandoDolor(false);
     }
   };
-
+ 
   const toggleFrase = (texto: string) => {
     setFrasesSeleccionadas(prev => {
       if (prev.includes(texto)) return prev.filter(f => f !== texto);
@@ -227,11 +227,11 @@ export default function Anuncios() {
       return [...prev, texto];
     });
   };
-
+ 
   const toggleDolor = (texto: string) => {
     setDolorSel(prev => prev.includes(texto) ? prev.filter(d => d !== texto) : [...prev, texto]);
   };
-
+ 
   const subirImagenAStorage = async (base64: string): Promise<string> => {
     try {
       const supabase = createClient();
@@ -246,7 +246,7 @@ export default function Anuncios() {
       return base64;
     }
   };
-
+ 
   const generarAnuncio = async () => {
     setGenerando(true);
     setImagenGenerada(null);
@@ -282,7 +282,7 @@ export default function Anuncios() {
       setGenerando(false);
     }
   };
-
+ 
   const editarAnuncio = async () => {
     if (!imagenGenerada || !instruccionEdicion.trim()) return;
     const imagenPrevia = imagenGenerada;
@@ -321,7 +321,7 @@ export default function Anuncios() {
       setEditando(false);
     }
   };
-
+ 
   const guardarEnBiblioteca = async () => {
     if (!imagenGenerada) return;
     setGuardando(true);
@@ -348,7 +348,7 @@ export default function Anuncios() {
     }
     setGuardando(false);
   };
-
+ 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -356,24 +356,24 @@ export default function Anuncios() {
     reader.onload = () => setImagenProducto(reader.result as string);
     reader.readAsDataURL(file);
   };
-
+ 
   const tempActual = TEMPERATURAS.find(t => t.id === temperatura)!;
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       <style>{`@keyframes shimmerGen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } } @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } } @keyframes blinkCursor { 0%, 49% { opacity: 0.8; } 50%, 100% { opacity: 0; } }`}</style>
-
+ 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
           {toast}
         </div>
       )}
-
+ 
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
-        <div className="flex items-center mb-0">
-          <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
-            <div className="w-[72px] h-[72px] rounded-full bg-[#1a0000] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
-              <svg width="42" height="42" viewBox="0 0 32 32" fill="none">
+        <div className="flex flex-col md:flex-row items-center mb-0">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#1a0000] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" className="md:w-[42px] md:h-[42px]">
                 <path d="M6 14 L20 8 L20 24 L6 18 Z" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
                 <rect x="6" y="14" width="4" height="4" fill="white" fillOpacity="0.6"/>
                 <circle cx="24" cy="12" r="2" fill="white"/>
@@ -383,22 +383,22 @@ export default function Anuncios() {
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Anuncios</p>
             {imagenProducto && (
-              <img src={imagenProducto} className="w-20 h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] mt-2 ml-3" />
+              <img src={imagenProducto} className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-lg bg-[#111] border border-[#1a1a1a] ml-2" />
             )}
           </div>
-          <div className="flex-1 text-center px-5">
+          <div className="flex-1 text-center md:px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · META ADS PROFESIONAL
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Crea anuncios que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-orange-500">convierten</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · temperatura · frases · la IA genera el anuncio listo para Meta Ads</p>
+            <p className="text-yellow-400 text-[11px] px-2">Producto · temperatura · frases · la IA genera el anuncio listo para Meta Ads</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}></div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"160px"}}></div>
         </div>
       </div>
-
+ 
       <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
         {[
           { n: 1, label: "Paso 1 — Producto", sub: "Tu producto" },
@@ -406,23 +406,23 @@ export default function Anuncios() {
           { n: 3, label: "Paso 3 — Tu anuncio", sub: "Genera y descarga" },
         ].map((s) => (
           <div key={s.n} onClick={() => setPantalla(s.n)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative">
+            className="flex-1 flex items-center justify-center gap-1 md:gap-2 px-1 md:px-4 py-3 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative">
             <div className={`w-[22px] h-[22px] rounded flex items-center justify-center text-[11px] font-black flex-shrink-0 ${pantalla === s.n ? "bg-orange-500 text-white" : pantalla > s.n ? "bg-green-500 text-white" : "bg-[#2a2a2a] text-[#555]"}`}>
               {pantalla > s.n ? "✓" : s.n}
             </div>
             <div>
-              <div className={`text-[10px] font-bold tracking-widest uppercase ${pantalla === s.n ? "text-orange-500" : pantalla > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
-              <div className="text-[9px] text-yellow-400 mt-0.5">{s.sub}</div>
+              <div className={`text-[9px] md:text-[10px] font-bold tracking-widest uppercase ${pantalla === s.n ? "text-orange-500" : pantalla > s.n ? "text-green-400" : "text-yellow-400"}`}>{s.label}</div>
+              <div className="text-[9px] text-yellow-400 mt-0.5 hidden sm:block">{s.sub}</div>
             </div>
             {pantalla === s.n && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500" />}
           </div>
         ))}
       </div>
-
+ 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
-
+ 
         {pantalla === 1 && !hayCampana && <SinCampana />}
-
+ 
         {pantalla === 1 && hayCampana && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -453,7 +453,7 @@ export default function Anuncios() {
                 </div>
               </div>
             </div>
-
+ 
             <div className="space-y-4">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
                 <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">Producto</p>
@@ -487,14 +487,14 @@ export default function Anuncios() {
                   <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
                 </div>
               </div>
-
+ 
               <button onClick={() => { if (nombre.trim() && headline.trim()) { setPantalla(2); if (nombre && !dolorChips.length) generarDolor(); } }} disabled={!nombre.trim() || !headline.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm">
                 Siguiente — Temperatura y frases →
               </button>
             </div>
           </div>
         )}
-
+ 
         {pantalla === 2 && (
           <div className="space-y-6">
             {(dolorChips.length > 0 || generandoDolor) && (
@@ -510,7 +510,7 @@ export default function Anuncios() {
                 </div>
               </div>
             )}
-
+ 
             <div>
               <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Temperatura y frases — máximo 7 frases</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -540,7 +540,7 @@ export default function Anuncios() {
                 ))}
               </div>
             </div>
-
+ 
             <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]" style={{ border: `1px solid ${tempActual.color}66`, boxShadow: `0 0 24px ${tempActual.glow.replace("0.45", "0.12").replace("0.4", "0.12")}` }}>
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1a1a1a]" style={{ background: "linear-gradient(90deg, #0d0d0d 0%, #0a0a0a 100%)" }}>
                 <span className="text-orange-500 text-[10px] font-bold tracking-[0.2em] uppercase">⚙ Configuración del anuncio</span>
@@ -549,7 +549,7 @@ export default function Anuncios() {
                   {tempActual.nombre.toUpperCase()} {tempActual.icon}
                 </span>
               </div>
-
+ 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 pb-3">
                 <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4">
                   <p className="text-yellow-400 text-[9px] font-bold tracking-[0.18em] uppercase mb-2.5">🎨 Fondo de la imagen</p>
@@ -580,7 +580,7 @@ export default function Anuncios() {
                   )}
                   <p className="text-zinc-600 text-[9px] mt-2.5">40 fondos · 9 categorías</p>
                 </div>
-
+ 
                 <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4">
                   <div className="flex items-baseline justify-between mb-2.5">
                     <p className="text-yellow-400 text-[9px] font-bold tracking-[0.18em] uppercase">Frases</p>
@@ -606,7 +606,7 @@ export default function Anuncios() {
                   )}
                 </div>
               </div>
-
+ 
               <div className="px-5 pb-5">
                 <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2.5">
@@ -620,7 +620,7 @@ export default function Anuncios() {
                 </div>
               </div>
             </div>
-
+ 
             <div className="flex gap-3">
               <button onClick={() => setPantalla(1)} className="px-6 py-3 border border-[#1e1e1e] text-yellow-400 text-sm font-bold rounded-xl hover:border-[#333] transition-colors">← Volver</button>
               <button onClick={() => setPantalla(3)} className="flex-1 relative overflow-hidden text-white font-black py-3.5 rounded-xl text-sm tracking-wide transition-transform active:scale-[0.98]" style={{ background: tempActual.grad, boxShadow: `0 0 28px ${tempActual.glow}` }}>
@@ -630,7 +630,7 @@ export default function Anuncios() {
             </div>
           </div>
         )}
-
+ 
         {pantalla === 3 && (
           <div className="space-y-6">
             {!imagenGenerada && !generando && (
@@ -659,7 +659,7 @@ export default function Anuncios() {
                 <div><button onClick={() => setPantalla(2)} className="text-yellow-400 text-xs border border-[#1e1e1e] px-4 py-2 rounded-lg">← Editar frases</button></div>
               </div>
             )}
-
+ 
             {generando && (
               <div className="text-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
@@ -668,7 +668,7 @@ export default function Anuncios() {
                 <p className="text-xs font-bold" style={{color:"#00ff88"}}>✓ Puedes navegar por la app — tu imagen seguirá generándose y estará aquí al volver</p>
               </div>
             )}
-
+ 
             {imagenGenerada && (
               <div className="space-y-4">
                 <div className="bg-[#0a0a0a] border border-green-500/30 rounded-2xl overflow-hidden">
@@ -700,7 +700,7 @@ export default function Anuncios() {
                 </div>
               </div>
             )}
-
+ 
             {errorGeneracion && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center">
                 <p className="text-red-400 text-sm font-bold">Error al generar</p>
@@ -710,7 +710,7 @@ export default function Anuncios() {
             )}
           </div>
         )}
-
+ 
       </div>
     </div>
   );
