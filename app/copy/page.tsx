@@ -346,6 +346,7 @@ export default function Copy() {
           <div className="flex-shrink-0" style={{width:"99px"}}></div>
         </div>
  
+       <style>{`@keyframes pulsoFabrica { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }`}</style>
        <div className="flex items-center gap-3 bg-gradient-to-r from-[#1a0a00] to-[#0d0d0d] border-t border-b border-[#2a2a2a] -mx-6 mb-6 px-6 py-3">
           <div className="w-10 h-10 rounded-full bg-[#1a1400] border border-[#3a3000] flex items-center justify-center flex-shrink-0">
             <span className="text-xl">💡</span>
@@ -651,7 +652,6 @@ export default function Copy() {
                 </div>
                 <style>{`
                   @keyframes lluviaProd { 0%{transform:translateY(-40px) rotate(0deg);} 100%{transform:translateY(400px) rotate(20deg);} }
-                  @keyframes pulsoFabrica { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
                   @keyframes fadePhrase { 0%{opacity:0;transform:translateY(8px);} 15%{opacity:1;transform:translateY(0);} 85%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-8px);} }
                 `}</style>
                 <div className="relative z-10">
