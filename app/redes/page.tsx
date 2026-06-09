@@ -191,10 +191,10 @@ export default function Redes() {
       console.error(`Error en idea-${v}:`, err);
     }
   }
-
+ 
   async function generarIdeas(soloUna?: string) {
     if (!producto) return;
-
+ 
     // Caso "regenerar una sola" — mantiene comportamiento previo
     if (soloUna) {
       setLoading(true);
@@ -203,11 +203,11 @@ export default function Redes() {
       setLoading(false);
       return;
     }
-
+ 
     // Generación NUEVA — las 4 EN PARALELO (como Landing), cada una aparece al llegar
     setPaso(3);
     setLoading(true);
-
+ 
     // 1) Pintar las 4 cajas vacías con su spinner
     const base: Idea[] = [0, 1, 2, 3].map(v => ({
       id: `idea-${v}`,
@@ -217,10 +217,10 @@ export default function Redes() {
       favorita: false,
     }));
     setIdeas(base);
-
+ 
     // 2) Lanzar las 4 al mismo tiempo (sin esperar en fila)
     await Promise.all([0, 1, 2, 3].map(v => generarUna(v)));
-
+ 
     setLoading(false);
     generarTextos();
   }
@@ -327,8 +327,8 @@ export default function Redes() {
       )}
  
       {modalCompartir && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-          <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 w-[360px]">
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "16px" }}>
+          <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 w-full max-w-[360px]">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[#FFF500] text-xs font-black tracking-widest uppercase">Compartir imagen</span>
               <button onClick={() => setModalCompartir(null)} className="text-[#7A7772] hover:text-white">✕</button>
@@ -355,12 +355,12 @@ export default function Redes() {
         </div>
       )}
  
-      {/* Header homogeneizado igual que Copy */}
-      <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-0">
-        <div className="flex items-center mb-4">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-[72px] h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center">
-              <svg width="42" height="42" viewBox="0 0 32 32" fill="none">
+      {/* Header homogeneizado igual que Copy — responsivo */}
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-0">
+        <div className="flex flex-col md:flex-row items-center mb-4">
+          <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center">
+              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" className="md:w-[42px] md:h-[42px]">
                 <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
                 <circle cx="16" cy="16" r="6" stroke="white" strokeWidth="1.5" opacity="0.6"/>
                 <circle cx="16" cy="16" r="2.5" fill="white"/>
@@ -376,12 +376,12 @@ export default function Redes() {
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · IMÁGENES PARA REDES
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Crea imágenes que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
+            <p className="text-yellow-400 text-[11px] px-2">Producto · destino · tipo · la IA genera imagen + texto + hashtags + guión TikTok</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"99px"}}></div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
         </div>
       </div>
  
@@ -393,22 +393,22 @@ export default function Redes() {
           { n: 3, label: "Paso 3 — Resultado", sub: "Galería + texto + descarga" },
         ].map((s) => (
           <div key={s.n} onClick={() => setPaso(s.n)}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
+            className={`flex-1 flex items-center justify-center gap-1 md:gap-2 px-1 md:px-4 py-2.5 border-r border-[#2a2a2a] last:border-r-0 cursor-pointer relative ${paso === s.n ? "bg-[rgba(255,215,0,0.05)]" : ""}`}>
             <div className={`w-5 h-5 rounded-sm flex items-center justify-center text-xs font-black flex-shrink-0 ${paso >= s.n ? "bg-[#FFF500] text-[#0d0d0d]" : "bg-[#2a2a2a] text-[#555]"}`}>
               {paso > s.n ? "✓" : s.n}
             </div>
             <div>
-              <div className={`text-xs font-bold tracking-widest uppercase ${paso >= s.n ? "text-[#FFF500]" : "text-[#555]"}`}>{s.label}</div>
-              <div className="text-xs text-[#555250] mt-0.5">{s.sub}</div>
+              <div className={`text-[9px] md:text-xs font-bold tracking-widest uppercase ${paso >= s.n ? "text-[#FFF500]" : "text-[#555]"}`}>{s.label}</div>
+              <div className="text-xs text-[#555250] mt-0.5 hidden sm:block">{s.sub}</div>
             </div>
             {paso === s.n && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFF500]" />}
           </div>
         ))}
       </div>
  
-      <div className="max-w-[1400px] mx-auto px-6 pb-20">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20">
       {!hayCampana ? <SinCampana /> : (
-      <div className="grid grid-cols-[380px_1fr] gap-6 mt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 mt-4">
  
         {/* Panel izquierdo */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
@@ -547,7 +547,7 @@ export default function Redes() {
               <div className="text-xs text-[#7A7772] mt-0.5">Precio, beneficio y CTA superpuestos</div>
             </div>
             <button onClick={() => setTextoEncima(!textoEncima)}
-              className={`w-8 h-4 rounded-full relative transition-colors ${textoEncima ? "bg-[#FFF500]" : "bg-[#333]"}`}>
+              className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${textoEncima ? "bg-[#FFF500]" : "bg-[#333]"}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[#0d0d0d] transition-all ${textoEncima ? "right-0.5" : "left-0.5"}`} />
             </button>
           </div>
@@ -570,7 +570,7 @@ export default function Redes() {
         </div>
  
         {/* Panel derecho */}
-        <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+        <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-5">
  
           {!loading && ideas.length === 0 && (
             <div className="flex items-center justify-center h-64 text-[#555250] text-sm flex-col gap-2">
@@ -600,7 +600,7 @@ export default function Redes() {
                 <span className="text-xs font-bold text-[#FFF500] tracking-widest uppercase">
                   4 ideas · {destinoActual?.nombre} · {TIPOS.find(t => t.id === tipo)?.nombre}
                 </span>
-                <span className="text-xs text-[#7A7772]">gpt-image-2 · automático</span>
+                <span className="text-xs text-[#7A7772] hidden sm:block">gpt-image-2 · automático</span>
               </div>
  
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -647,7 +647,7 @@ export default function Redes() {
                 ))}
               </div>
  
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 mb-4">
                 <button onClick={() => generarIdeas()} disabled={loading}
                   className="flex-1 bg-[#161616] border border-[#1e1e1e] rounded-md py-1.5 text-xs font-bold text-[#EDE8DC] cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40">
                   ↻ Regenerar todas
@@ -730,7 +730,7 @@ export default function Redes() {
                 </div>
               )}
  
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-col sm:flex-row gap-2 mt-3">
                 <button onClick={() => ideas.filter(i => i.imageUrl).forEach((i, idx) => descargarImagen(i.imageUrl!, `${producto}-${idx + 1}.png`))}
                   className="flex-1 bg-[#FFF500] border-none rounded-md py-2 text-[#0d0d0d] text-xs font-black cursor-pointer flex items-center justify-center gap-1.5">
                   ↓ Descargar todas
