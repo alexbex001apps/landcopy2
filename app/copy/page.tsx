@@ -351,7 +351,7 @@ export default function Copy() {
             <span className="text-xl">💡</span>
           </div>
           <div className="flex-1">
-            <div className="text-white text-[15px] font-black tracking-wide">FÁBRICA DE IDEAS</div>
+            <div className="text-white text-[26px] font-black tracking-wide">FÁBRICA DE IDEAS</div>
             <div className="text-yellow-400 text-[10px] mt-0.5">Explora, genera y lleva tus mejores ideas a donde quieras · Campaña · Anuncios · Landing · Redes</div>
           </div>
           <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-bold px-3 py-1.5 rounded-full flex-shrink-0">● LABORATORIO LIBRE</div>
