@@ -197,12 +197,12 @@ export default function Campaigns() {
     <div className="min-h-screen bg-[#050505] text-white">
       <style>{`@keyframes latidoCampana { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }`}</style>
  
-      {/* Header */}
+      {/* Header — apilado y centrado en móvil, en fila en desktop */}
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
-        <div className="flex items-center mb-0">
-          <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
-            <div className="w-[72px] h-[72px] rounded-full bg-[#0d1a00] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
-              <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <div className="flex flex-col md:flex-row items-center mb-0">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0d1a00] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="md:w-[38px] md:h-[38px]">
                 <rect x="4" y="6" width="24" height="18" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
                 <rect x="4" y="6" width="24" height="5" rx="2" fill="white" fillOpacity="0.4"/>
                 <circle cx="8" cy="8.5" r="1" fill="white"/>
@@ -211,16 +211,16 @@ export default function Campaigns() {
             </div>
             <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase">Campañas</p>
           </div>
-          <div className="flex-1 text-center px-5">
+          <div className="flex-1 text-center md:px-5">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               CAMPAIGN ENGINE · DATOS UNA SOLA VEZ
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Crea una campaña y <span style={{color:"#22c55e"}}>conecta</span> todos los módulos
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · fotos · precios · la IA identifica todo automáticamente</p>
+            <p className="text-yellow-400 text-[11px] px-2">Producto · fotos · precios · la IA identifica todo automáticamente</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"160px"}}></div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"160px"}}></div>
         </div>
       </div>
  
@@ -233,11 +233,11 @@ export default function Campaigns() {
             <input
               value={busqueda}
               onChange={e => { setBusqueda(e.target.value); if (e.target.value.trim()) setShowArchivo(true); }}
-              placeholder="Escribe el nombre de un producto para buscar tus campañas..."
-              className="flex-1 bg-transparent text-black text-sm outline-none placeholder-[#888]"
+              placeholder="Escribe el nombre de un producto..."
+              className="flex-1 bg-transparent text-black text-sm outline-none placeholder-[#888] min-w-0"
             />
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button onClick={abrirNueva} className={`flex-1 font-bold py-3 rounded-xl text-sm transition-colors ${showForm ? "bg-orange-500 text-white" : "bg-transparent border border-[#333] text-[#f0ead6] hover:border-orange-500/50"}`}>
               ➕ Nueva campaña
             </button>
@@ -249,14 +249,14 @@ export default function Campaigns() {
  
         {/* FORMULARIO NUEVA CAMPAÑA */}
         {showForm && (
-          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-8">
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-8">
             <p className="text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-4">Nueva campaña</p>
  
             <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fotos del producto (hasta 3)</p>
-            <div className="flex gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
               {[1,2,3].map(slot => (
                 <div key={slot} className="relative">
-                  <label className={`flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
+                  <label className={`flex flex-col items-center justify-center w-full h-[110px] md:h-[160px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${slot === 1 ? "border-orange-500/50 hover:border-orange-500" : "border-[#222] hover:border-[#444]"}`}>
                     {(slot === 1 ? imagen1 : slot === 2 ? imagen2 : imagen3) ? (
                       <div className="relative w-full h-full">
                         <img src={slot === 1 ? imagen1! : slot === 2 ? imagen2! : imagen3!} className="w-full h-full object-contain rounded-xl" />
@@ -265,21 +265,21 @@ export default function Campaigns() {
                     ) : (
                       <>
                         <span className="text-2xl mb-1">📷</span>
-                        <span className="text-[9px] text-zinc-500">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
+                        <span className="text-[9px] text-zinc-500 text-center px-1">{slot === 1 ? "Principal *" : `Combo ${slot}`}</span>
                       </>
                     )}
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleImagen(e, slot as 1|2|3)} />
                   </label>
                   {slot === 1 && imagen1 && (
-                    <button onClick={identificarProducto} disabled={identifying} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white text-[10px] font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform">
-                      {identifying ? "⏳ Identificando..." : "🔍 Identificar producto"}
+                    <button onClick={identificarProducto} disabled={identifying} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white text-[9px] md:text-[10px] font-bold px-2 py-2 rounded-lg active:scale-95 transition-transform">
+                      {identifying ? "⏳..." : "🔍 Identificar"}
                     </button>
                   )}
                 </div>
               ))}
             </div>
  
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Nombre de la campaña *</label>
                 <input value={nombre} onChange={e => setNombre(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: Poncho Impermeable Colombia" />
@@ -334,9 +334,9 @@ export default function Campaigns() {
         {/* CAMPAÑA ACTIVA EN EL CENTRO */}
         {!showForm && activa && (
           <div className="max-w-2xl mx-auto mb-8">
-            <div className="bg-[#0d1a0a] border border-[#22c55e66] rounded-2xl p-6">
+            <div className="bg-[#0d1a0a] border border-[#22c55e66] rounded-2xl p-4 md:p-6">
               <p className="text-green-400 text-[10px] font-bold tracking-widest uppercase mb-4 text-center">● Campaña activa</p>
-              <div className="flex items-center gap-5">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left">
                 <div className="flex gap-2 flex-shrink-0">
                   {activa.imagen_url ? (
                     <img src={activa.imagen_url} className="w-24 h-24 object-contain rounded-xl bg-[#111]" />
@@ -347,8 +347,8 @@ export default function Campaigns() {
                   {activa.imagen_url_3 && <img src={activa.imagen_url_3} className="w-12 h-12 object-contain rounded-lg bg-[#111]" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-white text-2xl font-black truncate">{activa.nombre}</p>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                    <p className="text-white text-xl md:text-2xl font-black truncate">{activa.nombre}</p>
                     {activa.es_combo && <span className="bg-orange-500/20 text-orange-400 text-[8px] font-bold px-2 py-0.5 rounded-full border border-orange-500/30 flex-shrink-0">COMBO</span>}
                   </div>
                   {activa.beneficio && <p className="text-yellow-400 text-[12px] leading-snug">✓ {activa.beneficio}</p>}
@@ -357,7 +357,7 @@ export default function Campaigns() {
                 </div>
               </div>
  
-              <div className="grid grid-cols-4 gap-2 mt-5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5">
                 <button onClick={() => irAModulo("/copy")} className="py-2.5 text-[11px] font-bold text-orange-500 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-colors">→ Copy</button>
                 <button onClick={() => irAModulo("/redes")} className="py-2.5 text-[11px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/30 rounded-lg hover:bg-purple-500/20 transition-colors">→ Redes</button>
                 <button onClick={() => irAModulo("/anuncios")} className="py-2.5 text-[11px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors">→ Anuncios</button>
@@ -376,7 +376,7 @@ export default function Campaigns() {
           <div className="text-center py-16">
             <div className="text-5xl mb-4" style={{ animation: "latidoCampana 2s ease-in-out infinite" }}>💛</div>
             <p className="text-white font-black text-2xl mb-2">Aquí empieza todo</p>
-            <p className="text-yellow-400 text-sm max-w-md mx-auto leading-relaxed">La campaña es el corazón de LandCopy. Crea una nueva o busca una que ya hiciste arriba.</p>
+            <p className="text-yellow-400 text-sm max-w-md mx-auto leading-relaxed px-4">La campaña es el corazón de LandCopy. Crea una nueva o busca una que ya hiciste arriba.</p>
           </div>
         )}
  
