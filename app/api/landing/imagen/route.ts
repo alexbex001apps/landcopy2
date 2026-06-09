@@ -80,7 +80,8 @@ export async function POST(req: NextRequest) {
     const fondoSeleccionado = FONDOS_DISPONIBLES.find(f => f.id === fondoId);
     const fondo = fondoSeleccionado?.prompt || null;
 
-    
+    let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, fondo });
+    if (soloTitulos) prompt += ` CRITICAL TEXT RULE: Include ONLY short bold TITLES/headlines on the image. Absolutely NO paragraphs, NO descriptive sentences, NO body text under the titles. Keep text minimal — just a few large impactful words. Clean visual with lots of empty space.`;
 
     let imageUrl = "";
 
