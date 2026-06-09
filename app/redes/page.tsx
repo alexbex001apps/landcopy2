@@ -173,35 +173,70 @@ export default function Redes() {
  
   async function generarIdeas(soloUna?: string) {
     if (!producto) return;
-    setLoading(true);
-    if (!soloUna) {
-      setPaso(3);
-      setIdeas([]);
-    }
- 
-    try {
-      const res = await fetch("/api/redes/generar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          producto, imagen, precioOferta, precioAnterior,
-          beneficio, problema, pais, tono, destino,
-          formatoIg, tipo, textoEncima,
-          promptCustom: modoAvanzado ? promptCustom : "",
-          soloUna,
-        }),
-      });
-      const data = await res.json();
-      if (soloUna) {
+
+    // Caso "regenerar una sola" — se mantiene igual que antes
+    if (soloUna) {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/redes/generar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            producto, imagen, precioOferta, precioAnterior,
+            beneficio, problema, pais, tono, destino,
+            formatoIg, tipo, textoEncima,
+            promptCustom: modoAvanzado ? promptCustom : "",
+            soloUna,
+          }),
+        });
+        const data = await res.json();
         setIdeas(prev => prev.map(i => i.id === soloUna ? { ...data.idea, id: soloUna, favorita: i.favorita } : i));
-      } else {
-        setIdeas(data.ideas || []);
-        generarTextos();
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
+      setLoading(false);
+      return;
     }
+
+    // Generación NUEVA — las 4 una por una, apareciendo de a una (como Landing)
+    setPaso(3);
+    setLoading(true);
+    sessionStorage.setItem("redes_generando", "1");
+
+    // 1) Pintar las 4 cajas vacías de una vez (con su spinner)
+    const base: Idea[] = [0, 1, 2, 3].map(v => ({
+      id: `idea-${v}`,
+      desc: "Generando...",
+      modo: "auto" as const,
+      imageUrl: "",
+      favorita: false,
+    }));
+    setIdeas(base);
+
+    // 2) Pedirlas una por una y llenar cada caja apenas llega
+    for (let v = 0; v < 4; v++) {
+      try {
+        const res = await fetch("/api/redes/generar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            producto, imagen, precioOferta, precioAnterior,
+            beneficio, problema, pais, tono, destino,
+            formatoIg, tipo, textoEncima,
+            promptCustom: v === 0 && modoAvanzado ? promptCustom : "",
+            soloUna: `idea-${v}`,
+          }),
+        });
+        const data = await res.json();
+        setIdeas(prev => prev.map(i => i.id === `idea-${v}` ? { ...data.idea, id: `idea-${v}`, favorita: i.favorita } : i));
+      } catch (err) {
+        console.error(`Error en idea-${v}:`, err);
+      }
+    }
+
+    sessionStorage.removeItem("redes_generando");
     setLoading(false);
+    generarTextos();
   }
  
   async function mejorarIdea(id: string) {
