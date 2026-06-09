@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type EspId = "josue" | "caleb" | "nehemias";
 type Mensaje = { de: "user" | EspId; texto: string };
@@ -104,6 +104,7 @@ export default function JosueChat() {
   const [campana, setCampana] = useState<any>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -242,6 +243,14 @@ export default function JosueChat() {
               );
             })}
           </div>
+
+          {/* Botón Abrir Mastermind */}
+          <button
+            onClick={() => { setAbierto(false); router.push("/mastermind"); }}
+            style={{ margin: "8px 12px", padding: "10px 12px", background: "rgba(255,80,0,0.12)", border: "1px solid #ff5000", borderRadius: "10px", color: "#ff5000", fontSize: "12px", fontWeight: 700, fontFamily: "sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+          >
+            🔥 Abrir Mastermind <span style={{ marginLeft: "auto" }}>→</span>
+          </button>
 
           {/* Chip campaña activa */}
           <div style={{ padding: "6px 12px", background: campana ? "#081308" : "#130d08", borderBottom: campana ? "1px solid #14301a" : "1px solid #2a1d0d", display: "flex", alignItems: "center", gap: "6px" }}>
