@@ -171,39 +171,44 @@ export default function Redes() {
     setIdeas(prev => prev.map(i => i.id === id ? { ...i, favorita: !i.favorita } : i));
   }
  
+ // Genera UNA imagen sola, la guarda apenas llega y limpia su bandera (patrón Landing)
+  async function generarUna(v: number) {
+    try {
+      const res = await fetch("/api/redes/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producto, imagen, precioOferta, precioAnterior,
+          beneficio, problema, pais, tono, destino,
+          formatoIg, tipo, textoEncima,
+          promptCustom: v === 0 && modoAvanzado ? promptCustom : "",
+          soloUna: `idea-${v}`,
+        }),
+      });
+      const data = await res.json();
+      setIdeas(prev => prev.map(i => i.id === `idea-${v}` ? { ...data.idea, id: `idea-${v}`, favorita: i.favorita } : i));
+    } catch (err) {
+      console.error(`Error en idea-${v}:`, err);
+    }
+  }
+
   async function generarIdeas(soloUna?: string) {
     if (!producto) return;
 
-    // Caso "regenerar una sola" — se mantiene igual que antes
+    // Caso "regenerar una sola" — mantiene comportamiento previo
     if (soloUna) {
       setLoading(true);
-      try {
-        const res = await fetch("/api/redes/generar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            producto, imagen, precioOferta, precioAnterior,
-            beneficio, problema, pais, tono, destino,
-            formatoIg, tipo, textoEncima,
-            promptCustom: modoAvanzado ? promptCustom : "",
-            soloUna,
-          }),
-        });
-        const data = await res.json();
-        setIdeas(prev => prev.map(i => i.id === soloUna ? { ...data.idea, id: soloUna, favorita: i.favorita } : i));
-      } catch (err) {
-        console.error(err);
-      }
+      const v = parseInt(soloUna.replace("idea-", ""), 10);
+      await generarUna(isNaN(v) ? 0 : v);
       setLoading(false);
       return;
     }
 
-    // Generación NUEVA — las 4 una por una, apareciendo de a una (como Landing)
+    // Generación NUEVA — las 4 EN PARALELO (como Landing), cada una aparece al llegar
     setPaso(3);
     setLoading(true);
-    sessionStorage.setItem("redes_generando", "1");
 
-    // 1) Pintar las 4 cajas vacías de una vez (con su spinner)
+    // 1) Pintar las 4 cajas vacías con su spinner
     const base: Idea[] = [0, 1, 2, 3].map(v => ({
       id: `idea-${v}`,
       desc: "Generando...",
@@ -213,28 +218,9 @@ export default function Redes() {
     }));
     setIdeas(base);
 
-    // 2) Pedirlas una por una y llenar cada caja apenas llega
-    for (let v = 0; v < 4; v++) {
-      try {
-        const res = await fetch("/api/redes/generar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            producto, imagen, precioOferta, precioAnterior,
-            beneficio, problema, pais, tono, destino,
-            formatoIg, tipo, textoEncima,
-            promptCustom: v === 0 && modoAvanzado ? promptCustom : "",
-            soloUna: `idea-${v}`,
-          }),
-        });
-        const data = await res.json();
-        setIdeas(prev => prev.map(i => i.id === `idea-${v}` ? { ...data.idea, id: `idea-${v}`, favorita: i.favorita } : i));
-      } catch (err) {
-        console.error(`Error en idea-${v}:`, err);
-      }
-    }
+    // 2) Lanzar las 4 al mismo tiempo (sin esperar en fila)
+    await Promise.all([0, 1, 2, 3].map(v => generarUna(v)));
 
-    sessionStorage.removeItem("redes_generando");
     setLoading(false);
     generarTextos();
   }
