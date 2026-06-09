@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
 import SinCampana from "@/components/SinCampana";
-
-
+ 
+ 
 interface Campaign {
   id: string;
   nombre: string;
@@ -21,7 +21,7 @@ interface Campaign {
   imagen_url_3: string | null;
   es_combo: boolean;
 }
-
+ 
 const SECCIONES_INDIVIDUAL = [
   { id: "hero", nombre: "Hero", sub: "Titular + foto + CTA" },
   { id: "problema", nombre: "El problema", sub: "Dolor amplificado" },
@@ -32,7 +32,7 @@ const SECCIONES_INDIVIDUAL = [
   { id: "oferta", nombre: "Oferta", sub: "Precio + urgencia" },
   { id: "cta_final", nombre: "CTA final", sub: "Cierre de venta" },
 ];
-
+ 
 const SECCIONES_COMBO = [
   { id: "hero", nombre: "Hero", sub: "3 fotos + titular" },
   { id: "problema", nombre: "El problema", sub: "Dolor amplificado" },
@@ -44,7 +44,47 @@ const SECCIONES_COMBO = [
   { id: "oferta", nombre: "Oferta combo", sub: "Precio del kit" },
   { id: "cta_final", nombre: "CTA final", sub: "Cierre de venta" },
 ];
-
+ 
+// Comprime una imagen (data:base64) a JPG liviano (~100-150KB) en el navegador.
+// JPG funciona en TODOS los navegadores. Si algo falla, devuelve la imagen original sin romper.
+function comprimirJPG(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    try {
+      if (!dataUrl || !dataUrl.startsWith("data:")) { resolve(dataUrl); return; }
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { resolve(dataUrl); return; }
+          // Fondo blanco (JPG no tiene transparencia)
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          let calidad = 0.72;
+          let out = canvas.toDataURL("image/jpeg", calidad);
+          // baja calidad hasta acercarse a ~110KB (base64 abulta ~37%), sin pasar de 0.4
+          while (out.length > 110 * 1024 * 1.37 && calidad > 0.4) {
+            calidad -= 0.1;
+            out = canvas.toDataURL("image/jpeg", calidad);
+          }
+          // si por lo que sea salió vacío o raro, usa la original
+          if (!out || out.length < 1000) { resolve(dataUrl); return; }
+          resolve(out);
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    } catch {
+      resolve(dataUrl);
+    }
+  });
+}
+ 
 export default function Landing() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [sinCampaña, setSinCampaña] = useState(false);
@@ -74,9 +114,9 @@ export default function Landing() {
   const [fImagen2, setFImagen2] = useState<string | null>(null);
   const [fImagen3, setFImagen3] = useState<string | null>(null);
   const [fIdentificando, setFIdentificando] = useState(false);
-
+ 
   const supabase = createClient();
-
+ 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = "/login";
@@ -108,27 +148,27 @@ export default function Landing() {
       }
     }
   }, []);
-
+ 
   const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
-
+ 
   const toggleSeccion = (id: string) => {
     setSeccionesSeleccionadas(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
-
+ 
   const toggleSeccionParaImagen = (id: string) => {
     setSeccionesParaImagen(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
-
+ 
   const generarImagenesSeleccionadas = () => {
     const lista = [...seccionesParaImagen];
     setSeccionesParaImagen([]);
     lista.forEach(id => { generarImagen(id); });
   };
-
+ 
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2 | 3) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -141,7 +181,7 @@ export default function Landing() {
     };
     reader.readAsDataURL(file);
   };
-
+ 
   const identificarProducto = async () => {
     if (!fImagen1) return;
     setFIdentificando(true);
@@ -159,7 +199,7 @@ export default function Landing() {
     } catch {}
     setFIdentificando(false);
   };
-
+ 
   const datosActivos = campaign ? {
     producto: campaign.producto,
     problema: campaign.problema,
@@ -187,7 +227,7 @@ export default function Landing() {
     imagen_url_3: fImagen3,
     es_combo: !!(fImagen2 || fImagen3),
   };
-
+ 
   const generarLanding = async () => {
     setGenerando(true);
     setPaso(2);
@@ -211,7 +251,7 @@ export default function Landing() {
     setGenerando(false);
     setPaso(3);
   };
-
+ 
   const marcarGenerando = (seccionId: string) => {
     try {
       const raw = sessionStorage.getItem("landing_generando");
@@ -222,7 +262,7 @@ export default function Landing() {
       sessionStorage.setItem("landing_generando", JSON.stringify(lista));
     } catch {}
   };
-
+ 
   const desmarcarGenerando = (seccionId: string) => {
     try {
       const raw = sessionStorage.getItem("landing_generando");
@@ -234,7 +274,7 @@ export default function Landing() {
       else sessionStorage.removeItem("landing_generando");
     } catch {}
   };
-
+ 
   const generarImagen = async (seccionId: string, soloTitulos = false) => {
     setImagenGenerando(prev => prev.includes(seccionId) ? prev : [...prev, seccionId]);
     marcarGenerando(seccionId);
@@ -248,14 +288,16 @@ export default function Landing() {
       if (data.imageUrl) {
         let urlFinal = data.imageUrl;
         if (data.imageUrl.startsWith("data:")) {
+          // Comprimir a JPG liviano antes de subir (carga rápida en móvil)
+          const comprimida = await comprimirJPG(data.imageUrl);
           try {
             const { data: { user } } = await supabase.auth.getUser();
-            const blob = await fetch(data.imageUrl).then(r => r.blob());
-            const path = `${user?.id}/${Date.now()}_${seccionId}.png`;
-            await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
+            const blob = await fetch(comprimida).then(r => r.blob());
+            const path = `${user?.id}/${Date.now()}_${seccionId}.jpg`;
+            await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/jpeg" });
             const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
             urlFinal = urlData.publicUrl;
-          } catch { urlFinal = data.imageUrl; }
+          } catch { urlFinal = comprimida; }
         }
         try {
           const guardadas = JSON.parse(sessionStorage.getItem("landing_imagenes") || "{}");
@@ -268,12 +310,12 @@ export default function Landing() {
     desmarcarGenerando(seccionId);
     setImagenGenerando(prev => prev.filter(x => x !== seccionId));
   };
-
+ 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
-
+ 
   const guardarSeccionEnBiblioteca = async (seccionId: string) => {
     const imagenBase64 = imagenes[seccionId];
     const textoSeccion = contenido[seccionId];
@@ -312,7 +354,7 @@ export default function Landing() {
     sessionStorage.removeItem("biblioteca_items");
     showToast(`✓ ${seccionNombre} guardada en Biblioteca`);
   };
-
+ 
   const guardarEnBiblioteca = async () => {
     const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
     if (seccionesConContenido.length === 0) return;
@@ -344,13 +386,13 @@ export default function Landing() {
     sessionStorage.removeItem("biblioteca_items");
     showToast("✓ Landing guardada en Biblioteca");
   };
-
+ 
   useEffect(() => {
     if (Object.keys(imagenes).length > 0) {
       sessionStorage.setItem("landing_imagenes", JSON.stringify(imagenes));
     }
   }, [imagenes]);
-
+ 
   useEffect(() => {
     if (Object.keys(contenido).length > 0) {
       sessionStorage.setItem("landing_contenido", JSON.stringify(contenido));
@@ -369,17 +411,17 @@ export default function Landing() {
     } catch {}
     setSeccionGenerando(null);
   };
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } } @keyframes shimmerBtn { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-
+ 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
           {toast}
         </div>
       )}
-
+ 
       <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
         <div className="flex items-center mb-0">
           <div className="flex items-center gap-2 flex-shrink-0" style={{width:"160px"}}>
@@ -411,7 +453,7 @@ export default function Landing() {
           <div className="flex-shrink-0" style={{width:"160px"}}></div>
         </div>
       </div>
-
+ 
       <div className="flex bg-[#1a1a1a] border-t border-b border-[#2a2a2a] mt-4">
         {[
           { n: 1, label: "Paso 1 — Tu producto", sub: "Datos o campaña" },
@@ -430,13 +472,13 @@ export default function Landing() {
           </div>
         ))}
       </div>
-
+ 
       <div className="max-w-[1400px] mx-auto px-4 pb-12 mt-6">
-
+ 
        {paso === 1 && !campaign && !sinCampaña && (
           <SinCampana />
         )}
-
+ 
         {paso === 1 && campaign && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0d1a0a] border border-[#22c55e30] rounded-xl p-4 flex items-center gap-3 mb-6">
@@ -460,7 +502,7 @@ export default function Landing() {
                 <button onClick={() => { sessionStorage.removeItem("campaign_activa"); sessionStorage.removeItem("landing_contenido"); sessionStorage.removeItem("landing_imagenes"); sessionStorage.removeItem("landing_generando"); window.location.reload(); }} className="text-[9px] text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:border-red-500">✕ Quitar campaña</button>
               </div>
             </div>
-
+ 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
               <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Selecciona las secciones a generar</p>
               <div className="grid grid-cols-2 gap-2 mb-4">
@@ -482,7 +524,7 @@ export default function Landing() {
             </div>
           </div>
         )}
-
+ 
         {paso === 1 && sinCampaña && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6 mb-6">
@@ -552,7 +594,7 @@ export default function Landing() {
             </div>
           </div>
         )}
-
+ 
         {paso === 2 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-6">
@@ -575,7 +617,7 @@ export default function Landing() {
             </div>
           </div>
         )}
-
+ 
         {paso === 3 && (
           <div className="grid grid-cols-[220px_1fr_200px] gap-4">
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
@@ -609,7 +651,7 @@ export default function Landing() {
                 <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
               </div>
             </div>
-
+ 
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl overflow-hidden">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-[#1a1a1a]">
                 <div className="flex gap-1">
@@ -650,7 +692,7 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-
+ 
             <div className="space-y-3">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">{secciones.find(s => s.id === seccionActiva)?.nombre}</p>
@@ -674,7 +716,7 @@ export default function Landing() {
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
-
+ 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo de imagen</p>
                 <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
@@ -705,7 +747,7 @@ export default function Landing() {
                   </div>
                 )}
               </div>
-
+ 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
                 <div className="space-y-1.5">
