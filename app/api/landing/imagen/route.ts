@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 
 export const FONDOS_DISPONIBLES = [
   { id: "negro_fuego", nombre: "Negro dramático", categoria: "Universal", color: "#1a0500", prompt: "Dark dramatic black background with orange fire particles, smoke and cinematic lighting." },
@@ -128,6 +129,24 @@ export async function POST(req: NextRequest) {
       if (!resp.ok) throw new Error(data.error?.message || "Error generando imagen");
       const b64 = data.data?.[0]?.b64_json;
       imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
+    }
+
+    // Comprimir a WebP ~100 KB para carga rápida en móvil (90% de las ventas)
+    if (imageUrl.startsWith("data:")) {
+      try {
+        const inputBuffer = Buffer.from(imageUrl.split(",")[1], "base64");
+        let calidad = 80;
+        let webpBuffer = await sharp(inputBuffer).webp({ quality: calidad }).toBuffer();
+        // Si pesa más de 100 KB, baja calidad hasta acercarse
+        while (webpBuffer.length > 100 * 1024 && calidad > 40) {
+          calidad -= 10;
+          webpBuffer = await sharp(inputBuffer).webp({ quality: calidad }).toBuffer();
+        }
+        imageUrl = `data:image/webp;base64,${webpBuffer.toString("base64")}`;
+      } catch (e) {
+        console.error("Error comprimiendo a WebP:", e);
+        // Si falla la compresión, devuelve la imagen original sin romper
+      }
     }
 
     return NextResponse.json({ imageUrl, seccion });
