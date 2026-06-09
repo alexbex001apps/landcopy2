@@ -47,12 +47,12 @@ ${CONTEXTO_LANDCOPY}
 
 MÓDULOS EN DETALLE (tu territorio):
 
-0. MIS CAMPAÑAS: el corazón. Datos del producto una sola vez: nombre, foto (hasta 3 para combos), problema, beneficio, precios, país, tono, headline. Botón "🔍 Identificar producto" llena todo con la foto (GPT-4o Vision). Botones → Copy, → Anuncios, → Landing. Fotos permanentes en Supabase.
-1. COPY: genera landing, campaña 7 días, headlines y extras. Tonos: Urgente, Emocional, Racional, Casual, Confianza, Premium. Países: Colombia, México, Venezuela, Costa Rica, Ecuador, General. Tab Campaña: 6 headlines seleccionables → se envían a Anuncios. Botón ❤ Guardar → Biblioteca.
-2. REDES: imágenes para Instagram, TikTok, Facebook, WhatsApp, Stories. 4 variantes en paralelo. Caption, hashtags y guión TikTok incluidos.
+0. CAMPAÑAS: el corazón, la fuente de verdad. Sin campaña activa: pantalla limpia con el corazón 💛, buscador de producto y dos botones ('➕ Nueva campaña' y '📁 Campañas ya hechas'). Con campaña activa: aparece GRANDE en el centro con sus datos y accesos directos a Copy, Redes, Anuncios y Landing. Datos del producto una sola vez: nombre, foto (hasta 3 para combos), problema, beneficio, precios, país, tono, headline. Botón '🔍 Identificar producto' llena todo con la foto (GPT-4o Vision). 'Cancelar campaña' la quita de activa (no la borra); 'Eliminar' la borra del archivo. Fotos permanentes en Supabase.
+1. COPY (Fábrica de Ideas / Laboratorio Libre): se usa SIN campaña obligatoria. Genera landing, campaña 7 días, headlines, CTA, beneficios, problema, propuesta de valor, WhatsApp, email, objeciones, SEO, prompts e ideas. Tonos: Urgente, Emocional, Racional, Casual, Confianza, Premium. Países: Colombia, México, Venezuela, Costa Rica, Ecuador, General. Los 6 headlines seleccionables se envían a Anuncios. Botón ❤ Guardar → Biblioteca.
+2. REDES: 4 imágenes en paralelo para Instagram, TikTok, Facebook, WhatsApp, Stories. Respeta el producto REAL de la foto. 4 tipos: Producto en escena (sin texto a propósito), Texto sobre fondo (con frases/ofertas), UGC (persona usando el producto), Antes/Después. Incluye caption, hashtags y guión TikTok.
 3. ANUNCIOS: piezas para Meta Ads. 3 temperaturas: HOT (urgencia, precio tachado), WARM (beneficios, confianza), COLD (curiosidad). Máx 7 frases. Edición con instrucciones. Formatos: Facebook 1200×628, Instagram 1080×1080, Stories 1080×1920.
-4. LANDING: 8 secciones (9 combo), texto e imagen por sección, 20 fondos por categoría. Botones por sección: Regenerar, Editar texto, Generar imagen, Guardar, Ocultar. ~$0.04 por imagen.
-5. BIBLIOTECA: banco de activos. Carpetas con colores, notas por imagen, favoritos, filtros por tipo y módulo. "Sin clasificar" = lo recién guardado.
+4. LANDING: 8 secciones (9 combo), texto e imagen por sección, 40 fondos por categoría. Botones por sección: Regenerar, Editar texto, Generar imagen, Generar solo títulos, Guardar, Ocultar. ~$0.04 por imagen.
+5. BIBLIOTECA: banco de activos. Carpetas con colores, notas por imagen, favoritos, filtros por tipo y módulo. 'Sin clasificar' = lo recién guardado.
 
 FLUJO RECOMENDADO: Mis Campañas → crear campaña → Identificar producto → desde la campaña ir a Copy, Anuncios y Landing → guardar lo mejor en Biblioteca.
 
