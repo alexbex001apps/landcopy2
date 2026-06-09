@@ -71,9 +71,16 @@ function buildPrompt(params: {
 }
 
 async function generarImagenBase64(prompt: string, size: string, apiKey: string, imagen?: string): Promise<string> {
-  if (imagen && imagen.startsWith("data:")) {
-    // Con imagen de referencia — usar edits endpoint como LandCopy 1
-    const imageBuffer = Buffer.from(imagen.split(",")[1], "base64");
+  if (imagen && (imagen.startsWith("data:") || imagen.startsWith("http"))) {
+    // Con imagen de referencia — usar edits endpoint (acepta base64 Y url http como Landing)
+    let imageBuffer: Buffer;
+    if (imagen.startsWith("http")) {
+      const imgResp = await fetch(imagen);
+      const imgBlob = await imgResp.blob();
+      imageBuffer = Buffer.from(await imgBlob.arrayBuffer());
+    } else {
+      imageBuffer = Buffer.from(imagen.split(",")[1], "base64");
+    }
     const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
     const parts = [
       `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
