@@ -119,8 +119,26 @@ export default function Redes() {
       setTono(c.tono || "Urgente");
       setHayCampana(true);
     }
+    try {
+      const guardado = sessionStorage.getItem("redes_estado");
+      if (guardado) {
+        const s = JSON.parse(guardado);
+        if (s.ideas) setIdeas(s.ideas);
+        if (s.textos) setTextos(s.textos);
+        if (s.tipo) setTipo(s.tipo);
+        if (s.destino) setDestino(s.destino);
+        if (s.tabTexto) setTabTexto(s.tabTexto);
+        if (s.paso) setPaso(s.paso);
+      }
+    } catch {}
   }, []);
  
+  useEffect(() => {
+    try {
+      const estado = { ideas, textos, tipo, destino, tabTexto, paso };
+      sessionStorage.setItem("redes_estado", JSON.stringify(estado));
+    } catch {}
+  }, [ideas, textos, tipo, destino, tabTexto, paso]);
   function handleImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
