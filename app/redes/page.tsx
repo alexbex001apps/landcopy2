@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
- 
+import SinCampana from "@/components/SinCampana"; 
 const PAISES = [
   { nombre: "Colombia", flag: "🇨🇴" },
   { nombre: "México", flag: "🇲🇽" },
@@ -69,7 +69,7 @@ export default function Redes() {
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [desdeCopy, setDesdeCopy] = useState(false);
- 
+  const [hayCampana, setHayCampana] = useState(false);
   const [destino, setDestino] = useState("instagram");
   const [formatoIg, setFormatoIg] = useState("feed45");
   const [tipo, setTipo] = useState("escena");
@@ -102,7 +102,22 @@ export default function Redes() {
       setPais(d.pais || "Colombia");
       setTono(d.tono || "Urgente");
       setDesdeCopy(true);
+      setHayCampana(true);
       sessionStorage.removeItem("redes_producto");
+      return;
+    }
+    const camp = sessionStorage.getItem("campaign_activa");
+    if (camp) {
+      const c = JSON.parse(camp);
+      setProducto(c.producto || "");
+      setImagen(c.imagen_url || null);
+      setPrecioOferta(c.precio_oferta || "");
+      setPrecioAnterior(c.precio_anterior || "");
+      setBeneficio(c.beneficio || "");
+      setProblema(c.problema || "");
+      setPais(c.pais || "Colombia");
+      setTono(c.tono || "Urgente");
+      setHayCampana(true);
     }
   }, []);
  
@@ -352,7 +367,9 @@ export default function Redes() {
         ))}
       </div>
  
-      <div className="max-w-[1400px] mx-auto px-6 pb-20"><div className="grid grid-cols-[380px_1fr] gap-6 mt-4">
+      <div className="max-w-[1400px] mx-auto px-6 pb-20">
+      {!hayCampana ? <SinCampana /> : (
+      <div className="grid grid-cols-[380px_1fr] gap-6 mt-4">
  
         {/* Panel izquierdo */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
@@ -690,7 +707,7 @@ export default function Redes() {
             </>
           )}
         </div>
-      </div></div>
+      </div>)}</div>
     </div>
   );
 }
