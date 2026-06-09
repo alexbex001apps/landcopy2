@@ -323,12 +323,12 @@ export default function Copy() {
  
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-6">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-6">
  
-        <div className="flex items-center mb-6">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-[72px] h-[72px] rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center">
-              <svg width="42" height="42" viewBox="0 0 32 32" fill="none"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        <div className="flex flex-col md:flex-row items-center mb-6">
+          <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center">
+              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" className="md:w-[42px] md:h-[42px]"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
             </div>
             <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Copy</p>
           </div>
@@ -336,29 +336,29 @@ export default function Copy() {
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
               IA GENERATIVA · COPY PROFESIONAL
             </div>
-            <h1 className="text-xl font-black text-white mb-1">
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
               Crea copy que <span className="text-orange-500">vende</span>,{" "}
               <span className="text-cyan-400">conecta</span> y{" "}
               <span className="text-green-400">convierte</span>
             </h1>
-            <p className="text-yellow-400 text-[11px]">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
+            <p className="text-yellow-400 text-[11px] px-2">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
           </div>
-          <div className="flex-shrink-0" style={{width:"99px"}}></div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
         </div>
  
        <style>{`@keyframes pulsoFabrica { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }`}</style>
-       <div className="flex items-center gap-3 bg-gradient-to-r from-[#1a0a00] to-[#0d0d0d] border-t border-b border-[#2a2a2a] -mx-6 mb-6 px-6 py-3">
+       <div className="flex items-center gap-3 bg-gradient-to-r from-[#1a0a00] to-[#0d0d0d] border-t border-b border-[#2a2a2a] -mx-4 md:-mx-6 mb-6 px-4 md:px-6 py-3">
           <div className="w-10 h-10 rounded-full bg-[#1a1400] border border-[#3a3000] flex items-center justify-center flex-shrink-0">
             <span className="text-xl">💡</span>
           </div>
-          <div className="flex-1">
-            <div className="text-white text-[26px] font-black tracking-wide">FÁBRICA DE IDEAS</div>
-           <div className="text-yellow-400 text-[14px] mt-2">Explora, genera y lleva tus mejores ideas a donde quieras · <span style={{ animation: "pulsoFabrica 2s ease-in-out infinite" }}><span className="text-orange-400 font-bold">Campaña</span> · <span className="text-red-400 font-bold">Anuncios</span> · <span className="text-green-400 font-bold">Landing</span> · <span className="text-purple-400 font-bold">Redes</span></span></div>
+          <div className="flex-1 min-w-0">
+            <div className="text-white text-[18px] md:text-[26px] font-black tracking-wide">FÁBRICA DE IDEAS</div>
+           <div className="text-yellow-400 text-[11px] md:text-[14px] mt-1 md:mt-2">Explora, genera y lleva tus mejores ideas a donde quieras · <span style={{ animation: "pulsoFabrica 2s ease-in-out infinite" }}><span className="text-orange-400 font-bold">Campaña</span> · <span className="text-red-400 font-bold">Anuncios</span> · <span className="text-green-400 font-bold">Landing</span> · <span className="text-purple-400 font-bold">Redes</span></span></div>
           </div>
-          <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-bold px-3 py-1.5 rounded-full flex-shrink-0">● LABORATORIO LIBRE</div>
+          <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-bold px-3 py-1.5 rounded-full flex-shrink-0 hidden sm:block">● LABORATORIO LIBRE</div>
         </div>
  
-        <div className="grid grid-cols-[380px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
  
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-[#151515]">
@@ -431,7 +431,7 @@ export default function Copy() {
             <div className="mb-3">
               <label className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1.5 block">Analizar competidor</label>
               <div className="flex gap-2">
-                <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
+                <input value={competidor} onChange={e => setCompetidor(e.target.value)} placeholder="https://competidor.com/producto" className="flex-1 min-w-0 bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-lg px-3 py-2 text-xs h-[34px] outline-none placeholder-[#999]" />
                 <button onClick={analizarCompetidor} disabled={!competidor || analizando} className="bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 rounded-lg px-3 text-xs font-bold whitespace-nowrap disabled:opacity-40">{analizando ? "Analizando..." : "Analizar"}</button>
               </div>
               <p className="text-green-400 text-[10px] mt-1 font-medium">La IA lee su copy y genera uno que lo supera punto por punto</p>
@@ -579,7 +579,7 @@ export default function Copy() {
             </button>
           </div>
  
-          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-5">
  
             {toastGuardado && (
               <div className="fixed bottom-6 right-6 bg-green-500 text-white text-sm font-bold px-4 py-3 rounded-xl shadow-lg z-50">
@@ -588,7 +588,7 @@ export default function Copy() {
             )}
  
             {resultado && (
-              <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
+              <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="text-orange-500 text-lg">⚡</span>
                   <div className="text-xs text-zinc-400 leading-5">
@@ -604,7 +604,7 @@ export default function Copy() {
             )}
  
             {resultado && (
-              <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 <div className="bg-[#0a0a0a] border border-[#151515] rounded-xl p-3 text-center">
                   <div className="text-orange-500 text-xl font-black">{resultado.palabras || 0}</div>
                   <div className="text-zinc-500 text-[10px]">Palabras</div>
@@ -682,7 +682,7 @@ export default function Copy() {
             )}
  
             {!loading && !resultado && (
-              <div className="flex items-center justify-center h-64 text-zinc-600 text-sm">
+              <div className="flex items-center justify-center h-64 text-zinc-600 text-sm text-center px-4">
                 Completa los datos y presiona Generar
               </div>
             )}
@@ -701,9 +701,9 @@ export default function Copy() {
                       {key:"cta",titulo:"CTA final"},
                     ].map(s => resultado[s.key] && (
                       <div key={s.key} className="border border-orange-500 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-orange-500/20">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 border-b border-orange-500/20">
                           <span className="text-orange-500 text-[10px] font-bold tracking-widest uppercase">{s.titulo}</span>
-                          <div className="flex gap-1.5">
+                          <div className="flex flex-wrap gap-1.5">
                             <button disabled={seccionCargando !== null} onClick={() => regenerar(s.key)} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `regenerar-${s.key}` ? "⏳ Generando..." : "↻ Regenerar"}</button>
                             <button disabled={seccionCargando !== null} onClick={() => mejorar(s.key)} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === `mejorar-${s.key}` ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado[s.key], s.key)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === s.key ? "✓ Copiado" : "Copiar"}</button>
@@ -760,12 +760,12 @@ export default function Copy() {
                           <p className="text-zinc-600 text-[10px] font-bold tracking-widest uppercase px-1">Secuencia de campaña — 7 días</p>
                           {dias.map((dia, i) => (
                             <div key={i} className="border border-[#1e1e1e] rounded-xl overflow-hidden">
-                              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1a1a1a] bg-[#0d0d0d]">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 border-b border-[#1a1a1a] bg-[#0d0d0d]">
                                 <div className="flex items-center gap-2">
                                   <span className="bg-orange-500 text-white text-[9px] font-black px-2 py-0.5 rounded">DÍA {i + 1}</span>
                                   <span className="text-green-400 text-[10px] font-bold">{dia.titulo}</span>
                                 </div>
-                                <div className="flex gap-1.5">
+                                <div className="flex flex-wrap gap-1.5">
                                   <button onClick={() => copiar(`${dia.titulo}\n${dia.texto}`, `campana-dia-${i + 1}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[9px] font-bold px-2 py-1 rounded-md">{copiado === `campana-dia-${i + 1}` ? "✓ Copiado" : "Copiar"}</button>
                                   <button onClick={() => { sessionStorage.setItem("anuncios_headlines", JSON.stringify([`${dia.titulo}\n${dia.texto}`])); sessionStorage.setItem("anuncios_producto", JSON.stringify({ producto, caracteristicas, problema, beneficio, precioOferta, precioAnterior, clientes, pais, tono, imagen })); window.location.href = "/anuncios"; }} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[9px] font-bold px-2 py-1 rounded-md">→ Anuncios</button>
                                   <button onClick={() => guardar(`${dia.titulo}\n${dia.texto}`, `Campaña Día ${i + 1}`)} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[9px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
@@ -801,9 +801,9 @@ export default function Copy() {
                   <div className="space-y-4">
                     {resultado.seo && (
                       <div className="border border-zinc-600 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">🔍 SEO Keywords</span>
-                          <div className="flex gap-1.5">
+                          <div className="flex flex-wrap gap-1.5">
                             <button disabled={seccionCargando !== null} onClick={() => regenerar("seo")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-seo" ? "⏳ Generando..." : "↻ Regenerar"}</button>
                             <button disabled={seccionCargando !== null} onClick={() => mejorar("seo")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-seo" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.seo, "seo")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "seo" ? "✓ Copiado" : "Copiar"}</button>
@@ -815,9 +815,9 @@ export default function Copy() {
                     )}
                     {resultado.objeciones && (
                       <div className="border border-zinc-600 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">💬 Objeciones y Respuestas</span>
-                          <div className="flex gap-1.5">
+                          <div className="flex flex-wrap gap-1.5">
                             <button disabled={seccionCargando !== null} onClick={() => regenerar("objeciones")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-objeciones" ? "⏳ Generando..." : "↻ Regenerar"}</button>
                             <button disabled={seccionCargando !== null} onClick={() => mejorar("objeciones")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-objeciones" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.objeciones, "objeciones")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "objeciones" ? "✓ Copiado" : "Copiar"}</button>
@@ -829,9 +829,9 @@ export default function Copy() {
                     )}
                     {resultado.email && (
                       <div className="border border-zinc-600 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-600/20">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 border-b border-zinc-600/20">
                           <span className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">📧 Email de seguimiento</span>
-                          <div className="flex gap-1.5">
+                          <div className="flex flex-wrap gap-1.5">
                             <button disabled={seccionCargando !== null} onClick={() => regenerar("email")} className="bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "regenerar-email" ? "⏳ Generando..." : "↻ Regenerar"}</button>
                             <button disabled={seccionCargando !== null} onClick={() => mejorar("email")} className="bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-md disabled:opacity-50">{seccionCargando === "mejorar-email" ? "⏳ Mejorando..." : "↑ Mejorar"}</button>
                             <button onClick={() => copiar(resultado.email, "email")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "email" ? "✓ Copiado" : "Copiar"}</button>
@@ -853,13 +853,13 @@ export default function Copy() {
                     <div className="bg-[#070707] px-4 py-3">
                       {guardados.map((g, i) => (
                         <div key={i} className="py-3 border-b border-[#111] last:border-none">
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-orange-500 text-[10px] font-bold">{g.producto || "Producto"}</span>
                               <span className="text-zinc-600 text-[10px]">·</span>
                               <span className="text-cyan-400 text-[10px] font-bold">{g.tipo}</span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <span className="text-zinc-600 text-[10px]">{g.hora}</span>
                               <button onClick={() => copiar(g.texto, `guardado-${i}`)} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] px-2 py-1 rounded-md">{copiado === `guardado-${i}` ? "✓ Copiado" : "Copiar"}</button>
                               <button onClick={async () => { if (g.id) { await fetch("/api/copys", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: g.id }) }); } setGuardados(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-400 text-[10px] font-bold px-1">✕</button>
