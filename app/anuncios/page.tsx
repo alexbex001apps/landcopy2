@@ -109,6 +109,7 @@ export default function Anuncios() {
         setHeadlines(parsed);
         if (parsed.length > 0) setHeadline(parsed[0]);
         sessionStorage.removeItem("anuncios_headlines");
+        sessionStorage.removeItem(SS_KEY);
         setPantalla(1);
       }
       const imgGen = sessionStorage.getItem("anuncios_img_generada");
