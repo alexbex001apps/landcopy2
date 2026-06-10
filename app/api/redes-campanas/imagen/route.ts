@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
  
 // ─────────────────────────────────────────────────────────────
-// MOTOR REDES-CAMPAÑAS · Imágenes (con edición IA)
+// MOTOR REDES-CAMPAÑAS · Imágenes (fidelidad fuerte + varias fotos)
 // Genera la imagen de UN día con gpt-image-2.
+// Usa TODAS las fotos del modo como referencia (no solo la primera).
 // Si viene "imagenPrevia" + "instruccion": edita esa imagen (editar con IA).
-// Si no: genera desde la foto del modo + el texto del día.
 // ─────────────────────────────────────────────────────────────
  
 function limpiarEtiquetas(texto: string): string {
@@ -17,7 +17,7 @@ function limpiarEtiquetas(texto: string): string {
     .trim();
 }
  
-// Prompt para generar la imagen normal del día.
+// Prompt para generar la imagen del día — CON FIDELIDAD FUERTE.
 function construirPrompt(body: any): string {
   const { modo, diaTitulo, diaTemp, textoImagen, tono } = body;
   const texto = limpiarEtiquetas(textoImagen || diaTitulo || "");
@@ -27,16 +27,21 @@ function construirPrompt(body: any): string {
     : diaTemp === "tibio" ? "Warm, engaging, building interest."
     : "Calm, inviting, value-first feel.";
  
+  // Instrucción de fidelidad fuerte según el modo.
+  let fidelidad = "";
   let escena = "";
   if (modo === "producto") {
-    escena = `Professional ecommerce social media post for the product. The product must be the hero of the image, well lit, premium commercial photography.`;
+    fidelidad = `CRITICAL: Keep EXACTLY the same product shown in the reference photos: same shape, same color, same brand, same details and proportions. Do NOT invent a different product. Do NOT alter the product. The product in the output MUST be identical to the reference.`;
+    escena = `Professional ecommerce social media post. The product is the hero, well lit, premium commercial photography.`;
   } else if (modo === "negocio") {
-    escena = `Professional social media post for a local business. Warm, trustworthy, community feel. Use the uploaded photo as the real base of the business.`;
+    fidelidad = `CRITICAL: Use faithfully the real place, products and elements shown in the reference photos. Do NOT invent a different business. Keep the real look of this specific business.`;
+    escena = `Professional social media post for a local business. Warm, trustworthy, community feel.`;
   } else {
-    escena = `Professional personal brand social media post. Inspirational and authoritative. Use the uploaded photo of the person as the base. Editorial, aspirational style.`;
+    fidelidad = `CRITICAL: Keep EXACTLY the same person shown in the reference photos: same face, same facial features, same skin tone, same hair, same identity. Do NOT invent a new person. Do NOT create different people. The person in the output MUST be clearly recognizable as the same individual from the reference photos.`;
+    escena = `Professional personal brand social media post. Inspirational and authoritative.`;
   }
  
-  return `${escena} Theme of the post: "${diaTitulo}". ${climaTexto} MUST include this exact short bold text overlay on the image (do not add any other text, do not write any labels): "${texto}". Tone: ${tono || "professional"}. Latin American audience. Modern, scroll-stopping, high quality. Square 1024x1024.`;
+  return `${escena} ${fidelidad} Theme of the post: "${diaTitulo}". ${climaTexto} MUST include this exact short bold text overlay on the image (do not add any other text, do not write any labels): "${texto}". Tone: ${tono || "professional"}. Latin American audience. Modern, scroll-stopping, high quality. Square 1024x1024.`;
 }
  
 // Convierte una imagen (data:base64 o http) a Buffer.
@@ -50,8 +55,8 @@ async function aBuffer(img: string): Promise<Buffer> {
   return Buffer.from(base64, "base64");
 }
  
-// Llama a images/edits con una imagen base + un prompt.
-async function editarImagen(imgBuffer: Buffer, prompt: string): Promise<string> {
+// Llama a images/edits con UNA O VARIAS imágenes base + un prompt.
+async function editarImagenes(buffers: Buffer[], prompt: string): Promise<string> {
   const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
   const parts = [
     `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
@@ -60,9 +65,16 @@ async function editarImagen(imgBuffer: Buffer, prompt: string): Promise<string> 
     `--${boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\n${prompt}`,
   ];
   const textParts = Buffer.from(parts.join("\r\n") + "\r\n");
-  const fileHeader = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="base.jpg"\r\nContent-Type: image/jpeg\r\n\r\n`);
-  const closing = Buffer.from(`\r\n--${boundary}--\r\n`);
-  const bodyBuffer = Buffer.concat([textParts, fileHeader, imgBuffer, closing]);
+ 
+  // Agregar cada imagen como image[] (gpt-image-2 acepta varias)
+  const imgParts: Buffer[] = [];
+  buffers.forEach((buf, i) => {
+    const header = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="ref${i}.jpg"\r\nContent-Type: image/jpeg\r\n\r\n`);
+    imgParts.push(header, buf, Buffer.from("\r\n"));
+  });
+ 
+  const closing = Buffer.from(`--${boundary}--\r\n`);
+  const bodyBuffer = Buffer.concat([textParts, ...imgParts, closing]);
  
   const resp = await fetch("https://api.openai.com/v1/images/edits", {
     method: "POST",
@@ -74,7 +86,7 @@ async function editarImagen(imgBuffer: Buffer, prompt: string): Promise<string> 
     body: bodyBuffer,
   });
   const data = await resp.json();
-  if (!resp.ok) throw new Error(data.error?.message || "Error editando imagen");
+  if (!resp.ok) throw new Error(data.error?.message || "Error con la imagen");
   const b64 = data.data?.[0]?.b64_json;
   return b64 ? `data:image/png;base64,${b64}` : "";
 }
@@ -82,15 +94,15 @@ async function editarImagen(imgBuffer: Buffer, prompt: string): Promise<string> 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { foto, imagenPrevia, instruccion } = body;
+    const { fotos, imagenPrevia, instruccion } = body;
  
     let imageUrl = "";
  
     // ── CASO 1: EDITAR CON IA (hay imagen previa + instrucción) ──
     if (imagenPrevia && instruccion && instruccion.trim().length > 0) {
       const imgBuffer = await aBuffer(imagenPrevia);
-      const promptEdit = `Edit this social media image following this instruction: "${limpiarEtiquetas(instruccion)}". Keep it professional, high quality, square 1024x1024. Do not add any labels or organizational text.`;
-      imageUrl = await editarImagen(imgBuffer, promptEdit);
+      const promptEdit = `Edit this social media image following this instruction: "${limpiarEtiquetas(instruccion)}". Keep the same person/product identity, do not change who or what is shown unless asked. Keep it professional, high quality, square 1024x1024. Do not add any labels or organizational text.`;
+      imageUrl = await editarImagenes([imgBuffer], promptEdit);
       return NextResponse.json({ imageUrl, diaNumero: body.diaNumero });
     }
  
@@ -101,10 +113,20 @@ export async function POST(req: NextRequest) {
  
     const prompt = construirPrompt(body);
  
-    if (foto && (foto.startsWith("data:") || foto.startsWith("http"))) {
-      const imgBuffer = await aBuffer(foto);
-      imageUrl = await editarImagen(imgBuffer, prompt);
+    // fotos puede venir como array (varias) o como string (una). Normalizamos.
+    let listaFotos: string[] = [];
+    if (Array.isArray(fotos)) listaFotos = fotos.filter(Boolean);
+    else if (typeof fotos === "string" && fotos.length > 0) listaFotos = [fotos];
+ 
+    // Filtrar solo las válidas (data:base64 o http) y limitar a 5 por seguridad.
+    listaFotos = listaFotos.filter(f => f.startsWith("data:") || f.startsWith("http")).slice(0, 5);
+ 
+    if (listaFotos.length > 0) {
+      const buffers: Buffer[] = [];
+      for (const f of listaFotos) buffers.push(await aBuffer(f));
+      imageUrl = await editarImagenes(buffers, prompt);
     } else {
+      // Sin fotos: generar desde cero
       const resp = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
