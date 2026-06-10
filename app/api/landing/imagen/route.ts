@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
+ 
 export const FONDOS_DISPONIBLES = [
   { id: "negro_fuego", nombre: "Negro dramático", categoria: "Universal", color: "#1a0500", prompt: "Dark dramatic black background with orange fire particles, smoke and cinematic lighting." },
   { id: "blanco_minimal", nombre: "Blanco minimalista", categoria: "Universal", color: "#f5f5f5", prompt: "Clean white minimalist background with soft natural shadows and subtle light gradient." },
@@ -42,54 +42,71 @@ export const FONDOS_DISPONIBLES = [
   { id: "halloween", nombre: "Halloween naranja", categoria: "Ocasiones", color: "#ff6600", prompt: "Halloween orange background with pumpkins, bats and spooky atmospheric fog effects." },
   { id: "anio_nuevo", nombre: "Año nuevo", categoria: "Ocasiones", color: "#1a0033", prompt: "New Year celebration background with fireworks, gold and silver sparkles against dark midnight sky." },
 ];
-
+ 
 const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
   hero: (p) => `Professional ecommerce hero banner for Latin American market. MUST include large bold text overlay on the image. Product: ${p.producto}. Bold headline text: "${p.headline || p.producto}". Subheadline text: "${p.beneficio}". CTA button with text: "¡Comprar ahora!". Dramatic cinematic product shot. Bold white typography. Commercial advertising quality. 4K ultra detailed. BACKGROUND: ${p.fondo || "Dark premium background with orange accent lighting."}`,
-
+ 
   problema: (p) => `Emotional marketing image showing the PROBLEM before using ${p.producto}. MUST include bold text overlay on the image. Main text: "${p.problema}". Secondary text: "¿Te ha pasado esto?". Split before/after style. Person looking frustrated or in pain. Latin American context. Bold white typography over image. Commercial photography quality. BACKGROUND: ${p.fondo || "Dark moody lighting on left side."}`,
-
+ 
   solucion: (p) => `Transformation marketing image for ${p.producto}. MUST include bold text overlay. Before side text: "Antes" with sad person. After side text: "Después" with happy person using the product. Center headline: "${p.beneficio}". Bold white and orange typography. Latin American lifestyle. Commercial photography quality. BACKGROUND: ${p.fondo || "Warm hopeful lighting."}`,
-
+ 
   kit: (p) => `Professional product kit flat lay for ${p.producto}. MUST include bold text overlay. Headline text: "Todo lo que incluye tu kit". All products visible and well arranged. Orange accent colors. Premium commercial photography with text labels for each product. BACKGROUND: ${p.fondo || "Clean white or gradient background."}`,
-
+ 
   beneficios: (p) => `Marketing infographic for ${p.producto}. MUST include bold text overlay. Large headline: "3 Beneficios que cambian todo". Three benefit sections with icons and bold text descriptions related to: ${p.beneficio}. Orange and white color scheme. Modern flat design. Professional marketing material quality. BACKGROUND: ${p.fondo || "Clean modern background."}`,
-
+ 
   como_funciona: (p) => `Step-by-step marketing infographic for ${p.producto}. MUST include bold text overlay. Large headline: "¿Cómo funciona?". Three numbered steps (1, 2, 3) with icons and short bold text instructions. Orange numbered circles. Bold typography. Professional infographic quality. BACKGROUND: ${p.fondo || "Clean white background."}`,
-
+ 
   testimonios: (p) => `Social proof marketing image for ${p.producto}. MUST include bold text overlay. Large headline: "Lo que dicen nuestros clientes". Three customer review cards with 5 orange stars each, photos of happy Latin American customers, and short bold quote text. Trust badges at bottom: "Garantía 30 días", "Envío rápido", "Pago seguro". Orange accent colors. Professional marketing design. BACKGROUND: ${p.fondo || "Clean professional background."}`,
-
+ 
   oferta: (p) => `Urgency sales image for ${p.producto}. MUST include large bold text overlay. Main price text: "${p.precioOferta || "Precio especial"}". Crossed out old price: "${p.precioAnterior || ""}". Bold text: "¡OFERTA LIMITADA!". Countdown or urgency badge. Red and orange accent colors. High contrast commercial advertising typography. BACKGROUND: ${p.fondo || "Dark dramatic background."}`,
-
+ 
   cta_final: (p) => `Closing sales banner for ${p.producto}. MUST include bold text overlay. Large headline: "¿Listo para transformar tu vida?". Subheadline: "${p.beneficio}". Bold CTA button text: "¡Quiero el mío ahora!". Guarantee text: "Garantía de satisfacción". Premium product shot centered. Orange and white bold typography. High end commercial quality. BACKGROUND: ${p.fondo || "Aspirational lifestyle background."}`,
 };
-
+ 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, imagen_url, fondoId, soloTitulos } = body;
-
+    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, headline, imagen_url, fondoId, soloTitulos, textoEditado, promptPropio, imagenPrevia } = body;
+ 
     if (!seccion || !producto) {
       return NextResponse.json({ error: "Sección y producto requeridos" }, { status: 400 });
     }
-
+ 
     const promptFn = PROMPTS_IMAGEN[seccion];
     if (!promptFn) {
       return NextResponse.json({ error: `Sección "${seccion}" no reconocida` }, { status: 400 });
     }
-
+ 
     const fondoSeleccionado = FONDOS_DISPONIBLES.find(f => f.id === fondoId);
     const fondo = fondoSeleccionado?.prompt || null;
-
-    let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, fondo });
+ 
+    let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, headline, fondo });
+ 
+    // NUEVO: si el usuario editó el texto de la sección a mano, ese texto manda.
+    // Se le pasa a la IA como el texto EXACTO que debe quemar en la imagen.
+    if (textoEditado && textoEditado.trim()) {
+      prompt += ` CRITICAL TEXT OVERRIDE: The exact text that MUST appear written on the image is the following (respect it word for word, do not invent other text): "${textoEditado.trim()}".`;
+    }
+ 
+    // NUEVO: instrucción libre del usuario (botón "Editar con IA").
+    // Es la orden de mayor prioridad: "cambia el título a amarillo", "pon el precio más grande", etc.
+    if (promptPropio && promptPropio.trim()) {
+      prompt += ` USER EDIT INSTRUCTION (highest priority, apply this change exactly): ${promptPropio.trim()}.`;
+    }
+ 
     if (soloTitulos) prompt += ` CRITICAL TEXT RULE: Include ONLY short bold TITLES/headlines on the image. Absolutely NO paragraphs, NO descriptive sentences, NO body text under the titles. Keep text minimal — just a few large impactful words. Clean visual with lots of empty space.`;
-
+ 
     let imageUrl = "";
-
-    if (imagen_url && imagen_url.startsWith("http")) {
-      const imgResp = await fetch(imagen_url);
+ 
+    // NUEVO: si viene imagenPrevia (editar una imagen ya generada), se edita ESA.
+    // Si no, se usa la foto del producto (imagen_url) como antes.
+    const imagenBase = (imagenPrevia && imagenPrevia.startsWith("http")) ? imagenPrevia : imagen_url;
+ 
+    if (imagenBase && imagenBase.startsWith("http")) {
+      const imgResp = await fetch(imagenBase);
       const imgBlob = await imgResp.blob();
       const imgBuffer = Buffer.from(await imgBlob.arrayBuffer());
-
+ 
       const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
       const parts = [
         `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
@@ -101,7 +118,7 @@ export async function POST(req: NextRequest) {
       const fileHeader = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="product.jpg"\r\nContent-Type: image/jpeg\r\n\r\n`);
       const closing = Buffer.from(`\r\n--${boundary}--\r\n`);
       const bodyBuffer = Buffer.concat([textParts, fileHeader, imgBuffer, closing]);
-
+ 
       const resp = await fetch("https://api.openai.com/v1/images/edits", {
         method: "POST",
         headers: {
@@ -129,7 +146,7 @@ export async function POST(req: NextRequest) {
       const b64 = data.data?.[0]?.b64_json;
       imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
     }
-
+ 
     return NextResponse.json({ imageUrl, seccion });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
