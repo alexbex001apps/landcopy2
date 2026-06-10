@@ -287,7 +287,7 @@ export default function Landing() {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, soloTitulos }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, soloTitulos, textoEditado: contenido[seccionId] || "" }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -771,11 +771,11 @@ export default function Landing() {
                     {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
                   </button>
                   {imagenes[seccionActiva] && (
-                    <button onClick={() => setEditandoImagen(!editandoImagen)} className="w-full bg-[#111] border border-cyan-500/30 text-cyan-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🖌️ Editar imagen</button>
+                    <button onClick={() => setEditandoImagen(!editandoImagen)} className="w-full bg-[#111] border border-cyan-500/30 text-cyan-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🖌️ Editar con IA</button>
                   )}
                   {editandoImagen && imagenes[seccionActiva] && (
                     <div className="bg-[#0d0d0d] border border-cyan-500/30 rounded-lg p-2 space-y-2">
-                      <textarea value={instruccionImagen} onChange={e => setInstruccionImagen(e.target.value)} rows={3} className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-[11px] px-2 py-2 rounded-lg outline-none resize-none" placeholder="Ej: el título debe decir 'Pintura Acrílica' con tilde · pon el precio más grande · más luz al producto" />
+                      <textarea value={instruccionImagen} onChange={e => setInstruccionImagen(e.target.value)} rows={3} className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-[11px] px-2 py-2 rounded-lg outline-none resize-none" placeholder="Dile a la IA qué cambiar: 'título en amarillo' · 'precio más grande' · 'más luz al producto'" />
                       <div className="flex gap-1.5">
                         <button onClick={() => setEditandoImagen(false)} className="flex-1 border border-[#1a1a1a] text-zinc-500 text-[11px] font-bold py-2 rounded-lg">Cancelar</button>
                         <button onClick={editarImagenIA} disabled={aplicandoEdicion || !instruccionImagen.trim()} className="flex-1 bg-cyan-500 text-black text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">{aplicandoEdicion ? "⟳ Aplicando..." : "Aplicar"}</button>
