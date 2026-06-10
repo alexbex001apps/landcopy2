@@ -252,11 +252,14 @@ export default function RedesCampanas() {
     return { ...base, mNombre, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias };
   }
  
-  // Foto base para las imágenes según el modo
-  function fotoBase(): string | null {
-    if (modo === "producto") return pImagen;
-    if (modo === "negocio") return nFotos[0] || null;
-    return mFotos[0] || null;
+  // Fotos base para las imágenes según el modo (TODAS, para más fidelidad)
+  function fotosBase(): string[] {
+    if (modo === "producto") return pImagen ? [pImagen] : [];
+    if (modo === "negocio") return nFotos;
+    return mFotos;
+  }
+  function hayFoto(): boolean {
+    return fotosBase().length > 0;
   }
  
   async function generarCampana() {
@@ -298,7 +301,7 @@ export default function RedesCampanas() {
           diaTitulo: dia.diaTitulo,
           diaTemp: dia.diaTemp,
           textoImagen: dia.textoImagen,
-          foto: fotoBase(),
+          fotos: fotosBase(),
         }),
       });
       const data = await resp.json();
@@ -757,11 +760,11 @@ export default function RedesCampanas() {
                               )}
                             </div>
                           ) : (
-                            <button onClick={() => generarImagenDia(i)} disabled={!fotoBase()}
+                            <button onClick={() => generarImagenDia(i)} disabled={!hayFoto()}
                               className="w-full aspect-square rounded-lg border-2 border-dashed border-[rgba(255,215,0,0.3)] hover:border-[#FFF500] flex flex-col items-center justify-center gap-2 bg-[rgba(255,215,0,0.03)] disabled:opacity-40 transition-colors">
                               <span className="text-2xl">🎨</span>
                               <span className="text-[10px] font-bold text-[#FFF500]">Generar imagen</span>
-                              {!fotoBase() && <span className="text-[8px] text-[#7A7772] px-2 text-center">Sube una foto arriba primero</span>}
+                              {!hayFoto() && <span className="text-[8px] text-[#7A7772] px-2 text-center">Sube una foto arriba primero</span>}
                             </button>
                           )}
                         </div>
