@@ -1,17 +1,28 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+ 
 // ─────────────────────────────────────────────────────────────
 // REDES — CENTRO DE CAMPAÑAS
 // 3 modos: Producto · Negocio · Marca personal.
-// Cada modo tiene su formulario y su calendario propio.
-// Maqueta viva — el motor de generación llega en la etapa siguiente.
+// Parte 2: el botón genera la campaña día por día (textos).
+// Las imágenes llegan en la Parte 3.
 // ─────────────────────────────────────────────────────────────
-
+ 
 type Modo = "producto" | "negocio" | "marca";
 type NivelId = "normal" | "pro" | "class";
-
+ 
+type DiaResultado = {
+  diaNumero: number;
+  diaTitulo: string;
+  diaTemp: string;
+  concepto?: string;
+  textoImagen?: string;
+  caption?: string;
+  hashtags?: string;
+  cargando?: boolean;
+};
+ 
 const NIVELES = [
   {
     id: "normal" as NivelId, nombre: "Normal", dias: 3, subtitulo: "Semana corta para probar", color: "#22c55e",
@@ -32,7 +43,7 @@ const NIVELES = [
     noIncluye: [], badge: "PREMIUM",
   },
 ];
-
+ 
 const REDES_INFO: Record<string, { nombre: string; icon: string }> = {
   instagram: { nombre: "Instagram", icon: "📸" },
   facebook: { nombre: "Facebook", icon: "👥" },
@@ -41,16 +52,16 @@ const REDES_INFO: Record<string, { nombre: string; icon: string }> = {
   story: { nombre: "Stories", icon: "📱" },
   shorts: { nombre: "YT Shorts", icon: "▶️" },
 };
-
+ 
 const TEMP = {
   frio: { label: "Frío", color: "#0088cc" },
   tibio: { label: "Tibio", color: "#ff8800" },
   caliente: { label: "Caliente", color: "#cc0000" },
 };
-
+ 
 const PAISES = ["Colombia", "México", "Venezuela", "Costa Rica", "Ecuador", "General"];
 const TONOS = ["Urgente", "Emocional", "Cercano", "Confianza", "Premium", "Divertido"];
-
+ 
 const DIAS_PRODUCTO = [
   { titulo: "Presentación — engancha", temp: "frio" },
   { titulo: "El problema — agita el dolor", temp: "frio" },
@@ -67,7 +78,7 @@ const DIAS_PRODUCTO = [
   { titulo: "Oferta final — última oportunidad", temp: "caliente" },
   { titulo: "Cierre de campaña", temp: "caliente" },
 ];
-
+ 
 const DIAS_NEGOCIO = [
   { titulo: "Bienvenida + horarios", temp: "frio" },
   { titulo: "Detrás de cámara", temp: "frio" },
@@ -84,8 +95,7 @@ const DIAS_NEGOCIO = [
   { titulo: "Novedad / anuncio", temp: "tibio" },
   { titulo: "Cierre de mes + agradecimiento", temp: "caliente" },
 ];
-
-// Calendario propio de MARCA PERSONAL: siembra (dar) antes que cosecha (vender)
+ 
 const DIAS_MARCA = [
   { titulo: "Enseñanza — aporta valor", temp: "frio" },
   { titulo: "Historia personal — conecta", temp: "frio" },
@@ -102,7 +112,7 @@ const DIAS_MARCA = [
   { titulo: "Reflexión del día", temp: "frio" },
   { titulo: "Llamado final — únete / adquiere", temp: "caliente" },
 ];
-
+ 
 export default function RedesCampanas() {
   useEffect(() => {
     const supabase = createClient();
@@ -110,10 +120,10 @@ export default function RedesCampanas() {
       if (!session) window.location.href = "/login";
     });
   }, []);
-
+ 
   const [modo, setModo] = useState<Modo>("producto");
   const [nivelId, setNivelId] = useState<NivelId>("pro");
-
+ 
   // ── Datos modo PRODUCTO ──
   const [pNombre, setPNombre] = useState("");
   const [pImagen, setPImagen] = useState<string | null>(null);
@@ -122,45 +132,48 @@ export default function RedesCampanas() {
   const [pBeneficio, setPBeneficio] = useState("");
   const [pProblema, setPProblema] = useState("");
   const [pIdentificando, setPIdentificando] = useState(false);
-
+ 
   // ── Datos modo NEGOCIO ──
   const [nNombre, setNNombre] = useState("");
   const [nFotos, setNFotos] = useState<string[]>([]);
   const [nOfrece, setNOfrece] = useState("");
   const [nCiudad, setNCiudad] = useState("");
   const [nIdentificando, setNIdentificando] = useState(false);
-
+ 
   // ── Datos modo MARCA PERSONAL ──
   const [mNombre, setMNombre] = useState("");
   const [mFotos, setMFotos] = useState<string[]>([]);
   const [mQueHace, setMQueHace] = useState("");
   const [mPromociona, setMPromociona] = useState("");
   const [mCiudad, setMCiudad] = useState("");
-  // Las 4 de información (opcionales — el que maneja la marca llena lo que quiera)
-  const [mMensaje, setMMensaje] = useState("");   // mensaje madre
-  const [mPilares, setMPilares] = useState("");   // pilares de contenido
-  const [mVoz, setMVoz] = useState("");           // voz propia
-  const [mHistorias, setMHistorias] = useState(""); // banco de historias
+  const [mMensaje, setMMensaje] = useState("");
+  const [mPilares, setMPilares] = useState("");
+  const [mVoz, setMVoz] = useState("");
+  const [mHistorias, setMHistorias] = useState("");
   const [mIdentificando, setMIdentificando] = useState(false);
-
+ 
   // ── Compartidos ──
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [toast, setToast] = useState("");
-
+ 
+  // ── Resultado de la campaña ──
+  const [generando, setGenerando] = useState(false);
+  const [resultado, setResultado] = useState<DiaResultado[]>([]);
+ 
   const pFileRef = useRef<HTMLInputElement>(null);
   const nFileRef = useRef<HTMLInputElement>(null);
   const mFileRef = useRef<HTMLInputElement>(null);
-
+ 
   const nivel = NIVELES.find(n => n.id === nivelId)!;
   const plantilla = modo === "producto" ? DIAS_PRODUCTO : modo === "negocio" ? DIAS_NEGOCIO : DIAS_MARCA;
   const dias = plantilla.slice(0, nivel.dias);
-
+ 
   function mostrarToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   }
-
+ 
   function comprimir(file: File): Promise<string> {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -177,13 +190,13 @@ export default function RedesCampanas() {
       img.src = URL.createObjectURL(file);
     });
   }
-
+ 
   async function handleImagenProducto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setPImagen(await comprimir(file));
   }
-
+ 
   async function handleFotosLista(e: React.ChangeEvent<HTMLInputElement>, lista: string[], setLista: (v: string[]) => void) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -193,7 +206,7 @@ export default function RedesCampanas() {
     for (const f of aProcesar) nuevas.push(await comprimir(f));
     setLista([...lista, ...nuevas].slice(0, 5));
   }
-
+ 
   async function identificarProducto() {
     if (!pImagen) return;
     setPIdentificando(true);
@@ -211,9 +224,7 @@ export default function RedesCampanas() {
     } catch { mostrarToast("No se pudo identificar"); }
     setPIdentificando(false);
   }
-
-  // Negocio y Marca: "identificar registrado" — por ahora usa Vision sobre la 1ª foto.
-  // En etapa futura: buscará en el banco de negocios/marcas registrados.
+ 
   async function identificarRegistrado(fotos: string[], setNom: (v: string) => void, setQue: (v: string) => void, setLoad: (v: boolean) => void, tipo: string) {
     if (fotos.length === 0) return;
     setLoad(true);
@@ -229,26 +240,82 @@ export default function RedesCampanas() {
     } catch { mostrarToast("No se pudo identificar"); }
     setLoad(false);
   }
-
+ 
+  // Arma el cuerpo con TODOS los datos del modo activo, para mandarlo al cerebro.
+  function datosDelModo() {
+    const base = { modo, pais, tono, redes: nivel.redes };
+    if (modo === "producto") {
+      return { ...base, pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior };
+    }
+    if (modo === "negocio") {
+      return { ...base, nNombre, nOfrece, nCiudad };
+    }
+    return { ...base, mNombre, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias };
+  }
+ 
+  // ── EL MOTOR: genera la campaña día por día (se ven llegando) ──
+  async function generarCampana() {
+    if (!listo || generando) return;
+    setGenerando(true);
+ 
+    // 1) Pintar todos los días en estado "cargando"
+    const base: DiaResultado[] = dias.map((d, i) => ({
+      diaNumero: i + 1,
+      diaTitulo: d.titulo,
+      diaTemp: d.temp,
+      cargando: true,
+    }));
+    setResultado(base);
+ 
+    const datos = datosDelModo();
+ 
+    // 2) Generar uno por uno (en orden, se ven llegando)
+    for (let i = 0; i < dias.length; i++) {
+      const d = dias[i];
+      try {
+        const resp = await fetch("/api/redes-campanas/generar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...datos,
+            diaNumero: i + 1,
+            diaTitulo: d.titulo,
+            diaTemp: d.temp,
+          }),
+        });
+        const data = await resp.json();
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, ...data, cargando: false } : r));
+      } catch {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, cargando: false, caption: "Error al generar este día" } : r));
+      }
+    }
+ 
+    setGenerando(false);
+    mostrarToast("✓ Campaña generada");
+  }
+ 
+  function copiar(texto: string) {
+    navigator.clipboard.writeText(texto || "");
+    mostrarToast("✓ Copiado");
+  }
+ 
   const listoProducto = modo === "producto" && pNombre.trim().length > 0;
   const listoNegocio = modo === "negocio" && nNombre.trim().length > 0;
   const listoMarca = modo === "marca" && mNombre.trim().length > 0;
   const listo = listoProducto || listoNegocio || listoMarca;
-
+ 
   const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
   const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
-
-  // Color del modo activo (para acentos)
   const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
-
+ 
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
-
+ 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">{toast}</div>
       )}
-
+ 
       {/* Header */}
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-0">
         <div className="flex flex-col md:flex-row items-center mb-4">
@@ -278,10 +345,10 @@ export default function RedesCampanas() {
           <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
         </div>
       </div>
-
+ 
       <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
-
-        {/* ───── BLOQUE 1: MODO (3 opciones) ───── */}
+ 
+        {/* ───── BLOQUE 1: MODO ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -305,13 +372,13 @@ export default function RedesCampanas() {
             </button>
           </div>
         </div>
-
-        {/* ───── BLOQUE 2: DATOS (cambia según modo) ───── */}
+ 
+        {/* ───── BLOQUE 2: DATOS ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase mb-3 block" style={{ color: modoColor }}>
             2 · {modo === "producto" ? "Tu producto" : modo === "negocio" ? "Tu negocio" : "Tu marca personal"}
           </span>
-
+ 
           {modo === "producto" && (
             <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4">
               <div>
@@ -356,7 +423,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
-
+ 
           {modo === "negocio" && (
             <div className="space-y-4">
               <div>
@@ -396,7 +463,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
-
+ 
           {modo === "marca" && (
             <div className="space-y-4">
               <div>
@@ -426,8 +493,6 @@ export default function RedesCampanas() {
                 )}
                 <p className="text-[10px] text-[#7A7772] mt-1.5">💡 Registra tu marca con tus fotos y datos, y la IA llenará todo para las campañas.</p>
               </div>
-
-              {/* Datos base de la marca */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div><span className={labelCls}>Tu nombre / nombre artístico *</span>
                   <input value={mNombre} onChange={e => setMNombre(e.target.value)} placeholder="Ej: Alejandro Bec" className={inputCls} /></div>
@@ -438,8 +503,6 @@ export default function RedesCampanas() {
                 <div><span className={labelCls}>Ciudad</span>
                   <input value={mCiudad} onChange={e => setMCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
               </div>
-
-              {/* Las 4 de información — opcionales, el que maneja la marca llena lo que quiera */}
               <div className="bg-[#0d0d0d] border border-[rgba(250,204,21,0.2)] rounded-xl p-3 space-y-3">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-400">ADN de tu marca <span className="text-[#7A7772] normal-case font-normal">(opcional — entre más llenes, mejores campañas)</span></p>
                 <div><span className={labelCls}>💎 Mensaje madre — tu gran idea</span>
@@ -453,8 +516,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
-
-          {/* País + Tono (compartidos) */}
+ 
           <div className="border-t border-[#1e1e1e] my-4" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -477,7 +539,7 @@ export default function RedesCampanas() {
             </div>
           </div>
         </div>
-
+ 
         {/* ───── BLOQUE 3: NIVEL ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">3 · ¿Cuánto contenido quieres?</span>
@@ -500,8 +562,8 @@ export default function RedesCampanas() {
             })}
           </div>
         </div>
-
-        {/* ───── BLOQUE 4: REDES DEL NIVEL ───── */}
+ 
+        {/* ───── BLOQUE 4: REDES ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">4 · Redes incluidas en {nivel.nombre}</span>
           <div className="flex flex-wrap gap-2">
@@ -513,8 +575,8 @@ export default function RedesCampanas() {
             ))}
           </div>
         </div>
-
-        {/* ───── BLOQUE 5: CALENDARIO MAQUETA ───── */}
+ 
+        {/* ───── BLOQUE 5: CALENDARIO + BOTÓN GENERAR ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500]">
@@ -528,7 +590,7 @@ export default function RedesCampanas() {
               ))}
             </div>
           </div>
-
+ 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
             {dias.map((d, i) => {
               const temp = TEMP[d.temp as keyof typeof TEMP];
@@ -548,22 +610,79 @@ export default function RedesCampanas() {
               );
             })}
           </div>
-
+ 
           <div className="mt-5">
-            <button disabled={!listo}
-              className={`w-full rounded-lg py-3 text-sm font-black flex items-center justify-center gap-2 transition-all ${listo ? "bg-[#FFF500] text-[#0d0d0d] cursor-pointer hover:brightness-110" : "bg-[#FFF500] text-[#0d0d0d] opacity-30 cursor-not-allowed"}`}>
-              ⚡ Generar campaña completa
+            <button onClick={generarCampana} disabled={!listo || generando}
+              className={`w-full rounded-lg py-3 text-sm font-black flex items-center justify-center gap-2 transition-all ${listo && !generando ? "bg-[#FFF500] text-[#0d0d0d] cursor-pointer hover:brightness-110" : "bg-[#FFF500] text-[#0d0d0d] opacity-30 cursor-not-allowed"}`}>
+              {generando ? "⚙️ Generando campaña..." : "⚡ Generar campaña completa"}
             </button>
-            <p className="text-center text-[10px] text-[#555] mt-2">
-              {listo
-                ? "Maqueta — el motor de generación llega en la siguiente etapa"
-                : modo === "producto" ? "Agrega el nombre del producto para continuar"
+            {!listo && (
+              <p className="text-center text-[10px] text-[#555] mt-2">
+                {modo === "producto" ? "Agrega el nombre del producto para continuar"
                 : modo === "negocio" ? "Agrega el nombre del negocio para continuar"
                 : "Agrega tu nombre para continuar"}
-            </p>
+              </p>
+            )}
           </div>
         </div>
-
+ 
+        {/* ───── BLOQUE 6: RESULTADO (los días generados) ───── */}
+        {resultado.length > 0 && (
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-4 block">
+              ✨ Tu campaña generada · {resultado.filter(r => !r.cargando).length}/{resultado.length} días
+            </span>
+            <div className="space-y-3">
+              {resultado.map((r, i) => {
+                const temp = TEMP[r.diaTemp as keyof typeof TEMP];
+                return (
+                  <div key={i} className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-3 h-3 rounded" style={{ background: temp?.color }}></span>
+                      <span className="text-[11px] font-black text-white">DÍA {r.diaNumero}</span>
+                      <span className="text-[10px] text-[#7A7772]">· {r.diaTitulo}</span>
+                    </div>
+ 
+                    {r.cargando ? (
+                      <div className="flex items-center gap-2 py-3">
+                        <div className="w-4 h-4 border-2 border-[#FFF500] border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-[11px] text-[#7A7772]">Generando contenido...</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {r.textoImagen && (
+                          <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-orange-400">Texto para la imagen</span>
+                            <p className="text-[12px] text-white font-bold mt-0.5">{r.textoImagen}</p>
+                          </div>
+                        )}
+                        {r.caption && (
+                          <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[8px] font-bold uppercase tracking-widest text-cyan-400">Caption</span>
+                              <button onClick={() => copiar(r.caption!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>
+                            </div>
+                            <p className="text-[11px] text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{r.caption}</p>
+                          </div>
+                        )}
+                        {r.hashtags && (
+                          <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[8px] font-bold uppercase tracking-widest text-[#86EFAC]">Hashtags</span>
+                              <button onClick={() => copiar(r.hashtags!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>
+                            </div>
+                            <p className="text-[10px] text-[#86EFAC] leading-relaxed">{r.hashtags}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+ 
       </div>
     </div>
   );
