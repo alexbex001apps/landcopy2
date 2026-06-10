@@ -23,6 +23,8 @@ type DiaResultado = {
   imagen?: string;          // imagen generada del día
   generandoImg?: boolean;   // spinner de la imagen
   editando?: boolean;       // editor de texto abierto
+  editandoImg?: boolean;    // editor de imagen IA abierto
+  instruccionImg?: string;  // instrucción para editar la imagen con IA
 };
  
 const NIVELES = [
@@ -319,6 +321,47 @@ export default function RedesCampanas() {
   }
   function cambiarCampo(i: number, campo: "textoImagen" | "caption" | "hashtags", valor: string) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, [campo]: valor } : r));
+  }
+ 
+  // NUEVO: abrir/cerrar el editor de imagen con IA
+  function toggleEditarImg(i: number) {
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, editandoImg: !r.editandoImg } : r));
+  }
+  function cambiarInstruccion(i: number, valor: string) {
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, instruccionImg: valor } : r));
+  }
+ 
+  // NUEVO: editar la imagen del día con IA siguiendo una instrucción
+  async function editarImagenIA(i: number) {
+    const dia = resultado[i];
+    if (!dia || !dia.imagen || !dia.instruccionImg || dia.generandoImg) return;
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          diaNumero: dia.diaNumero,
+          imagenPrevia: dia.imagen,
+          instruccion: dia.instruccionImg,
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: data.imageUrl, generandoImg: false, editandoImg: false, instruccionImg: "" } : r));
+        mostrarToast(`✓ Imagen editada`);
+      } else {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        mostrarToast("No se pudo editar la imagen");
+      }
+    } catch {
+      setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      mostrarToast("Error al editar la imagen");
+    }
+  }
+ 
+  // NUEVO: quitar la imagen de un día
+  function quitarImagen(i: number) {
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: undefined, editandoImg: false, instruccionImg: "" } : r));
   }
  
   function copiar(texto: string) {
@@ -695,10 +738,23 @@ export default function RedesCampanas() {
                           ) : r.imagen ? (
                             <div className="relative">
                               <img src={r.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`día ${r.diaNumero}`} />
-                              <div className="flex gap-1 mt-1.5">
-                                <button onClick={() => generarImagenDia(i)} className="flex-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFF500]">↻ Otra</button>
-                                <button onClick={() => descargar(r.imagen!, `dia-${r.diaNumero}.png`)} className="flex-1 text-[9px] font-bold py-1.5 rounded bg-[#FFF500] text-black">↓ Bajar</button>
+                              <div className="grid grid-cols-2 gap-1 mt-1.5">
+                                <button onClick={() => generarImagenDia(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                                <button onClick={() => descargar(r.imagen!, `dia-${r.diaNumero}.png`)} className="text-[9px] font-bold py-1.5 rounded bg-[#FFF500] text-black">↓ Bajar</button>
+                                <button onClick={() => toggleEditarImg(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar IA</button>
+                                <button onClick={() => quitarImagen(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                               </div>
+                              {r.editandoImg && (
+                                <div className="mt-2 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-2">
+                                  <input value={r.instruccionImg || ""} onChange={e => cambiarInstruccion(i, e.target.value)}
+                                    placeholder="Ej: ponle más luz, fondo más oscuro..."
+                                    className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[10px] px-2 py-1.5 rounded outline-none mb-1.5" />
+                                  <button onClick={() => editarImagenIA(i)} disabled={!r.instruccionImg}
+                                    className="w-full text-[10px] font-bold py-1.5 rounded bg-purple-500 text-white disabled:opacity-40">
+                                    🖌️ Aplicar cambio
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <button onClick={() => generarImagenDia(i)} disabled={!fotoBase()}
