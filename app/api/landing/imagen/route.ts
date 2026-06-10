@@ -63,6 +63,18 @@ const PROMPTS_IMAGEN: Record<string, (p: any) => string> = {
   cta_final: (p) => `Closing sales banner for ${p.producto}. MUST include bold text overlay. Large headline: "¿Listo para transformar tu vida?". Subheadline: "${p.beneficio}". Bold CTA button text: "¡Quiero el mío ahora!". Guarantee text: "Garantía de satisfacción". Premium product shot centered. Orange and white bold typography. High end commercial quality. BACKGROUND: ${p.fondo || "Aspirational lifestyle background."}`,
 };
  
+// Limpia las etiquetas organizativas (TITULAR:, FRASE:, CTA:, etc.) de cualquier texto
+// ANTES de mandarlo a la imagen, para que la IA nunca las vea y nunca las pinte.
+function limpiarEtiquetas(texto: string): string {
+  if (!texto) return "";
+  return texto
+    .replace(/\b(TITULAR|TITTULAR|SUBTITULO|SUBTÍTULO|SUBTITULOS|FRASE|FRASES|CTA|CIERRE|GARANTIA|GARANTÍA|BENEFICIO|BENEFICIOS|PASO|PASOS|TESTIMONIO|TESTIMONIOS)\s*\d*\s*:/gi, "")
+    .replace(/\s*\|\s*/g, " — ")
+    .replace(/\n+/g, " · ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+ 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -80,16 +92,25 @@ export async function POST(req: NextRequest) {
     const fondoSeleccionado = FONDOS_DISPONIBLES.find(f => f.id === fondoId);
     const fondo = fondoSeleccionado?.prompt || null;
  
-    let prompt = `[ABSOLUTE RULE — READ FIRST] The words "TITULAR", "TITTULAR", "SUBTITULO", "SUBTÍTULO", "FRASE", "CTA", "CIERRE", "GARANTIA", "GARANTÍA", "BENEFICIO", "PASO", "TESTIMONIO" are FORBIDDEN on the image. They are internal labels, NOT part of the design. If you see them in the text, DELETE them and show only what comes after the colon. Never render a colon-label. ` + promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, headline, fondo });
+    // Se limpian los textos que alimentan el prompt base, por si traen etiquetas.
+    let prompt = promptFn({
+      producto,
+      problema: limpiarEtiquetas(problema || ""),
+      beneficio: limpiarEtiquetas(beneficio || ""),
+      precioOferta,
+      precioAnterior,
+      headline: limpiarEtiquetas(headline || ""),
+      fondo,
+    });
  
-    // NUEVO: si el usuario editó el texto de la sección a mano, ese texto manda.
-    // Se le pasa a la IA como el texto EXACTO que debe quemar en la imagen.
+    // Si el usuario editó el texto de la sección a mano, ese texto manda.
+    // Se limpia de etiquetas y se le pasa a la IA como el texto EXACTO a quemar.
     if (textoEditado && textoEditado.trim()) {
-      prompt += ` CRITICAL TEXT OVERRIDE: The exact text that MUST appear written on the image is the following (respect it word for word, do not invent other text): "${textoEditado.trim()}".`;
+      const textoLimpio = limpiarEtiquetas(textoEditado);
+      prompt += ` The exact text to display on the image is: "${textoLimpio}".`;
     }
  
-    // NUEVO: instrucción libre del usuario (botón "Editar con IA").
-    // Es la orden de mayor prioridad: "cambia el título a amarillo", "pon el precio más grande", etc.
+    // Instrucción libre del usuario (botón "Editar con IA"). Máxima prioridad.
     if (promptPropio && promptPropio.trim()) {
       prompt += ` USER EDIT INSTRUCTION (highest priority, apply this change exactly): ${promptPropio.trim()}.`;
     }
@@ -98,7 +119,7 @@ export async function POST(req: NextRequest) {
  
     let imageUrl = "";
  
-    // NUEVO: si viene imagenPrevia (editar una imagen ya generada), se edita ESA.
+    // Si viene imagenPrevia (editar una imagen ya generada), se edita ESA.
     // Si no, se usa la foto del producto (imagen_url) como antes.
     const imagenBase = (imagenPrevia && imagenPrevia.startsWith("http")) ? imagenPrevia : imagen_url;
  
