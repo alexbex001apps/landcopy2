@@ -5,8 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 // ─────────────────────────────────────────────────────────────
 // REDES — CENTRO DE CAMPAÑAS
 // 3 modos: Producto · Negocio · Marca personal.
-// Parte 2: el botón genera la campaña día por día (textos).
-// Las imágenes llegan en la Parte 3.
+// Pieza B: cada día genera su imagen (botón) + editar texto a mano.
 // ─────────────────────────────────────────────────────────────
  
 type Modo = "producto" | "negocio" | "marca";
@@ -21,6 +20,9 @@ type DiaResultado = {
   caption?: string;
   hashtags?: string;
   cargando?: boolean;
+  imagen?: string;          // imagen generada del día
+  generandoImg?: boolean;   // spinner de la imagen
+  editando?: boolean;       // editor de texto abierto
 };
  
 const NIVELES = [
@@ -124,7 +126,7 @@ export default function RedesCampanas() {
   const [modo, setModo] = useState<Modo>("producto");
   const [nivelId, setNivelId] = useState<NivelId>("pro");
  
-  // ── Datos modo PRODUCTO ──
+  // PRODUCTO
   const [pNombre, setPNombre] = useState("");
   const [pImagen, setPImagen] = useState<string | null>(null);
   const [pPrecioOferta, setPPrecioOferta] = useState("");
@@ -133,14 +135,14 @@ export default function RedesCampanas() {
   const [pProblema, setPProblema] = useState("");
   const [pIdentificando, setPIdentificando] = useState(false);
  
-  // ── Datos modo NEGOCIO ──
+  // NEGOCIO
   const [nNombre, setNNombre] = useState("");
   const [nFotos, setNFotos] = useState<string[]>([]);
   const [nOfrece, setNOfrece] = useState("");
   const [nCiudad, setNCiudad] = useState("");
   const [nIdentificando, setNIdentificando] = useState(false);
  
-  // ── Datos modo MARCA PERSONAL ──
+  // MARCA
   const [mNombre, setMNombre] = useState("");
   const [mFotos, setMFotos] = useState<string[]>([]);
   const [mQueHace, setMQueHace] = useState("");
@@ -152,12 +154,12 @@ export default function RedesCampanas() {
   const [mHistorias, setMHistorias] = useState("");
   const [mIdentificando, setMIdentificando] = useState(false);
  
-  // ── Compartidos ──
+  // COMPARTIDOS
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [toast, setToast] = useState("");
  
-  // ── Resultado de la campaña ──
+  // RESULTADO
   const [generando, setGenerando] = useState(false);
   const [resultado, setResultado] = useState<DiaResultado[]>([]);
  
@@ -241,47 +243,34 @@ export default function RedesCampanas() {
     setLoad(false);
   }
  
-  // Arma el cuerpo con TODOS los datos del modo activo, para mandarlo al cerebro.
   function datosDelModo() {
     const base = { modo, pais, tono, redes: nivel.redes };
-    if (modo === "producto") {
-      return { ...base, pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior };
-    }
-    if (modo === "negocio") {
-      return { ...base, nNombre, nOfrece, nCiudad };
-    }
+    if (modo === "producto") return { ...base, pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior };
+    if (modo === "negocio") return { ...base, nNombre, nOfrece, nCiudad };
     return { ...base, mNombre, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias };
   }
  
-  // ── EL MOTOR: genera la campaña día por día (se ven llegando) ──
+  // Foto base para las imágenes según el modo
+  function fotoBase(): string | null {
+    if (modo === "producto") return pImagen;
+    if (modo === "negocio") return nFotos[0] || null;
+    return mFotos[0] || null;
+  }
+ 
   async function generarCampana() {
     if (!listo || generando) return;
     setGenerando(true);
- 
-    // 1) Pintar todos los días en estado "cargando"
     const base: DiaResultado[] = dias.map((d, i) => ({
-      diaNumero: i + 1,
-      diaTitulo: d.titulo,
-      diaTemp: d.temp,
-      cargando: true,
+      diaNumero: i + 1, diaTitulo: d.titulo, diaTemp: d.temp, cargando: true,
     }));
     setResultado(base);
- 
     const datos = datosDelModo();
- 
-    // 2) Generar uno por uno (en orden, se ven llegando)
     for (let i = 0; i < dias.length; i++) {
       const d = dias[i];
       try {
         const resp = await fetch("/api/redes-campanas/generar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...datos,
-            diaNumero: i + 1,
-            diaTitulo: d.titulo,
-            diaTemp: d.temp,
-          }),
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...datos, diaNumero: i + 1, diaTitulo: d.titulo, diaTemp: d.temp }),
         });
         const data = await resp.json();
         setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, ...data, cargando: false } : r));
@@ -289,14 +278,57 @@ export default function RedesCampanas() {
         setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, cargando: false, caption: "Error al generar este día" } : r));
       }
     }
- 
     setGenerando(false);
     mostrarToast("✓ Campaña generada");
+  }
+ 
+  // NUEVO: generar la imagen de UN día
+  async function generarImagenDia(i: number) {
+    const dia = resultado[i];
+    if (!dia || dia.generandoImg) return;
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          modo, tono,
+          diaNumero: dia.diaNumero,
+          diaTitulo: dia.diaTitulo,
+          diaTemp: dia.diaTemp,
+          textoImagen: dia.textoImagen,
+          foto: fotoBase(),
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: data.imageUrl, generandoImg: false } : r));
+        mostrarToast(`✓ Imagen del día ${dia.diaNumero}`);
+      } else {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        mostrarToast("No se pudo generar la imagen");
+      }
+    } catch {
+      setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      mostrarToast("Error al generar la imagen");
+    }
+  }
+ 
+  // NUEVO: editar texto a mano
+  function toggleEditar(i: number) {
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, editando: !r.editando } : r));
+  }
+  function cambiarCampo(i: number, campo: "textoImagen" | "caption" | "hashtags", valor: string) {
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, [campo]: valor } : r));
   }
  
   function copiar(texto: string) {
     navigator.clipboard.writeText(texto || "");
     mostrarToast("✓ Copiado");
+  }
+ 
+  function descargar(url: string, nombre: string) {
+    const a = document.createElement("a");
+    a.href = url; a.download = nombre; a.click();
   }
  
   const listoProducto = modo === "producto" && pNombre.trim().length > 0;
@@ -348,7 +380,7 @@ export default function RedesCampanas() {
  
       <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
  
-        {/* ───── BLOQUE 1: MODO ───── */}
+        {/* BLOQUE 1: MODO */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -373,7 +405,7 @@ export default function RedesCampanas() {
           </div>
         </div>
  
-        {/* ───── BLOQUE 2: DATOS ───── */}
+        {/* BLOQUE 2: DATOS */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase mb-3 block" style={{ color: modoColor }}>
             2 · {modo === "producto" ? "Tu producto" : modo === "negocio" ? "Tu negocio" : "Tu marca personal"}
@@ -540,7 +572,7 @@ export default function RedesCampanas() {
           </div>
         </div>
  
-        {/* ───── BLOQUE 3: NIVEL ───── */}
+        {/* BLOQUE 3: NIVEL */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">3 · ¿Cuánto contenido quieres?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -563,7 +595,7 @@ export default function RedesCampanas() {
           </div>
         </div>
  
-        {/* ───── BLOQUE 4: REDES ───── */}
+        {/* BLOQUE 4: REDES */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">4 · Redes incluidas en {nivel.nombre}</span>
           <div className="flex flex-wrap gap-2">
@@ -576,7 +608,7 @@ export default function RedesCampanas() {
           </div>
         </div>
  
-        {/* ───── BLOQUE 5: CALENDARIO + BOTÓN GENERAR ───── */}
+        {/* BLOQUE 5: CALENDARIO + BOTÓN */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500]">
@@ -590,7 +622,6 @@ export default function RedesCampanas() {
               ))}
             </div>
           </div>
- 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
             {dias.map((d, i) => {
               const temp = TEMP[d.temp as keyof typeof TEMP];
@@ -610,7 +641,6 @@ export default function RedesCampanas() {
               );
             })}
           </div>
- 
           <div className="mt-5">
             <button onClick={generarCampana} disabled={!listo || generando}
               className={`w-full rounded-lg py-3 text-sm font-black flex items-center justify-center gap-2 transition-all ${listo && !generando ? "bg-[#FFF500] text-[#0d0d0d] cursor-pointer hover:brightness-110" : "bg-[#FFF500] text-[#0d0d0d] opacity-30 cursor-not-allowed"}`}>
@@ -626,7 +656,7 @@ export default function RedesCampanas() {
           </div>
         </div>
  
-        {/* ───── BLOQUE 6: RESULTADO (los días generados) ───── */}
+        {/* BLOQUE 6: RESULTADO */}
         {resultado.length > 0 && (
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-4 block">
@@ -641,6 +671,11 @@ export default function RedesCampanas() {
                       <span className="w-3 h-3 rounded" style={{ background: temp?.color }}></span>
                       <span className="text-[11px] font-black text-white">DÍA {r.diaNumero}</span>
                       <span className="text-[10px] text-[#7A7772]">· {r.diaTitulo}</span>
+                      {!r.cargando && (
+                        <button onClick={() => toggleEditar(i)} className="ml-auto text-[10px] text-yellow-400 border border-[rgba(255,215,0,0.3)] px-2 py-0.5 rounded">
+                          {r.editando ? "✓ Listo" : "✎ Editar texto"}
+                        </button>
+                      )}
                     </div>
  
                     {r.cargando ? (
@@ -649,31 +684,71 @@ export default function RedesCampanas() {
                         <span className="text-[11px] text-[#7A7772]">Generando contenido...</span>
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        {r.textoImagen && (
+                      <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3">
+                        {/* Columna imagen */}
+                        <div>
+                          {r.generandoImg ? (
+                            <div className="aspect-square rounded-lg bg-[#0d0d0d] border border-[#2a2a2a] flex flex-col items-center justify-center gap-2">
+                              <div className="w-6 h-6 border-2 border-[#FFF500] border-t-transparent rounded-full animate-spin"></div>
+                              <span className="text-[9px] text-[#7A7772]">Creando imagen...</span>
+                            </div>
+                          ) : r.imagen ? (
+                            <div className="relative">
+                              <img src={r.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`día ${r.diaNumero}`} />
+                              <div className="flex gap-1 mt-1.5">
+                                <button onClick={() => generarImagenDia(i)} className="flex-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(255,215,0,0.15)] border border-[rgba(255,215,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                                <button onClick={() => descargar(r.imagen!, `dia-${r.diaNumero}.png`)} className="flex-1 text-[9px] font-bold py-1.5 rounded bg-[#FFF500] text-black">↓ Bajar</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button onClick={() => generarImagenDia(i)} disabled={!fotoBase()}
+                              className="w-full aspect-square rounded-lg border-2 border-dashed border-[rgba(255,215,0,0.3)] hover:border-[#FFF500] flex flex-col items-center justify-center gap-2 bg-[rgba(255,215,0,0.03)] disabled:opacity-40 transition-colors">
+                              <span className="text-2xl">🎨</span>
+                              <span className="text-[10px] font-bold text-[#FFF500]">Generar imagen</span>
+                              {!fotoBase() && <span className="text-[8px] text-[#7A7772] px-2 text-center">Sube una foto arriba primero</span>}
+                            </button>
+                          )}
+                        </div>
+ 
+                        {/* Columna textos */}
+                        <div className="space-y-2">
+                          {/* Texto imagen */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <span className="text-[8px] font-bold uppercase tracking-widest text-orange-400">Texto para la imagen</span>
-                            <p className="text-[12px] text-white font-bold mt-0.5">{r.textoImagen}</p>
+                            {r.editando ? (
+                              <input value={r.textoImagen || ""} onChange={e => cambiarCampo(i, "textoImagen", e.target.value)}
+                                className="w-full mt-1 bg-[#1a1a1a] border border-[#333] text-white text-[12px] font-bold px-2 py-1 rounded outline-none" />
+                            ) : (
+                              <p className="text-[12px] text-white font-bold mt-0.5">{r.textoImagen}</p>
+                            )}
                           </div>
-                        )}
-                        {r.caption && (
+                          {/* Caption */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[8px] font-bold uppercase tracking-widest text-cyan-400">Caption</span>
-                              <button onClick={() => copiar(r.caption!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>
+                              {!r.editando && <button onClick={() => copiar(r.caption!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>}
                             </div>
-                            <p className="text-[11px] text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{r.caption}</p>
+                            {r.editando ? (
+                              <textarea value={r.caption || ""} onChange={e => cambiarCampo(i, "caption", e.target.value)} rows={3}
+                                className="w-full bg-[#1a1a1a] border border-[#333] text-[#EDE8DC] text-[11px] px-2 py-1 rounded outline-none resize-none" />
+                            ) : (
+                              <p className="text-[11px] text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{r.caption}</p>
+                            )}
                           </div>
-                        )}
-                        {r.hashtags && (
+                          {/* Hashtags */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[8px] font-bold uppercase tracking-widest text-[#86EFAC]">Hashtags</span>
-                              <button onClick={() => copiar(r.hashtags!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>
+                              {!r.editando && <button onClick={() => copiar(r.hashtags!)} className="text-[9px] text-[#7A7772] hover:text-white">⎘ copiar</button>}
                             </div>
-                            <p className="text-[10px] text-[#86EFAC] leading-relaxed">{r.hashtags}</p>
+                            {r.editando ? (
+                              <textarea value={r.hashtags || ""} onChange={e => cambiarCampo(i, "hashtags", e.target.value)} rows={2}
+                                className="w-full bg-[#1a1a1a] border border-[#333] text-[#86EFAC] text-[10px] px-2 py-1 rounded outline-none resize-none" />
+                            ) : (
+                              <p className="text-[10px] text-[#86EFAC] leading-relaxed">{r.hashtags}</p>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
                   </div>
