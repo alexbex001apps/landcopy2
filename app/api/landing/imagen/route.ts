@@ -80,8 +80,7 @@ export async function POST(req: NextRequest) {
     const fondoSeleccionado = FONDOS_DISPONIBLES.find(f => f.id === fondoId);
     const fondo = fondoSeleccionado?.prompt || null;
  
-    let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, headline, fondo });
-    prompt += ` IMPORTANT TEXT RULE: Never write organizational labels like "TITULAR:", "SUBTITULO:", "FRASE:", "CTA:", "CIERRE:", "GARANTIA:", "BENEFICIO:", "PASO:", "TESTIMONIO:" on the image. Show only the actual content, never those label words.`;
+    let prompt = `[ABSOLUTE RULE — READ FIRST] The words "TITULAR", "TITTULAR", "SUBTITULO", "SUBTÍTULO", "FRASE", "CTA", "CIERRE", "GARANTIA", "GARANTÍA", "BENEFICIO", "PASO", "TESTIMONIO" are FORBIDDEN on the image. They are internal labels, NOT part of the design. If you see them in the text, DELETE them and show only what comes after the colon. Never render a colon-label. ` + promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, headline, fondo });
  
     // NUEVO: si el usuario editó el texto de la sección a mano, ese texto manda.
     // Se le pasa a la IA como el texto EXACTO que debe quemar en la imagen.
