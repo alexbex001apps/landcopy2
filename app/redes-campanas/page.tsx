@@ -3,14 +3,13 @@ import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // ─────────────────────────────────────────────────────────────
-// REDES — CENTRO DE CAMPAÑAS (Etapa 2)
-// Maqueta viva + bloque de datos que cambia según el modo.
-// Producto: 1 foto + identificar con IA.
-// Negocio: hasta 5 fotos + perfil de negocio.
-// La generación real de la campaña llega en la etapa siguiente.
+// REDES — CENTRO DE CAMPAÑAS
+// 3 modos: Producto · Negocio · Marca personal.
+// Cada modo tiene su formulario y su calendario propio.
+// Maqueta viva — el motor de generación llega en la etapa siguiente.
 // ─────────────────────────────────────────────────────────────
 
-type Modo = "producto" | "negocio";
+type Modo = "producto" | "negocio" | "marca";
 type NivelId = "normal" | "pro" | "class";
 
 const NIVELES = [
@@ -86,6 +85,24 @@ const DIAS_NEGOCIO = [
   { titulo: "Cierre de mes + agradecimiento", temp: "caliente" },
 ];
 
+// Calendario propio de MARCA PERSONAL: siembra (dar) antes que cosecha (vender)
+const DIAS_MARCA = [
+  { titulo: "Enseñanza — aporta valor", temp: "frio" },
+  { titulo: "Historia personal — conecta", temp: "frio" },
+  { titulo: "Cita poderosa — inspira", temp: "frio" },
+  { titulo: "Detrás de cámara — humaniza", temp: "frio" },
+  { titulo: "Testimonio de seguidor", temp: "tibio" },
+  { titulo: "Pregunta a tu comunidad", temp: "tibio" },
+  { titulo: "Lanzamiento — tu libro/música/evento", temp: "caliente" },
+  { titulo: "Lección aprendida — tu caída y cambio", temp: "frio" },
+  { titulo: "Mini-tutorial / consejo práctico", temp: "tibio" },
+  { titulo: "Detrás del proceso creativo", temp: "frio" },
+  { titulo: "Invitación al evento / live", temp: "caliente" },
+  { titulo: "Responde una duda frecuente", temp: "tibio" },
+  { titulo: "Reflexión del día", temp: "frio" },
+  { titulo: "Llamado final — únete / adquiere", temp: "caliente" },
+];
+
 export default function RedesCampanas() {
   useEffect(() => {
     const supabase = createClient();
@@ -113,6 +130,19 @@ export default function RedesCampanas() {
   const [nCiudad, setNCiudad] = useState("");
   const [nIdentificando, setNIdentificando] = useState(false);
 
+  // ── Datos modo MARCA PERSONAL ──
+  const [mNombre, setMNombre] = useState("");
+  const [mFotos, setMFotos] = useState<string[]>([]);
+  const [mQueHace, setMQueHace] = useState("");
+  const [mPromociona, setMPromociona] = useState("");
+  const [mCiudad, setMCiudad] = useState("");
+  // Las 4 de información (opcionales — el que maneja la marca llena lo que quiera)
+  const [mMensaje, setMMensaje] = useState("");   // mensaje madre
+  const [mPilares, setMPilares] = useState("");   // pilares de contenido
+  const [mVoz, setMVoz] = useState("");           // voz propia
+  const [mHistorias, setMHistorias] = useState(""); // banco de historias
+  const [mIdentificando, setMIdentificando] = useState(false);
+
   // ── Compartidos ──
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
@@ -120,9 +150,10 @@ export default function RedesCampanas() {
 
   const pFileRef = useRef<HTMLInputElement>(null);
   const nFileRef = useRef<HTMLInputElement>(null);
+  const mFileRef = useRef<HTMLInputElement>(null);
 
   const nivel = NIVELES.find(n => n.id === nivelId)!;
-  const plantilla = modo === "producto" ? DIAS_PRODUCTO : DIAS_NEGOCIO;
+  const plantilla = modo === "producto" ? DIAS_PRODUCTO : modo === "negocio" ? DIAS_NEGOCIO : DIAS_MARCA;
   const dias = plantilla.slice(0, nivel.dias);
 
   function mostrarToast(msg: string) {
@@ -130,7 +161,6 @@ export default function RedesCampanas() {
     setTimeout(() => setToast(""), 2500);
   }
 
-  // Comprime una imagen a JPG liviano antes de guardarla en estado
   function comprimir(file: File): Promise<string> {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -151,30 +181,25 @@ export default function RedesCampanas() {
   async function handleImagenProducto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const b = await comprimir(file);
-    setPImagen(b);
+    setPImagen(await comprimir(file));
   }
 
-  async function handleFotosNegocio(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFotosLista(e: React.ChangeEvent<HTMLInputElement>, lista: string[], setLista: (v: string[]) => void) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    const espacio = 5 - nFotos.length;
+    const espacio = 5 - lista.length;
     const aProcesar = files.slice(0, espacio);
     const nuevas: string[] = [];
-    for (const f of aProcesar) {
-      nuevas.push(await comprimir(f));
-    }
-    setNFotos(prev => [...prev, ...nuevas].slice(0, 5));
+    for (const f of aProcesar) nuevas.push(await comprimir(f));
+    setLista([...lista, ...nuevas].slice(0, 5));
   }
 
-  // Identificar PRODUCTO con IA (usa el endpoint que ya existe en Campaigns/Landing)
   async function identificarProducto() {
     if (!pImagen) return;
     setPIdentificando(true);
     try {
       const resp = await fetch("/api/campaigns/identificar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imagen: pImagen }),
       });
       const data = await resp.json();
@@ -183,39 +208,39 @@ export default function RedesCampanas() {
       if (data.problema) setPProblema(data.problema);
       if (data.beneficio) setPBeneficio(data.beneficio);
       mostrarToast("✓ Producto identificado");
-    } catch {
-      mostrarToast("No se pudo identificar");
-    }
+    } catch { mostrarToast("No se pudo identificar"); }
     setPIdentificando(false);
   }
 
-  // Identificar NEGOCIO con IA (reusa el mismo endpoint con la primera foto)
-  async function identificarNegocio() {
-    if (nFotos.length === 0) return;
-    setNIdentificando(true);
+  // Negocio y Marca: "identificar registrado" — por ahora usa Vision sobre la 1ª foto.
+  // En etapa futura: buscará en el banco de negocios/marcas registrados.
+  async function identificarRegistrado(fotos: string[], setNom: (v: string) => void, setQue: (v: string) => void, setLoad: (v: boolean) => void, tipo: string) {
+    if (fotos.length === 0) return;
+    setLoad(true);
     try {
       const resp = await fetch("/api/campaigns/identificar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imagen: nFotos[0] }),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagen: fotos[0] }),
       });
       const data = await resp.json();
-      if (data.nombre) setNNombre(data.nombre);
-      if (data.beneficio) setNOfrece(data.beneficio);
-      mostrarToast("✓ Negocio identificado");
-    } catch {
-      mostrarToast("No se pudo identificar");
-    }
-    setNIdentificando(false);
+      if (data.nombre) setNom(data.nombre);
+      if (data.beneficio) setQue(data.beneficio);
+      mostrarToast(`✓ ${tipo} identificado`);
+    } catch { mostrarToast("No se pudo identificar"); }
+    setLoad(false);
   }
 
-  // ¿Tiene datos mínimos para poder generar?
   const listoProducto = modo === "producto" && pNombre.trim().length > 0;
   const listoNegocio = modo === "negocio" && nNombre.trim().length > 0;
-  const listo = listoProducto || listoNegocio;
+  const listoMarca = modo === "marca" && mNombre.trim().length > 0;
+  const listo = listoProducto || listoNegocio || listoMarca;
 
   const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
+  const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
+
+  // Color del modo activo (para acentos)
+  const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
@@ -256,35 +281,39 @@ export default function RedesCampanas() {
 
       <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
 
-        {/* ───── BLOQUE 1: MODO ───── */}
+        {/* ───── BLOQUE 1: MODO (3 opciones) ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button onClick={() => setModo("producto")}
               className={`text-left rounded-xl p-4 border transition-all ${modo === "producto" ? "border-orange-500 bg-[rgba(255,80,0,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
               <div className="text-2xl mb-2">📦</div>
               <div className={`text-sm font-black mb-1 ${modo === "producto" ? "text-orange-400" : "text-white"}`}>Un producto</div>
-              <div className="text-[11px] text-[#7A7772] leading-snug">Dropshipping o un producto que vendes. La IA crea imágenes del producto y campaña de venta.</div>
+              <div className="text-[10px] text-[#7A7772] leading-snug">Dropshipping o un producto que vendes. La IA crea imágenes del producto.</div>
             </button>
             <button onClick={() => setModo("negocio")}
               className={`text-left rounded-xl p-4 border transition-all ${modo === "negocio" ? "border-cyan-500 bg-[rgba(56,189,248,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
               <div className="text-2xl mb-2">🏪</div>
               <div className={`text-sm font-black mb-1 ${modo === "negocio" ? "text-cyan-400" : "text-white"}`}>Mi negocio local</div>
-              <div className="text-[11px] text-[#7A7772] leading-snug">Peluquería, restaurante, tienda. Subes tus fotos reales y la IA arma tu mes de publicaciones.</div>
+              <div className="text-[10px] text-[#7A7772] leading-snug">Peluquería, restaurante, tienda. Subes tus fotos y armas tu mes.</div>
+            </button>
+            <button onClick={() => setModo("marca")}
+              className={`text-left rounded-xl p-4 border transition-all ${modo === "marca" ? "border-yellow-400 bg-[rgba(250,204,21,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
+              <div className="text-2xl mb-2">⭐</div>
+              <div className={`text-sm font-black mb-1 ${modo === "marca" ? "text-yellow-400" : "text-white"}`}>Marca personal</div>
+              <div className="text-[10px] text-[#7A7772] leading-snug">Autor, músico, pastor, coach. Date a conocer por tu mensaje y tu obra.</div>
             </button>
           </div>
         </div>
 
         {/* ───── BLOQUE 2: DATOS (cambia según modo) ───── */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">
-            2 · {modo === "producto" ? "Tu producto" : "Tu negocio"}
+          <span className="text-xs font-bold tracking-widest uppercase mb-3 block" style={{ color: modoColor }}>
+            2 · {modo === "producto" ? "Tu producto" : modo === "negocio" ? "Tu negocio" : "Tu marca personal"}
           </span>
 
-          {modo === "producto" ? (
-            // ── FORMULARIO PRODUCTO ──
+          {modo === "producto" && (
             <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4">
-              {/* Foto producto */}
               <div>
                 <span className={labelCls}>Foto del producto</span>
                 <div onClick={() => !pImagen && pFileRef.current?.click()}
@@ -311,37 +340,25 @@ export default function RedesCampanas() {
                   </button>
                 )}
               </div>
-
-              {/* Campos producto */}
               <div className="space-y-2">
-                <div>
-                  <span className={labelCls}>Nombre del producto *</span>
-                  <input value={pNombre} onChange={e => setPNombre(e.target.value)} placeholder="Ej: Rodillax" className={inputCls} />
-                </div>
+                <div><span className={labelCls}>Nombre del producto *</span>
+                  <input value={pNombre} onChange={e => setPNombre(e.target.value)} placeholder="Ej: Rodillax" className={inputCls} /></div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <span className={labelCls}>Precio oferta</span>
-                    <input value={pPrecioOferta} onChange={e => setPPrecioOferta(e.target.value)} placeholder="49.000" className={inputCls} />
-                  </div>
-                  <div>
-                    <span className={labelCls}>Precio anterior</span>
-                    <input value={pPrecioAnterior} onChange={e => setPPrecioAnterior(e.target.value)} placeholder="89.000" className={inputCls} />
-                  </div>
+                  <div><span className={labelCls}>Precio oferta</span>
+                    <input value={pPrecioOferta} onChange={e => setPPrecioOferta(e.target.value)} placeholder="49.000" className={inputCls} /></div>
+                  <div><span className={labelCls}>Precio anterior</span>
+                    <input value={pPrecioAnterior} onChange={e => setPPrecioAnterior(e.target.value)} placeholder="89.000" className={inputCls} /></div>
                 </div>
-                <div>
-                  <span className={labelCls}>Beneficio principal</span>
-                  <input value={pBeneficio} onChange={e => setPBeneficio(e.target.value)} placeholder="Se llena solo con 🔍" className={inputCls} />
-                </div>
-                <div>
-                  <span className={labelCls}>Problema que resuelve</span>
-                  <input value={pProblema} onChange={e => setPProblema(e.target.value)} placeholder="Se llena solo con 🔍" className={inputCls} />
-                </div>
+                <div><span className={labelCls}>Beneficio principal</span>
+                  <input value={pBeneficio} onChange={e => setPBeneficio(e.target.value)} placeholder="Se llena solo con 🔍" className={inputCls} /></div>
+                <div><span className={labelCls}>Problema que resuelve</span>
+                  <input value={pProblema} onChange={e => setPProblema(e.target.value)} placeholder="Se llena solo con 🔍" className={inputCls} /></div>
               </div>
             </div>
-          ) : (
-            // ── FORMULARIO NEGOCIO ──
+          )}
+
+          {modo === "negocio" && (
             <div className="space-y-4">
-              {/* Fotos negocio (hasta 5) */}
               <div>
                 <span className={labelCls}>Fotos de tu negocio (hasta 5) — local, equipo, productos</span>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -360,29 +377,79 @@ export default function RedesCampanas() {
                     </button>
                   )}
                 </div>
-                <input ref={nFileRef} type="file" accept="image/*" multiple onChange={handleFotosNegocio} className="hidden" />
+                <input ref={nFileRef} type="file" accept="image/*" multiple onChange={(e) => handleFotosLista(e, nFotos, setNFotos)} className="hidden" />
                 {nFotos.length > 0 && (
-                  <button onClick={identificarNegocio} disabled={nIdentificando}
+                  <button onClick={() => identificarRegistrado(nFotos, setNNombre, setNOfrece, setNIdentificando, "Negocio")} disabled={nIdentificando}
                     className="mt-2 bg-cyan-500 text-black text-[11px] font-bold py-2 px-4 rounded-lg disabled:opacity-40">
-                    {nIdentificando ? "⏳ Identificando..." : "🔍 Identificar negocio"}
+                    {nIdentificando ? "⏳ Identificando..." : "🔍 Identificar negocio registrado"}
                   </button>
                 )}
+                <p className="text-[10px] text-[#7A7772] mt-1.5">💡 Registra tu negocio con sus fotos y datos, y la IA llenará todo para las campañas.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div><span className={labelCls}>Nombre del negocio *</span>
+                  <input value={nNombre} onChange={e => setNNombre(e.target.value)} placeholder="Ej: Peluquería Maru" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué ofreces?</span>
+                  <input value={nOfrece} onChange={e => setNOfrece(e.target.value)} placeholder="Cortes, color, peinados" className={inputCls} /></div>
+                <div><span className={labelCls}>Ciudad</span>
+                  <input value={nCiudad} onChange={e => setNCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
+              </div>
+            </div>
+          )}
+
+          {modo === "marca" && (
+            <div className="space-y-4">
+              <div>
+                <span className={labelCls}>Tus fotos (hasta 5) — tú, tus libros, predicando, en escena</span>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {mFotos.map((f, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#2a2a2a]">
+                      <img src={f} className="w-full h-full object-cover" alt={`foto ${i + 1}`} />
+                      <button onClick={() => setMFotos(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
+                    </div>
+                  ))}
+                  {mFotos.length < 5 && (
+                    <button onClick={() => mFileRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-yellow-400/40 hover:border-yellow-400 flex flex-col items-center justify-center bg-[rgba(250,204,21,0.04)] transition-colors">
+                      <span className="text-yellow-400 text-2xl">＋</span>
+                      <span className="text-yellow-400 text-[8px] font-bold">Agregar</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={mFileRef} type="file" accept="image/*" multiple onChange={(e) => handleFotosLista(e, mFotos, setMFotos)} className="hidden" />
+                {mFotos.length > 0 && (
+                  <button onClick={() => identificarRegistrado(mFotos, setMNombre, setMQueHace, setMIdentificando, "Marca")} disabled={mIdentificando}
+                    className="mt-2 bg-yellow-400 text-black text-[11px] font-bold py-2 px-4 rounded-lg disabled:opacity-40">
+                    {mIdentificando ? "⏳ Identificando..." : "🔍 Identificar marca registrada"}
+                  </button>
+                )}
+                <p className="text-[10px] text-[#7A7772] mt-1.5">💡 Registra tu marca con tus fotos y datos, y la IA llenará todo para las campañas.</p>
               </div>
 
-              {/* Campos negocio */}
+              {/* Datos base de la marca */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <span className={labelCls}>Nombre del negocio *</span>
-                  <input value={nNombre} onChange={e => setNNombre(e.target.value)} placeholder="Ej: Peluquería Maru" className={inputCls} />
-                </div>
-                <div>
-                  <span className={labelCls}>¿Qué ofreces?</span>
-                  <input value={nOfrece} onChange={e => setNOfrece(e.target.value)} placeholder="Cortes, color, peinados" className={inputCls} />
-                </div>
-                <div>
-                  <span className={labelCls}>Ciudad</span>
-                  <input value={nCiudad} onChange={e => setNCiudad(e.target.value)} placeholder="Medellín" className={inputCls} />
-                </div>
+                <div><span className={labelCls}>Tu nombre / nombre artístico *</span>
+                  <input value={mNombre} onChange={e => setMNombre(e.target.value)} placeholder="Ej: Alejandro Bec" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué haces?</span>
+                  <input value={mQueHace} onChange={e => setMQueHace(e.target.value)} placeholder="Autor de libros de fe y finanzas" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué promocionas ahora?</span>
+                  <input value={mPromociona} onChange={e => setMPromociona(e.target.value)} placeholder="Mi libro 'Raíces de Iniquidad'" className={inputCls} /></div>
+                <div><span className={labelCls}>Ciudad</span>
+                  <input value={mCiudad} onChange={e => setMCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
+              </div>
+
+              {/* Las 4 de información — opcionales, el que maneja la marca llena lo que quiera */}
+              <div className="bg-[#0d0d0d] border border-[rgba(250,204,21,0.2)] rounded-xl p-3 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-400">ADN de tu marca <span className="text-[#7A7772] normal-case font-normal">(opcional — entre más llenes, mejores campañas)</span></p>
+                <div><span className={labelCls}>💎 Mensaje madre — tu gran idea</span>
+                  <textarea value={mMensaje} onChange={e => setMMensaje(e.target.value)} rows={2} placeholder="La idea central que repites de mil formas. Ej: del ruido al propósito." className={areaCls} /></div>
+                <div><span className={labelCls}>🎯 Pilares — tus 3-4 temas</span>
+                  <input value={mPilares} onChange={e => setMPilares(e.target.value)} placeholder="Fe · Familia · Finanzas · Propósito" className={inputCls} /></div>
+                <div><span className={labelCls}>🗣️ Tu voz — cómo hablas</span>
+                  <textarea value={mVoz} onChange={e => setMVoz(e.target.value)} rows={2} placeholder="Frases típicas, tu tono, palabras que usas. Ej: cercano, directo, con humor." className={areaCls} /></div>
+                <div><span className={labelCls}>📖 Tus historias — testimonios reales</span>
+                  <textarea value={mHistorias} onChange={e => setMHistorias(e.target.value)} rows={2} placeholder="Momentos tuyos que conectan: cómo empezaste, tu caída, tu cambio." className={areaCls} /></div>
               </div>
             </div>
           )}
@@ -395,9 +462,7 @@ export default function RedesCampanas() {
               <div className="flex flex-wrap gap-1">
                 {PAISES.map(p => (
                   <button key={p} onClick={() => setPais(p)}
-                    className={`text-[10px] font-bold px-2 py-1 rounded-sm border transition-all ${pais === p ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFF500]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
-                    {p}
-                  </button>
+                    className={`text-[10px] font-bold px-2 py-1 rounded-sm border transition-all ${pais === p ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFF500]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>{p}</button>
                 ))}
               </div>
             </div>
@@ -406,9 +471,7 @@ export default function RedesCampanas() {
               <div className="flex flex-wrap gap-1">
                 {TONOS.map(t => (
                   <button key={t} onClick={() => setTono(t)}
-                    className={`text-[10px] font-bold px-2 py-1 rounded-sm border transition-all ${tono === t ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFF500]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>
-                    {t}
-                  </button>
+                    className={`text-[10px] font-bold px-2 py-1 rounded-sm border transition-all ${tono === t ? "bg-[rgba(255,215,0,0.1)] border-[rgba(255,215,0,0.4)] text-[#FFF500]" : "bg-[#1e1e1e] border-[#2a2a2a] text-[#EDE8DC]"}`}>{t}</button>
                 ))}
               </div>
             </div>
@@ -425,18 +488,12 @@ export default function RedesCampanas() {
                 <button key={n.id} onClick={() => setNivelId(n.id)}
                   className={`text-left rounded-xl p-4 border transition-all relative ${activo ? "bg-[#111]" : "border-[#1e1e1e] bg-[#0d0d0d] hover:border-[#333]"}`}
                   style={activo ? { borderColor: n.color } : {}}>
-                  {n.badge && (
-                    <span className="absolute top-3 right-3 text-[8px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: n.color }}>{n.badge}</span>
-                  )}
+                  {n.badge && (<span className="absolute top-3 right-3 text-[8px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: n.color }}>{n.badge}</span>)}
                   <div className="text-base font-black mb-0.5" style={{ color: activo ? n.color : "#fff" }}>{n.nombre}</div>
                   <div className="text-[10px] text-[#7A7772] mb-3">{n.dias} días · {n.subtitulo}</div>
                   <ul className="space-y-1">
-                    {n.incluye.map((x, i) => (
-                      <li key={i} className="text-[10px] text-[#C8C3B7] flex gap-1.5"><span style={{ color: n.color }}>✓</span>{x}</li>
-                    ))}
-                    {n.noIncluye.map((x, i) => (
-                      <li key={i} className="text-[10px] text-[#555] flex gap-1.5"><span>—</span>{x}</li>
-                    ))}
+                    {n.incluye.map((x, i) => (<li key={i} className="text-[10px] text-[#C8C3B7] flex gap-1.5"><span style={{ color: n.color }}>✓</span>{x}</li>))}
+                    {n.noIncluye.map((x, i) => (<li key={i} className="text-[10px] text-[#555] flex gap-1.5"><span>—</span>{x}</li>))}
                   </ul>
                 </button>
               );
@@ -461,7 +518,7 @@ export default function RedesCampanas() {
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500]">
-              5 · Tu campaña de {nivel.dias} días {modo === "negocio" ? "(negocio)" : "(producto)"}
+              5 · Tu campaña de {nivel.dias} días {modo === "negocio" ? "(negocio)" : modo === "marca" ? "(marca personal)" : "(producto)"}
             </span>
             <div className="flex gap-3">
               {Object.values(TEMP).map(t => (
@@ -500,7 +557,9 @@ export default function RedesCampanas() {
             <p className="text-center text-[10px] text-[#555] mt-2">
               {listo
                 ? "Maqueta — el motor de generación llega en la siguiente etapa"
-                : modo === "producto" ? "Agrega el nombre del producto para continuar" : "Agrega el nombre del negocio para continuar"}
+                : modo === "producto" ? "Agrega el nombre del producto para continuar"
+                : modo === "negocio" ? "Agrega el nombre del negocio para continuar"
+                : "Agrega tu nombre para continuar"}
             </p>
           </div>
         </div>
