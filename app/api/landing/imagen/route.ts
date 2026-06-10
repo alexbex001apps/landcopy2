@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
     const fondo = fondoSeleccionado?.prompt || null;
  
     let prompt = promptFn({ producto, problema, beneficio, precioOferta, precioAnterior, headline, fondo });
+    prompt += ` IMPORTANT TEXT RULE: Never write organizational labels like "TITULAR:", "SUBTITULO:", "FRASE:", "CTA:", "CIERRE:", "GARANTIA:", "BENEFICIO:", "PASO:", "TESTIMONIO:" on the image. Show only the actual content, never those label words.`;
  
     // NUEVO: si el usuario editó el texto de la sección a mano, ese texto manda.
     // Se le pasa a la IA como el texto EXACTO que debe quemar en la imagen.
