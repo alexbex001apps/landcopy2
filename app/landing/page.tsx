@@ -114,6 +114,11 @@ export default function Landing() {
   const [fImagen2, setFImagen2] = useState<string | null>(null);
   const [fImagen3, setFImagen3] = useState<string | null>(null);
   const [fIdentificando, setFIdentificando] = useState(false);
+  const [editandoTexto, setEditandoTexto] = useState(false);
+  const [textoEditado, setTextoEditado] = useState("");
+  const [editandoImagen, setEditandoImagen] = useState(false);
+  const [instruccionImagen, setInstruccionImagen] = useState("");
+  const [aplicandoEdicion, setAplicandoEdicion] = useState(false);
  
   const supabase = createClient();
  
@@ -398,6 +403,52 @@ export default function Landing() {
       sessionStorage.setItem("landing_contenido", JSON.stringify(contenido));
     }
   }, [contenido]);
+  const guardarTextoEditado = () => {
+    setContenido(prev => ({ ...prev, [seccionActiva]: textoEditado }));
+    setEditandoTexto(false);
+    showToast("✓ Texto actualizado");
+  };
+
+  const editarImagenIA = async () => {
+    if (!instruccionImagen.trim() || !imagenes[seccionActiva]) return;
+    setAplicandoEdicion(true);
+    marcarGenerando(seccionActiva);
+    setImagenGenerando(prev => prev.includes(seccionActiva) ? prev : [...prev, seccionActiva]);
+    try {
+      const resp = await fetch("/api/landing/imagen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seccion: seccionActiva, ...datosActivos, fondoId: fondoSeleccionado, imagenPrevia: imagenes[seccionActiva], promptPropio: instruccionImagen }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        let urlFinal = data.imageUrl;
+        if (data.imageUrl.startsWith("data:")) {
+          const comprimida = await comprimirJPG(data.imageUrl);
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const blob = await fetch(comprimida).then(r => r.blob());
+            const path = `${user?.id}/${Date.now()}_${seccionActiva}_edit.jpg`;
+            await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/jpeg" });
+            const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+            urlFinal = urlData.publicUrl;
+          } catch { urlFinal = comprimida; }
+        }
+        try {
+          const guardadas = JSON.parse(sessionStorage.getItem("landing_imagenes") || "{}");
+          guardadas[seccionActiva] = urlFinal;
+          sessionStorage.setItem("landing_imagenes", JSON.stringify(guardadas));
+        } catch {}
+        setImagenes(prev => ({ ...prev, [seccionActiva]: urlFinal }));
+        setInstruccionImagen("");
+        setEditandoImagen(false);
+        showToast("✓ Imagen actualizada");
+      }
+    } catch {}
+    desmarcarGenerando(seccionActiva);
+    setImagenGenerando(prev => prev.filter(x => x !== seccionActiva));
+    setAplicandoEdicion(false);
+  };
   const regenerarSeccion = async (seccionId: string) => {
     setSeccionGenerando(seccionId);
     try {
@@ -700,7 +751,16 @@ export default function Landing() {
                   <button onClick={() => regenerarSeccion(seccionActiva)} disabled={seccionGenerando === seccionActiva} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 transition-transform">
                     {seccionGenerando === seccionActiva ? "⟳ Generando..." : "↻ Regenerar sección"}
                   </button>
-                  <button className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
+                  <button onClick={() => { if (editandoTexto) { setEditandoTexto(false); } else { setTextoEditado(contenido[seccionActiva] || ""); setEditandoTexto(true); } }} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">✎ Editar texto</button>
+                  {editandoTexto && (
+                    <div className="bg-[#0d0d0d] border border-yellow-500/30 rounded-lg p-2 space-y-2">
+                      <textarea value={textoEditado} onChange={e => setTextoEditado(e.target.value)} rows={5} className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-[11px] px-2 py-2 rounded-lg outline-none resize-none" placeholder="Edita el texto de esta sección..." />
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setEditandoTexto(false)} className="flex-1 border border-[#1a1a1a] text-zinc-500 text-[11px] font-bold py-2 rounded-lg">Cancelar</button>
+                        <button onClick={guardarTextoEditado} className="flex-1 bg-yellow-500 text-black text-[11px] font-bold py-2 rounded-lg">Guardar texto</button>
+                      </div>
+                    </div>
+                  )}
                   <button onClick={() => generarImagen(seccionActiva)} disabled={imagenGenerando.includes(seccionActiva)} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg disabled:opacity-40 active:scale-95 relative overflow-hidden" style={{backgroundImage: !imagenGenerando.includes(seccionActiva) ? "linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.15) 50%, transparent 100%)" : "none", backgroundSize:"200% 100%", animation: !imagenGenerando.includes(seccionActiva) ? "shimmerBtn 2.5s infinite" : "none"}}>
                     {imagenGenerando.includes(seccionActiva) ? "⟳ Generando imagen..." : "🖼️ Generar imagen"}
                   </button>
@@ -710,6 +770,18 @@ export default function Landing() {
                   <button onClick={() => guardarSeccionEnBiblioteca(seccionActiva)} disabled={guardandoSeccion || (!imagenes[seccionActiva] && !contenido[seccionActiva])} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-40">
                     {guardandoSeccion ? "⟳ Guardando..." : "💾 Guardar sección"}
                   </button>
+                  {imagenes[seccionActiva] && (
+                    <button onClick={() => setEditandoImagen(!editandoImagen)} className="w-full bg-[#111] border border-cyan-500/30 text-cyan-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🖌️ Editar imagen</button>
+                  )}
+                  {editandoImagen && imagenes[seccionActiva] && (
+                    <div className="bg-[#0d0d0d] border border-cyan-500/30 rounded-lg p-2 space-y-2">
+                      <textarea value={instruccionImagen} onChange={e => setInstruccionImagen(e.target.value)} rows={3} className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-[11px] px-2 py-2 rounded-lg outline-none resize-none" placeholder="Ej: el título debe decir 'Pintura Acrílica' con tilde · pon el precio más grande · más luz al producto" />
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setEditandoImagen(false)} className="flex-1 border border-[#1a1a1a] text-zinc-500 text-[11px] font-bold py-2 rounded-lg">Cancelar</button>
+                        <button onClick={editarImagenIA} disabled={aplicandoEdicion || !instruccionImagen.trim()} className="flex-1 bg-cyan-500 text-black text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">{aplicandoEdicion ? "⟳ Aplicando..." : "Aplicar"}</button>
+                      </div>
+                    </div>
+                  )}
                   {imagenes[seccionActiva] && (
                     <button onClick={() => { setImagenes(prev => { const n = {...prev}; delete n[seccionActiva]; sessionStorage.setItem("landing_imagenes", JSON.stringify(n)); return n; }); }} className="w-full bg-[#111] border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Quitar imagen</button>
                   )}
