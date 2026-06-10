@@ -90,7 +90,7 @@ export default function Navbar() {
   const modulos = [
     { href: "/campaigns", label: "Campañas", Icon: LogoCampanas },
     { href: "/copy", label: "Copy", Icon: LogoCopy },
-    { href: "/redes", label: "Redes", Icon: LogoRedes },
+    { href: "/redes-campanas", label: "Redes", Icon: LogoRedes },
     { href: "/landing", label: "Landing", Icon: LogoLanding },
     { href: "/anuncios", label: "Anuncios", Icon: LogoAnuncios },
     { href: "/biblioteca", label: "Biblioteca", Icon: LogoCopy },
