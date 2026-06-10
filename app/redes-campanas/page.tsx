@@ -133,7 +133,7 @@ export default function RedesCampanas() {
                 <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
-            <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Campañas</p>
+            <p className="text-white text-[15px] md:text-[18px] font-bold tracking-[0.10em] uppercase leading-tight">Redes ·<br/>Campañas</p>
           </div>
           <div className="flex-1 text-center">
             <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
