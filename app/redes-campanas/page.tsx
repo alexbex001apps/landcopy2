@@ -1,16 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
- 
-// ─────────────────────────────────────────────────────────────
-// REDES — CENTRO DE CAMPAÑAS
-// 3 modos: Producto · Negocio · Marca personal.
-// Pieza B: cada día genera su imagen (botón) + editar texto a mano.
-// ─────────────────────────────────────────────────────────────
- 
+
 type Modo = "producto" | "negocio" | "marca";
 type NivelId = "normal" | "pro" | "class";
- 
+
 type DiaResultado = {
   diaNumero: number;
   diaTitulo: string;
@@ -20,13 +14,13 @@ type DiaResultado = {
   caption?: string;
   hashtags?: string;
   cargando?: boolean;
-  imagen?: string;          // imagen generada del día
-  generandoImg?: boolean;   // spinner de la imagen
-  editando?: boolean;       // editor de texto abierto
-  editandoImg?: boolean;    // editor de imagen IA abierto
-  instruccionImg?: string;  // instrucción para editar la imagen con IA
+  imagen?: string;
+  generandoImg?: boolean;
+  editando?: boolean;
+  editandoImg?: boolean;
+  instruccionImg?: string;
 };
- 
+
 const NIVELES = [
   {
     id: "normal" as NivelId, nombre: "Normal", dias: 3, subtitulo: "Semana corta para probar", color: "#22c55e",
@@ -47,7 +41,7 @@ const NIVELES = [
     noIncluye: [], badge: "PREMIUM",
   },
 ];
- 
+
 const REDES_INFO: Record<string, { nombre: string; icon: string }> = {
   instagram: { nombre: "Instagram", icon: "📸" },
   facebook: { nombre: "Facebook", icon: "👥" },
@@ -56,16 +50,16 @@ const REDES_INFO: Record<string, { nombre: string; icon: string }> = {
   story: { nombre: "Stories", icon: "📱" },
   shorts: { nombre: "YT Shorts", icon: "▶️" },
 };
- 
+
 const TEMP = {
   frio: { label: "Frío", color: "#0088cc" },
   tibio: { label: "Tibio", color: "#ff8800" },
   caliente: { label: "Caliente", color: "#cc0000" },
 };
- 
+
 const PAISES = ["Colombia", "México", "Venezuela", "Costa Rica", "Ecuador", "General"];
 const TONOS = ["Urgente", "Emocional", "Cercano", "Confianza", "Premium", "Divertido"];
- 
+
 const DIAS_PRODUCTO = [
   { titulo: "Presentación — engancha", temp: "frio" },
   { titulo: "El problema — agita el dolor", temp: "frio" },
@@ -82,7 +76,7 @@ const DIAS_PRODUCTO = [
   { titulo: "Oferta final — última oportunidad", temp: "caliente" },
   { titulo: "Cierre de campaña", temp: "caliente" },
 ];
- 
+
 const DIAS_NEGOCIO = [
   { titulo: "Bienvenida + horarios", temp: "frio" },
   { titulo: "Detrás de cámara", temp: "frio" },
@@ -99,7 +93,7 @@ const DIAS_NEGOCIO = [
   { titulo: "Novedad / anuncio", temp: "tibio" },
   { titulo: "Cierre de mes + agradecimiento", temp: "caliente" },
 ];
- 
+
 const DIAS_MARCA = [
   { titulo: "Enseñanza — aporta valor", temp: "frio" },
   { titulo: "Historia personal — conecta", temp: "frio" },
@@ -116,7 +110,7 @@ const DIAS_MARCA = [
   { titulo: "Reflexión del día", temp: "frio" },
   { titulo: "Llamado final — únete / adquiere", temp: "caliente" },
 ];
- 
+
 export default function RedesCampanas() {
   useEffect(() => {
     const supabase = createClient();
@@ -124,11 +118,10 @@ export default function RedesCampanas() {
       if (!session) window.location.href = "/login";
     });
   }, []);
- 
+
   const [modo, setModo] = useState<Modo>("producto");
   const [nivelId, setNivelId] = useState<NivelId>("pro");
- 
-  // PRODUCTO
+
   const [pNombre, setPNombre] = useState("");
   const [pImagen, setPImagen] = useState<string | null>(null);
   const [pPrecioOferta, setPPrecioOferta] = useState("");
@@ -136,15 +129,13 @@ export default function RedesCampanas() {
   const [pBeneficio, setPBeneficio] = useState("");
   const [pProblema, setPProblema] = useState("");
   const [pIdentificando, setPIdentificando] = useState(false);
- 
-  // NEGOCIO
+
   const [nNombre, setNNombre] = useState("");
   const [nFotos, setNFotos] = useState<string[]>([]);
   const [nOfrece, setNOfrece] = useState("");
   const [nCiudad, setNCiudad] = useState("");
   const [nIdentificando, setNIdentificando] = useState(false);
- 
-  // MARCA
+
   const [mNombre, setMNombre] = useState("");
   const [mFotos, setMFotos] = useState<string[]>([]);
   const [mQueHace, setMQueHace] = useState("");
@@ -155,29 +146,28 @@ export default function RedesCampanas() {
   const [mVoz, setMVoz] = useState("");
   const [mHistorias, setMHistorias] = useState("");
   const [mIdentificando, setMIdentificando] = useState(false);
- 
-  // COMPARTIDOS
+
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [toast, setToast] = useState("");
- 
-  // RESULTADO
+
   const [generando, setGenerando] = useState(false);
   const [resultado, setResultado] = useState<DiaResultado[]>([]);
- 
+  const [guardandoTodo, setGuardandoTodo] = useState(false);
+
   const pFileRef = useRef<HTMLInputElement>(null);
   const nFileRef = useRef<HTMLInputElement>(null);
   const mFileRef = useRef<HTMLInputElement>(null);
- 
+
   const nivel = NIVELES.find(n => n.id === nivelId)!;
   const plantilla = modo === "producto" ? DIAS_PRODUCTO : modo === "negocio" ? DIAS_NEGOCIO : DIAS_MARCA;
   const dias = plantilla.slice(0, nivel.dias);
- 
+
   function mostrarToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   }
- 
+
   function comprimir(file: File): Promise<string> {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -194,13 +184,13 @@ export default function RedesCampanas() {
       img.src = URL.createObjectURL(file);
     });
   }
- 
+
   async function handleImagenProducto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setPImagen(await comprimir(file));
   }
- 
+
   async function handleFotosLista(e: React.ChangeEvent<HTMLInputElement>, lista: string[], setLista: (v: string[]) => void) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -210,7 +200,7 @@ export default function RedesCampanas() {
     for (const f of aProcesar) nuevas.push(await comprimir(f));
     setLista([...lista, ...nuevas].slice(0, 5));
   }
- 
+
   async function identificarProducto() {
     if (!pImagen) return;
     setPIdentificando(true);
@@ -228,7 +218,7 @@ export default function RedesCampanas() {
     } catch { mostrarToast("No se pudo identificar"); }
     setPIdentificando(false);
   }
- 
+
   async function identificarRegistrado(fotos: string[], setNom: (v: string) => void, setQue: (v: string) => void, setLoad: (v: boolean) => void, tipo: string) {
     if (fotos.length === 0) return;
     setLoad(true);
@@ -244,15 +234,14 @@ export default function RedesCampanas() {
     } catch { mostrarToast("No se pudo identificar"); }
     setLoad(false);
   }
- 
+
   function datosDelModo() {
     const base = { modo, pais, tono, redes: nivel.redes };
     if (modo === "producto") return { ...base, pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior };
     if (modo === "negocio") return { ...base, nNombre, nOfrece, nCiudad };
     return { ...base, mNombre, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias };
   }
- 
-  // Fotos base para las imágenes según el modo (TODAS, para más fidelidad)
+
   function fotosBase(): string[] {
     if (modo === "producto") return pImagen ? [pImagen] : [];
     if (modo === "negocio") return nFotos;
@@ -261,7 +250,7 @@ export default function RedesCampanas() {
   function hayFoto(): boolean {
     return fotosBase().length > 0;
   }
- 
+
   async function generarCampana() {
     if (!listo || generando) return;
     setGenerando(true);
@@ -286,8 +275,7 @@ export default function RedesCampanas() {
     setGenerando(false);
     mostrarToast("✓ Campaña generada");
   }
- 
-  // NUEVO: generar la imagen de UN día
+
   async function generarImagenDia(i: number) {
     const dia = resultado[i];
     if (!dia || dia.generandoImg) return;
@@ -317,24 +305,21 @@ export default function RedesCampanas() {
       mostrarToast("Error al generar la imagen");
     }
   }
- 
-  // NUEVO: editar texto a mano
+
   function toggleEditar(i: number) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, editando: !r.editando } : r));
   }
   function cambiarCampo(i: number, campo: "textoImagen" | "caption" | "hashtags", valor: string) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, [campo]: valor } : r));
   }
- 
-  // NUEVO: abrir/cerrar el editor de imagen con IA
+
   function toggleEditarImg(i: number) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, editandoImg: !r.editandoImg } : r));
   }
   function cambiarInstruccion(i: number, valor: string) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, instruccionImg: valor } : r));
   }
- 
-  // NUEVO: editar la imagen del día con IA siguiendo una instrucción
+
   async function editarImagenIA(i: number) {
     const dia = resultado[i];
     if (!dia || !dia.imagen || !dia.instruccionImg || dia.generandoImg) return;
@@ -361,40 +346,133 @@ export default function RedesCampanas() {
       mostrarToast("Error al editar la imagen");
     }
   }
- 
-  // NUEVO: quitar la imagen de un día
+
   function quitarImagen(i: number) {
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: undefined, editandoImg: false, instruccionImg: "" } : r));
   }
- 
+
+  function comprimirJPG(dataUrl: string): Promise<string> {
+    return new Promise((resolve) => {
+      try {
+        if (!dataUrl || !dataUrl.startsWith("data:")) { resolve(dataUrl); return; }
+        const img = new window.Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) { resolve(dataUrl); return; }
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            let calidad = 0.72;
+            let out = canvas.toDataURL("image/jpeg", calidad);
+            while (out.length > 110 * 1024 * 1.37 && calidad > 0.4) {
+              calidad -= 0.1; out = canvas.toDataURL("image/jpeg", calidad);
+            }
+            if (!out || out.length < 1000) { resolve(dataUrl); return; }
+            resolve(out);
+          } catch { resolve(dataUrl); }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      } catch { resolve(dataUrl); }
+    });
+  }
+
+  function nombreSujeto(): string {
+    if (modo === "producto") return pNombre || "Producto";
+    if (modo === "negocio") return nNombre || "Negocio";
+    return mNombre || "Marca";
+  }
+
+  async function subirImagen(supabase: any, imagen: string, diaNumero: number): Promise<string | null> {
+    if (!imagen) return null;
+    if (imagen.startsWith("http")) return imagen;
+    if (!imagen.startsWith("data:")) return null;
+    try {
+      const comprimida = await comprimirJPG(imagen);
+      const { data: { user } } = await supabase.auth.getUser();
+      const blob = await fetch(comprimida).then(r => r.blob());
+      const path = `${user?.id}/${Date.now()}_redescamp_dia${diaNumero}.jpg`;
+      await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/jpeg" });
+      const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+      return urlData.publicUrl;
+    } catch { return null; }
+  }
+
+  async function guardarDiaEnBiblioteca(i: number) {
+    const dia = resultado[i];
+    if (!dia || !dia.imagen) { mostrarToast("Genera la imagen primero"); return; }
+    const supabase = createClient();
+    const nombre = `${nombreSujeto()} — Día ${dia.diaNumero}`;
+    const imageUrl = await subirImagen(supabase, dia.imagen, dia.diaNumero);
+    await fetch("/api/biblioteca", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "imagen", modulo: "redes-campanas", nombre, producto: nombreSujeto(),
+        contenido: dia.caption || null, imagen_url: imageUrl,
+        metadata: { dia: dia.diaNumero, tema: dia.diaTitulo, temperatura: dia.diaTemp, hashtags: dia.hashtags, textoImagen: dia.textoImagen },
+      }),
+    });
+    sessionStorage.removeItem("biblioteca_items");
+    mostrarToast(`✓ Día ${dia.diaNumero} guardado`);
+  }
+
+  async function guardarTodaLaCampana() {
+    const conImagen = resultado.filter(r => r.imagen);
+    if (conImagen.length === 0) { mostrarToast("Genera imágenes primero"); return; }
+    setGuardandoTodo(true);
+    const supabase = createClient();
+    let guardados = 0;
+    for (const dia of conImagen) {
+      try {
+        const nombre = `${nombreSujeto()} — Día ${dia.diaNumero}`;
+        const imageUrl = await subirImagen(supabase, dia.imagen!, dia.diaNumero);
+        await fetch("/api/biblioteca", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tipo: "imagen", modulo: "redes-campanas", nombre, producto: nombreSujeto(),
+            contenido: dia.caption || null, imagen_url: imageUrl,
+            metadata: { dia: dia.diaNumero, tema: dia.diaTitulo, temperatura: dia.diaTemp, hashtags: dia.hashtags, textoImagen: dia.textoImagen },
+          }),
+        });
+        guardados++;
+        mostrarToast(`Guardando... ${guardados}/${conImagen.length}`);
+      } catch {}
+    }
+    sessionStorage.removeItem("biblioteca_items");
+    setGuardandoTodo(false);
+    mostrarToast(`✓ ${guardados} días guardados en Biblioteca`);
+  }
+
   function copiar(texto: string) {
     navigator.clipboard.writeText(texto || "");
     mostrarToast("✓ Copiado");
   }
- 
+
   function descargar(url: string, nombre: string) {
     const a = document.createElement("a");
     a.href = url; a.download = nombre; a.click();
   }
- 
+
   const listoProducto = modo === "producto" && pNombre.trim().length > 0;
   const listoNegocio = modo === "negocio" && nNombre.trim().length > 0;
   const listoMarca = modo === "marca" && mNombre.trim().length > 0;
   const listo = listoProducto || listoNegocio || listoMarca;
- 
+
   const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
   const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
   const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
- 
+
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
- 
+
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">{toast}</div>
       )}
- 
-      {/* Header */}
+
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-0">
         <div className="flex flex-col md:flex-row items-center mb-4">
           <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
@@ -423,10 +501,9 @@ export default function RedesCampanas() {
           <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
         </div>
       </div>
- 
+
       <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
- 
-        {/* BLOQUE 1: MODO */}
+
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -450,13 +527,12 @@ export default function RedesCampanas() {
             </button>
           </div>
         </div>
- 
-        {/* BLOQUE 2: DATOS */}
+
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase mb-3 block" style={{ color: modoColor }}>
             2 · {modo === "producto" ? "Tu producto" : modo === "negocio" ? "Tu negocio" : "Tu marca personal"}
           </span>
- 
+
           {modo === "producto" && (
             <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4">
               <div>
@@ -501,7 +577,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
- 
+
           {modo === "negocio" && (
             <div className="space-y-4">
               <div>
@@ -541,7 +617,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
- 
+
           {modo === "marca" && (
             <div className="space-y-4">
               <div>
@@ -594,7 +670,7 @@ export default function RedesCampanas() {
               </div>
             </div>
           )}
- 
+
           <div className="border-t border-[#1e1e1e] my-4" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -617,8 +693,7 @@ export default function RedesCampanas() {
             </div>
           </div>
         </div>
- 
-        {/* BLOQUE 3: NIVEL */}
+
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">3 · ¿Cuánto contenido quieres?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -640,8 +715,7 @@ export default function RedesCampanas() {
             })}
           </div>
         </div>
- 
-        {/* BLOQUE 4: REDES */}
+
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">4 · Redes incluidas en {nivel.nombre}</span>
           <div className="flex flex-wrap gap-2">
@@ -653,8 +727,7 @@ export default function RedesCampanas() {
             ))}
           </div>
         </div>
- 
-        {/* BLOQUE 5: CALENDARIO + BOTÓN */}
+
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500]">
@@ -701,8 +774,7 @@ export default function RedesCampanas() {
             )}
           </div>
         </div>
- 
-        {/* BLOQUE 6: RESULTADO */}
+
         {resultado.length > 0 && (
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-4 block">
@@ -723,7 +795,7 @@ export default function RedesCampanas() {
                         </button>
                       )}
                     </div>
- 
+
                     {r.cargando ? (
                       <div className="flex items-center gap-2 py-3">
                         <div className="w-4 h-4 border-2 border-[#FFF500] border-t-transparent rounded-full animate-spin"></div>
@@ -731,7 +803,6 @@ export default function RedesCampanas() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3">
-                        {/* Columna imagen */}
                         <div>
                           {r.generandoImg ? (
                             <div className="aspect-square rounded-lg bg-[#0d0d0d] border border-[#2a2a2a] flex flex-col items-center justify-center gap-2">
@@ -747,6 +818,7 @@ export default function RedesCampanas() {
                                 <button onClick={() => toggleEditarImg(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar IA</button>
                                 <button onClick={() => quitarImagen(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                               </div>
+                              <button onClick={() => guardarDiaEnBiblioteca(i)} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Biblioteca</button>
                               {r.editandoImg && (
                                 <div className="mt-2 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-2">
                                   <input value={r.instruccionImg || ""} onChange={e => cambiarInstruccion(i, e.target.value)}
@@ -768,10 +840,8 @@ export default function RedesCampanas() {
                             </button>
                           )}
                         </div>
- 
-                        {/* Columna textos */}
+
                         <div className="space-y-2">
-                          {/* Texto imagen */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <span className="text-[8px] font-bold uppercase tracking-widest text-orange-400">Texto para la imagen</span>
                             {r.editando ? (
@@ -781,7 +851,6 @@ export default function RedesCampanas() {
                               <p className="text-[12px] text-white font-bold mt-0.5">{r.textoImagen}</p>
                             )}
                           </div>
-                          {/* Caption */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[8px] font-bold uppercase tracking-widest text-cyan-400">Caption</span>
@@ -794,7 +863,6 @@ export default function RedesCampanas() {
                               <p className="text-[11px] text-[#EDE8DC] leading-relaxed whitespace-pre-wrap">{r.caption}</p>
                             )}
                           </div>
-                          {/* Hashtags */}
                           <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[8px] font-bold uppercase tracking-widest text-[#86EFAC]">Hashtags</span>
@@ -814,9 +882,15 @@ export default function RedesCampanas() {
                 );
               })}
             </div>
+            {resultado.some(r => r.imagen) && (
+              <button onClick={guardarTodaLaCampana} disabled={guardandoTodo}
+                className="w-full mt-4 rounded-lg py-3 text-sm font-black bg-purple-500 text-white hover:brightness-110 disabled:opacity-40 transition-all">
+                {guardandoTodo ? "⟳ Guardando campaña..." : "📚 Guardar toda la campaña en Biblioteca"}
+              </button>
+            )}
           </div>
         )}
- 
+
       </div>
     </div>
   );
