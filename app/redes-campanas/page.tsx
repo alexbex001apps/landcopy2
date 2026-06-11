@@ -142,7 +142,7 @@ export default function RedesCampanas() {
       if (e.mPilares) setMPilares(e.mPilares);
       if (e.mVoz) setMVoz(e.mVoz);
       if (e.mHistorias) setMHistorias(e.mHistorias);
-      if (e.resultado) setResultado(e.resultado);
+      if (e.resultado) setResultado(e.resultado.map((r: DiaResultado) => ({ ...r, cargando: false, generandoImg: false, editandoImg: false })));
     } catch {}
   }, []);
 
@@ -191,12 +191,18 @@ export default function RedesCampanas() {
   const dias = plantilla.slice(0, nivel.dias);
   useEffect(() => {
     try {
-      const estado = {
+      const resultadoLimpio = resultado.map(r => ({
+        ...r,
+        cargando: false,
+        generandoImg: false,
+        editandoImg: false,
+      }));
+        const estado = {
         modo, nivelId, pais, tono,
         pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema,
         nNombre, nFotos, nOfrece, nCiudad,
         mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias,
-        resultado,
+        resultado: resultadoLimpio,
       };
       sessionStorage.setItem("redescamp_estado", JSON.stringify(estado));
     } catch {}
