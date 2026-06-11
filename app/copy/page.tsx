@@ -32,6 +32,7 @@ export default function Copy() {
   const [analizando, setAnalizando] = useState(false);
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [origenCampana, setOrigenCampana] = useState<"general" | "propia">("propia");
   const [modalCompartir, setModalCompartir] = useState<string | null>(null);
   const [headlinesSeleccionados, setHeadlinesSeleccionados] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,7 @@ export default function Copy() {
       setPais(c.pais || "Colombia");
       setTono(c.tono || "Urgente");
       if (c.imagen_url) setImagen(c.imagen_url);
+      setOrigenCampana("general");
       const resCamp = ss.getItem("landcopy_resultado");
       const resCampProd = ss.getItem("landcopy_resultado_producto");
       if (resCamp && resCampProd === (c.producto || "")) setResultado(JSON.parse(resCamp));
@@ -362,6 +364,23 @@ export default function Copy() {
           <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-bold px-3 py-1.5 rounded-full flex-shrink-0 hidden sm:block">● LABORATORIO LIBRE</div>
         </div>
  
+        <div className="flex items-center gap-3 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl px-4 py-2.5 mb-4">
+          {origenCampana === "general" ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 bg-[rgba(255,215,0,0.12)] border border-[rgba(255,215,0,0.4)] text-[#FFF500] text-[10px] font-bold px-2.5 py-1 rounded-full">
+                🔗 Campaña general
+              </span>
+              <span className="text-[#EDE8DC] text-xs font-bold truncate">{producto || "Sin producto"}</span>
+            </>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1.5 bg-[#151515] border border-[#2a2a2a] text-[#9a958a] text-[10px] font-bold px-2.5 py-1 rounded-full">
+                ✎ Solo en Copy
+              </span>
+              <span className="text-[#EDE8DC] text-xs font-bold truncate">{producto || "Empieza tu copy"}</span>
+            </>
+          )}
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
  
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
