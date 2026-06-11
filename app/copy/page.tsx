@@ -150,6 +150,7 @@ export default function Copy() {
  
   async function identificarProducto() {
     if (!imagen) return;
+    setResultado(null);
     setIdentificando(true);
     try {
       const resp = await fetch("/api/campaigns/identificar", {
