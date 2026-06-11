@@ -60,7 +60,8 @@ export default function Copy() {
       setTono(c.tono || "Urgente");
       if (c.imagen_url) setImagen(c.imagen_url);
       const resCamp = ss.getItem("landcopy_resultado");
-      if (resCamp) setResultado(JSON.parse(resCamp));
+      const resCampProd = ss.getItem("landcopy_resultado_producto");
+      if (resCamp && resCampProd === (c.producto || "")) setResultado(JSON.parse(resCamp));
       const guardCamp = ls.getItem("landcopy_guardados");
       if (guardCamp) setGuardados(JSON.parse(guardCamp));
       setHydrated(true);
@@ -80,7 +81,8 @@ export default function Copy() {
     const img = ss.getItem("lc_imagen");
     if (img) setImagen(img);
     const res = ss.getItem("landcopy_resultado");
-    if (res) setResultado(JSON.parse(res));
+    const resProd = ss.getItem("landcopy_resultado_producto");
+    if (res && resProd === (ss.getItem("lc_producto") || "")) setResultado(JSON.parse(res));
     const guard = ls.getItem("landcopy_guardados");
     if (guard) setGuardados(JSON.parse(guard));
     setHydrated(true);
@@ -314,6 +316,7 @@ export default function Copy() {
       setProgreso(100);
       setResultado(data);
       sessionStorage.setItem("landcopy_resultado", JSON.stringify(data));
+      sessionStorage.setItem("landcopy_resultado_producto", producto);
       setTiempoReal(Math.round((Date.now() - tiempoInicioRef.current) / 1000));
     } catch {
       clearInterval(interval);
