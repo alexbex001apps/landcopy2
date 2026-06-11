@@ -117,6 +117,33 @@ export default function RedesCampanas() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = "/login";
     });
+    try {
+      const e = JSON.parse(sessionStorage.getItem("redescamp_estado") || "{}");
+      if (e.modo) setModo(e.modo);
+      if (e.nivelId) setNivelId(e.nivelId);
+      if (e.pais) setPais(e.pais);
+      if (e.tono) setTono(e.tono);
+      if (e.pNombre) setPNombre(e.pNombre);
+      if (e.pImagen) setPImagen(e.pImagen);
+      if (e.pPrecioOferta) setPPrecioOferta(e.pPrecioOferta);
+      if (e.pPrecioAnterior) setPPrecioAnterior(e.pPrecioAnterior);
+      if (e.pBeneficio) setPBeneficio(e.pBeneficio);
+      if (e.pProblema) setPProblema(e.pProblema);
+      if (e.nNombre) setNNombre(e.nNombre);
+      if (e.nFotos) setNFotos(e.nFotos);
+      if (e.nOfrece) setNOfrece(e.nOfrece);
+      if (e.nCiudad) setNCiudad(e.nCiudad);
+      if (e.mNombre) setMNombre(e.mNombre);
+      if (e.mFotos) setMFotos(e.mFotos);
+      if (e.mQueHace) setMQueHace(e.mQueHace);
+      if (e.mPromociona) setMPromociona(e.mPromociona);
+      if (e.mCiudad) setMCiudad(e.mCiudad);
+      if (e.mMensaje) setMMensaje(e.mMensaje);
+      if (e.mPilares) setMPilares(e.mPilares);
+      if (e.mVoz) setMVoz(e.mVoz);
+      if (e.mHistorias) setMHistorias(e.mHistorias);
+      if (e.resultado) setResultado(e.resultado);
+    } catch {}
   }, []);
 
   const [modo, setModo] = useState<Modo>("producto");
@@ -162,6 +189,18 @@ export default function RedesCampanas() {
   const nivel = NIVELES.find(n => n.id === nivelId)!;
   const plantilla = modo === "producto" ? DIAS_PRODUCTO : modo === "negocio" ? DIAS_NEGOCIO : DIAS_MARCA;
   const dias = plantilla.slice(0, nivel.dias);
+  useEffect(() => {
+    try {
+      const estado = {
+        modo, nivelId, pais, tono,
+        pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema,
+        nNombre, nFotos, nOfrece, nCiudad,
+        mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias,
+        resultado,
+      };
+      sessionStorage.setItem("redescamp_estado", JSON.stringify(estado));
+    } catch {}
+  }, [modo, nivelId, pais, tono, pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema, nNombre, nFotos, nOfrece, nCiudad, mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias, resultado]);
 
   function mostrarToast(msg: string) {
     setToast(msg);
