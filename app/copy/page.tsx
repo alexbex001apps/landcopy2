@@ -186,6 +186,10 @@ export default function Copy() {
     img.src = URL.createObjectURL(file);
   }
  
+  function soltarCampana() {
+    sessionStorage.removeItem("campaign_activa");
+    setOrigenCampana("propia");
+  }
   function quitarImagen(e: React.MouseEvent) {
     e.stopPropagation();
     setImagen(null);
@@ -371,6 +375,9 @@ export default function Copy() {
                 🔗 Campaña general
               </span>
               <span className="text-[#EDE8DC] text-xs font-bold truncate">{producto || "Sin producto"}</span>
+              <button onClick={soltarCampana} className="ml-auto inline-flex items-center gap-1 bg-[#151515] border border-[#2a2a2a] hover:border-[#FFF500] text-[#9a958a] hover:text-[#FFF500] text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors">
+                ✂️ Soltar y trabajar aparte
+              </button>
             </>
           ) : (
             <>
