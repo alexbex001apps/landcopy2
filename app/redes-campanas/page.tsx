@@ -142,33 +142,7 @@ export default function RedesCampanas() {
       if (e.mPilares) setMPilares(e.mPilares);
       if (e.mVoz) setMVoz(e.mVoz);
       if (e.mHistorias) setMHistorias(e.mHistorias);
-      if (e.resultado) {
-        let imgsGuardadas: Record<number, string> = {};
-        let listaGenerando: number[] = [];
-        try { imgsGuardadas = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
-        try { listaGenerando = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
-        setResultado(e.resultado.map((r: DiaResultado) => ({
-          ...r,
-          cargando: false,
-          editandoImg: false,
-          imagen: imgsGuardadas[r.diaNumero] || r.imagen,
-          generandoImg: listaGenerando.includes(r.diaNumero),
-        })));
-        if (listaGenerando.length > 0) {
-          const intervalo = setInterval(() => {
-            let actual: number[] = [];
-            let imagenesAhora: Record<number, string> = {};
-            try { actual = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
-            try { imagenesAhora = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
-            setResultado(prev => prev.map(r => ({
-              ...r,
-              imagen: imagenesAhora[r.diaNumero] || r.imagen,
-              generandoImg: actual.includes(r.diaNumero),
-            })));
-            if (actual.length === 0) clearInterval(intervalo);
-          }, 1000);
-        }
-      }
+      if (e.resultado) setResultado(e.resultado.map((r: DiaResultado) => ({ ...r, cargando: false, generandoImg: false, editandoImg: false })));
     } catch {}
   }, []);
 
@@ -237,29 +211,6 @@ export default function RedesCampanas() {
   function mostrarToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
-  }
-
-  function guardarImagenSession(diaNumero: number, url: string) {
-    try {
-      const imgs = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}");
-      imgs[diaNumero] = url;
-      sessionStorage.setItem("redescamp_imagenes", JSON.stringify(imgs));
-    } catch {}
-  }
-  function marcarGenerando(diaNumero: number) {
-    try {
-      const lista = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]");
-      if (!lista.includes(diaNumero)) {
-        lista.push(diaNumero);
-        sessionStorage.setItem("redescamp_generando", JSON.stringify(lista));
-      }
-    } catch {}
-  }
-  function desmarcarGenerando(diaNumero: number) {
-    try {
-      const lista = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]");
-      sessionStorage.setItem("redescamp_generando", JSON.stringify(lista.filter((d: number) => d !== diaNumero)));
-    } catch {}
   }
 
   function comprimir(file: File): Promise<string> {
@@ -348,7 +299,6 @@ export default function RedesCampanas() {
   async function generarCampana() {
     if (!listo || generando) return;
     setGenerando(true);
-    try { sessionStorage.removeItem("redescamp_imagenes"); sessionStorage.removeItem("redescamp_generando"); } catch {}
     const base: DiaResultado[] = dias.map((d, i) => ({
       diaNumero: i + 1, diaTitulo: d.titulo, diaTemp: d.temp, cargando: true,
     }));
@@ -374,9 +324,7 @@ export default function RedesCampanas() {
   async function generarImagenDia(i: number) {
     const dia = resultado[i];
     if (!dia || dia.generandoImg) return;
-    const diaNum = dia.diaNumero;
-    marcarGenerando(diaNum);
-    setResultado(prev => prev.map(r => r.diaNumero === diaNum ? { ...r, generandoImg: true } : r));
+    setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -391,31 +339,16 @@ export default function RedesCampanas() {
       });
       const data = await resp.json();
       if (data.imageUrl) {
-        guardarImagenSession(diaNum, data.imageUrl);
-        setResultado(prev => prev.map(r => r.diaNumero === diaNum ? { ...r, imagen: data.imageUrl, generandoImg: false } : r));
-        mostrarToast(`✓ Imagen del día ${diaNum}`);
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: data.imageUrl, generandoImg: false } : r));
+        mostrarToast(`✓ Imagen del día ${dia.diaNumero}`);
       } else {
-        setResultado(prev => prev.map(r => r.diaNumero === diaNum ? { ...r, generandoImg: false } : r));
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
         mostrarToast("No se pudo generar la imagen");
       }
     } catch {
-      setResultado(prev => prev.map(r => r.diaNumero === diaNum ? { ...r, generandoImg: false } : r));
+      setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
       mostrarToast("Error al generar la imagen");
-    } finally {
-      desmarcarGenerando(diaNum);
     }
-  }
-
-  function generarTodasLasImagenes() {
-    if (!hayFoto()) { mostrarToast("Sube una foto arriba primero"); return; }
-    const pendientes = resultado.filter(r => !r.imagen && !r.generandoImg && !r.cargando);
-    if (pendientes.length === 0) { mostrarToast("Ya están todas las imágenes"); return; }
-    resultado.forEach((r, i) => {
-      if (!r.imagen && !r.generandoImg && !r.cargando) {
-        generarImagenDia(i);
-      }
-    });
-    mostrarToast("⚡ Generando imágenes... puedes navegar");
   }
 
   function toggleEditar(i: number) {
@@ -892,12 +825,6 @@ export default function RedesCampanas() {
             <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-4 block">
               ✨ Tu campaña generada · {resultado.filter(r => !r.cargando).length}/{resultado.length} días
             </span>
-            {hayFoto() && resultado.some(r => !r.imagen && !r.cargando) && (
-              <button onClick={generarTodasLasImagenes}
-                className="w-full mb-4 rounded-lg py-3 text-sm font-black bg-[#FFF500] text-[#0d0d0d] hover:brightness-110 transition-all">
-                🎨 Generar todas las imágenes (puedes navegar mientras)
-              </button>
-            )}
             <div className="space-y-3">
               {resultado.map((r, i) => {
                 const temp = TEMP[r.diaTemp as keyof typeof TEMP];
