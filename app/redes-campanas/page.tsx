@@ -339,7 +339,10 @@ export default function RedesCampanas() {
       });
       const data = await resp.json();
       if (data.imageUrl) {
-        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: data.imageUrl, generandoImg: false } : r));
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, dia.diaNumero);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: imagenFinal, generandoImg: false } : r));
         mostrarToast(`✓ Imagen del día ${dia.diaNumero}`);
       } else {
         setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
