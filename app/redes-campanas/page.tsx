@@ -111,67 +111,13 @@ const DIAS_MARCA = [
   { titulo: "Llamado final — únete / adquiere", temp: "caliente" },
 ];
 
-export default function RedesCampanas() {
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = "/login";
-    });
-    try {
-      const e = JSON.parse(sessionStorage.getItem("redescamp_estado") || "{}");
-      if (e.modo) setModo(e.modo);
-      if (e.nivelId) setNivelId(e.nivelId);
-      if (e.pais) setPais(e.pais);
-      if (e.tono) setTono(e.tono);
-      if (e.pNombre) setPNombre(e.pNombre);
-      if (e.pImagen) setPImagen(e.pImagen);
-      if (e.pPrecioOferta) setPPrecioOferta(e.pPrecioOferta);
-      if (e.pPrecioAnterior) setPPrecioAnterior(e.pPrecioAnterior);
-      if (e.pBeneficio) setPBeneficio(e.pBeneficio);
-      if (e.pProblema) setPProblema(e.pProblema);
-      if (e.nNombre) setNNombre(e.nNombre);
-      if (e.nFotos) setNFotos(e.nFotos);
-      if (e.nOfrece) setNOfrece(e.nOfrece);
-      if (e.nCiudad) setNCiudad(e.nCiudad);
-      if (e.mNombre) setMNombre(e.mNombre);
-      if (e.mFotos) setMFotos(e.mFotos);
-      if (e.mQueHace) setMQueHace(e.mQueHace);
-      if (e.mPromociona) setMPromociona(e.mPromociona);
-      if (e.mCiudad) setMCiudad(e.mCiudad);
-      if (e.mMensaje) setMMensaje(e.mMensaje);
-      if (e.mPilares) setMPilares(e.mPilares);
-      if (e.mVoz) setMVoz(e.mVoz);
-      if (e.mHistorias) setMHistorias(e.mHistorias);
-      if (e.resultado) {
-        let imgs: Record<number, string> = {};
-        let gen: number[] = [];
-        try { imgs = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
-        try { gen = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
-        if (!Array.isArray(gen)) gen = [];
-        setResultado(e.resultado.map((r: DiaResultado) => ({
-          ...r, cargando: false, editandoImg: false,
-          imagen: imgs[r.diaNumero] || r.imagen,
-          generandoImg: gen.includes(r.diaNumero),
-        })));
-        if (gen.length > 0) {
-          const vigilante = setInterval(() => {
-            let actual: number[] = [];
-            let imagenesAhora: Record<number, string> = {};
-            try { actual = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
-            try { imagenesAhora = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
-            if (!Array.isArray(actual)) actual = [];
-            setResultado(prev => prev.map(r => ({
-              ...r,
-              imagen: imagenesAhora[r.diaNumero] || r.imagen,
-              generandoImg: actual.includes(r.diaNumero),
-            })));
-            if (actual.length === 0) clearInterval(vigilante);
-          }, 1000);
-        }
-      }
-    } catch {}
-  }, []);
+// === CAJAS POR MODO (la solución de raíz: cada modo su propia caja) ===
+const claveEstado = "redescamp_estado"; // global: modo + campos + nivel/pais/tono (SIN resultado)
+const claveResultado = (m: Modo) => `redescamp_resultado_${m}`;
+const claveImagenes = (m: Modo) => `redescamp_imagenes_${m}`;
+const claveGenerando = (m: Modo) => `redescamp_generando_${m}`;
 
+export default function RedesCampanas() {
   const [modo, setModo] = useState<Modo>("producto");
   const [nivelId, setNivelId] = useState<NivelId>("pro");
 
@@ -207,59 +153,163 @@ export default function RedesCampanas() {
   const [generando, setGenerando] = useState(false);
   const [resultado, setResultado] = useState<DiaResultado[]>([]);
   const [guardandoTodo, setGuardandoTodo] = useState(false);
+  const [hidratado, setHidratado] = useState(false);
 
   const pFileRef = useRef<HTMLInputElement>(null);
   const nFileRef = useRef<HTMLInputElement>(null);
   const mFileRef = useRef<HTMLInputElement>(null);
 
+  // Refs para que el vigilante y los closures sepan SIEMPRE el modo activo
+  const modoRef = useRef<Modo>("producto");
+  const vigilanteRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function pararVigilante() {
+    if (vigilanteRef.current) {
+      clearInterval(vigilanteRef.current);
+      vigilanteRef.current = null;
+    }
+  }
+
+  // Arranca un vigilante atado a UN modo. Si el modo activo cambia, se apaga solo.
+  function arrancarVigilante(m: Modo) {
+    pararVigilante();
+    const intervalo = setInterval(() => {
+      if (modoRef.current !== m) { clearInterval(intervalo); return; }
+      let actual: number[] = [];
+      let imagenesAhora: Record<number, string> = {};
+      try { actual = JSON.parse(sessionStorage.getItem(claveGenerando(m)) || "[]"); } catch {}
+      try { imagenesAhora = JSON.parse(sessionStorage.getItem(claveImagenes(m)) || "{}"); } catch {}
+      if (!Array.isArray(actual)) actual = [];
+      setResultado(prev => prev.map(r => ({
+        ...r,
+        imagen: imagenesAhora[r.diaNumero] || r.imagen,
+        generandoImg: actual.includes(r.diaNumero),
+      })));
+      if (actual.length === 0) { clearInterval(intervalo); vigilanteRef.current = null; }
+    }, 1000);
+    vigilanteRef.current = intervalo;
+  }
+
+  // Lee resultado + imágenes + generando de la caja de UN modo y los pinta
+  function cargarModoEnResultado(m: Modo) {
+    let res: DiaResultado[] = [];
+    let imgs: Record<number, string> = {};
+    let gen: number[] = [];
+    try { res = JSON.parse(sessionStorage.getItem(claveResultado(m)) || "[]"); } catch {}
+    try { imgs = JSON.parse(sessionStorage.getItem(claveImagenes(m)) || "{}"); } catch {}
+    try { gen = JSON.parse(sessionStorage.getItem(claveGenerando(m)) || "[]"); } catch {}
+    if (!Array.isArray(res)) res = [];
+    if (!Array.isArray(gen)) gen = [];
+    setResultado(res.map((r: DiaResultado) => ({
+      ...r, cargando: false, editandoImg: false,
+      imagen: imgs[r.diaNumero] || r.imagen,
+      generandoImg: gen.includes(r.diaNumero),
+    })));
+    if (gen.length > 0) arrancarVigilante(m);
+    else pararVigilante();
+  }
+
+  // === CARGA INICIAL (al montar) ===
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = "/login";
+    });
+    try {
+      const e = JSON.parse(sessionStorage.getItem(claveEstado) || "{}");
+      const modoActivo: Modo = (e.modo as Modo) || "producto";
+      modoRef.current = modoActivo;
+      if (e.modo) setModo(e.modo);
+      if (e.nivelId) setNivelId(e.nivelId);
+      if (e.pais) setPais(e.pais);
+      if (e.tono) setTono(e.tono);
+      if (e.pNombre) setPNombre(e.pNombre);
+      if (e.pImagen) setPImagen(e.pImagen);
+      if (e.pPrecioOferta) setPPrecioOferta(e.pPrecioOferta);
+      if (e.pPrecioAnterior) setPPrecioAnterior(e.pPrecioAnterior);
+      if (e.pBeneficio) setPBeneficio(e.pBeneficio);
+      if (e.pProblema) setPProblema(e.pProblema);
+      if (e.nNombre) setNNombre(e.nNombre);
+      if (e.nFotos) setNFotos(e.nFotos);
+      if (e.nOfrece) setNOfrece(e.nOfrece);
+      if (e.nCiudad) setNCiudad(e.nCiudad);
+      if (e.mNombre) setMNombre(e.mNombre);
+      if (e.mFotos) setMFotos(e.mFotos);
+      if (e.mQueHace) setMQueHace(e.mQueHace);
+      if (e.mPromociona) setMPromociona(e.mPromociona);
+      if (e.mCiudad) setMCiudad(e.mCiudad);
+      if (e.mMensaje) setMMensaje(e.mMensaje);
+      if (e.mPilares) setMPilares(e.mPilares);
+      if (e.mVoz) setMVoz(e.mVoz);
+      if (e.mHistorias) setMHistorias(e.mHistorias);
+      cargarModoEnResultado(modoActivo);
+    } catch {}
+    setHidratado(true);
+    return () => pararVigilante();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const nivel = NIVELES.find(n => n.id === nivelId)!;
   const plantilla = modo === "producto" ? DIAS_PRODUCTO : modo === "negocio" ? DIAS_NEGOCIO : DIAS_MARCA;
   const dias = plantilla.slice(0, nivel.dias);
+
+  // === GUARDADO ===
+  // Guarda el estado global (sin resultado) + el resultado en la caja del modo activo.
+  // No corre hasta que terminó la hidratación, para no pisar las cajas al montar.
   useEffect(() => {
+    if (!hidratado) return;
     try {
-      const resultadoLimpio = resultado.map(r => ({
-        ...r,
-        cargando: false,
-        generandoImg: false,
-        editandoImg: false,
-      }));
-        const estado = {
+      const estado = {
         modo, nivelId, pais, tono,
         pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema,
         nNombre, nFotos, nOfrece, nCiudad,
         mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias,
-        resultado: resultadoLimpio,
       };
-      sessionStorage.setItem("redescamp_estado", JSON.stringify(estado));
+      sessionStorage.setItem(claveEstado, JSON.stringify(estado));
+      const resultadoLimpio = resultado.map(r => ({
+        ...r, cargando: false, generandoImg: false, editandoImg: false,
+      }));
+      sessionStorage.setItem(claveResultado(modo), JSON.stringify(resultadoLimpio));
     } catch {}
-  }, [modo, nivelId, pais, tono, pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema, nNombre, nFotos, nOfrece, nCiudad, mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias, resultado]);
+  }, [hidratado, modo, nivelId, pais, tono, pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema, nNombre, nFotos, nOfrece, nCiudad, mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias, resultado]);
 
- function guardarImagenSessionRedes(diaNumero: number, url: string) {
+  // === CAMBIO DE MODO (clic en tarjeta): recarga la vista de ESE modo ===
+  function cambiarModo(nuevo: Modo) {
+    if (nuevo === modo) return;
+    modoRef.current = nuevo;
+    setModo(nuevo);
+    cargarModoEnResultado(nuevo);
+  }
+
+  // === Helpers de imágenes/generando: SIEMPRE reciben el modo, nunca lo adivinan ===
+  function guardarImagenSessionRedes(m: Modo, diaNumero: number, url: string) {
     try {
-      const raw = sessionStorage.getItem("redescamp_imagenes");
+      const k = claveImagenes(m);
+      const raw = sessionStorage.getItem(k);
       const imgs = raw ? JSON.parse(raw) : {};
       imgs[diaNumero] = url;
-      sessionStorage.setItem("redescamp_imagenes", JSON.stringify(imgs));
+      sessionStorage.setItem(k, JSON.stringify(imgs));
     } catch {}
   }
-  function marcarGenerando(diaNumero: number) {
+  function marcarGenerando(m: Modo, diaNumero: number) {
     try {
-      const raw = sessionStorage.getItem("redescamp_generando");
+      const k = claveGenerando(m);
+      const raw = sessionStorage.getItem(k);
       let lista: number[] = raw ? JSON.parse(raw) : [];
       if (!Array.isArray(lista)) lista = [];
       if (!lista.includes(diaNumero)) lista.push(diaNumero);
-      sessionStorage.setItem("redescamp_generando", JSON.stringify(lista));
+      sessionStorage.setItem(k, JSON.stringify(lista));
     } catch {}
   }
-
-  function desmarcarGenerando(diaNumero: number) {
+  function desmarcarGenerando(m: Modo, diaNumero: number) {
     try {
-      const raw = sessionStorage.getItem("redescamp_generando");
+      const k = claveGenerando(m);
+      const raw = sessionStorage.getItem(k);
       let lista: number[] = raw ? JSON.parse(raw) : [];
       if (!Array.isArray(lista)) lista = [];
       lista = lista.filter(d => d !== diaNumero);
-      if (lista.length > 0) sessionStorage.setItem("redescamp_generando", JSON.stringify(lista));
-      else sessionStorage.removeItem("redescamp_generando");
+      if (lista.length > 0) sessionStorage.setItem(k, JSON.stringify(lista));
+      else sessionStorage.removeItem(k);
     } catch {}
   }
   function mostrarToast(msg: string) {
@@ -353,6 +403,12 @@ export default function RedesCampanas() {
   async function generarCampana() {
     if (!listo || generando) return;
     setGenerando(true);
+    // Campaña nueva en ESTE modo: limpiar sus imágenes/generando viejos (no los de otros modos)
+    try {
+      sessionStorage.removeItem(claveImagenes(modo));
+      sessionStorage.removeItem(claveGenerando(modo));
+    } catch {}
+    pararVigilante();
     const base: DiaResultado[] = dias.map((d, i) => ({
       diaNumero: i + 1, diaTitulo: d.titulo, diaTemp: d.temp, cargando: true,
     }));
@@ -378,14 +434,15 @@ export default function RedesCampanas() {
   async function generarImagenDia(i: number) {
     const dia = resultado[i];
     if (!dia || dia.generandoImg) return;
+    const m = modo;            // congelamos el modo de esta generación
     const diaNum = dia.diaNumero;
-    marcarGenerando(diaNum);
+    marcarGenerando(m, diaNum);
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          modo, tono,
+          modo: m, tono,
           diaNumero: dia.diaNumero,
           diaTitulo: dia.diaTitulo,
           diaTemp: dia.diaTemp,
@@ -398,16 +455,25 @@ export default function RedesCampanas() {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, dia.diaNumero);
         const imagenFinal = urlGuardada || data.imageUrl;
-        guardarImagenSessionRedes(diaNum, imagenFinal);
-        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: imagenFinal, generandoImg: false } : r));
-        desmarcarGenerando(diaNum);
-        mostrarToast(`✓ Imagen del día ${dia.diaNumero}`);
+        guardarImagenSessionRedes(m, diaNum, imagenFinal);
+        desmarcarGenerando(m, diaNum);
+        // Solo pintamos si el usuario SIGUE en este modo (si no, ya quedó en su caja)
+        if (modoRef.current === m) {
+          setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: imagenFinal, generandoImg: false } : r));
+        }
+        mostrarToast(`✓ Imagen del día ${diaNum}`);
       } else {
-        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        desmarcarGenerando(m, diaNum);
+        if (modoRef.current === m) {
+          setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        }
         mostrarToast("No se pudo generar la imagen");
       }
     } catch {
-      setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      desmarcarGenerando(m, diaNum);
+      if (modoRef.current === m) {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      }
       mostrarToast("Error al generar la imagen");
     }
   }
@@ -429,6 +495,9 @@ export default function RedesCampanas() {
   async function editarImagenIA(i: number) {
     const dia = resultado[i];
     if (!dia || !dia.imagen || !dia.instruccionImg || dia.generandoImg) return;
+    const m = modo;
+    const diaNum = dia.diaNumero;
+    marcarGenerando(m, diaNum);
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
@@ -441,14 +510,27 @@ export default function RedesCampanas() {
       });
       const data = await resp.json();
       if (data.imageUrl) {
-        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: data.imageUrl, generandoImg: false, editandoImg: false, instruccionImg: "" } : r));
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, diaNum);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenSessionRedes(m, diaNum, imagenFinal);
+        desmarcarGenerando(m, diaNum);
+        if (modoRef.current === m) {
+          setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: imagenFinal, generandoImg: false, editandoImg: false, instruccionImg: "" } : r));
+        }
         mostrarToast(`✓ Imagen editada`);
       } else {
-        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        desmarcarGenerando(m, diaNum);
+        if (modoRef.current === m) {
+          setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+        }
         mostrarToast("No se pudo editar la imagen");
       }
     } catch {
-      setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      desmarcarGenerando(m, diaNum);
+      if (modoRef.current === m) {
+        setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
+      }
       mostrarToast("Error al editar la imagen");
     }
   }
@@ -457,9 +539,10 @@ export default function RedesCampanas() {
     const dia = resultado[i];
     if (dia) {
       try {
-        const imgs = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}");
+        const k = claveImagenes(modo);
+        const imgs = JSON.parse(sessionStorage.getItem(k) || "{}");
         delete imgs[dia.diaNumero];
-        sessionStorage.setItem("redescamp_imagenes", JSON.stringify(imgs));
+        sessionStorage.setItem(k, JSON.stringify(imgs));
       } catch {}
     }
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: undefined, editandoImg: false, instruccionImg: "" } : r));
@@ -579,7 +662,6 @@ export default function RedesCampanas() {
   const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
   const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
-
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
 
@@ -621,19 +703,19 @@ export default function RedesCampanas() {
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button onClick={() => setModo("producto")}
+            <button onClick={() => cambiarModo("producto")}
               className={`text-left rounded-xl p-4 border transition-all ${modo === "producto" ? "border-orange-500 bg-[rgba(255,80,0,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
               <div className="text-2xl mb-2">📦</div>
               <div className={`text-sm font-black mb-1 ${modo === "producto" ? "text-orange-400" : "text-white"}`}>Un producto</div>
               <div className="text-[10px] text-[#7A7772] leading-snug">Dropshipping o un producto que vendes. La IA crea imágenes del producto.</div>
             </button>
-            <button onClick={() => setModo("negocio")}
+            <button onClick={() => cambiarModo("negocio")}
               className={`text-left rounded-xl p-4 border transition-all ${modo === "negocio" ? "border-cyan-500 bg-[rgba(56,189,248,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
               <div className="text-2xl mb-2">🏪</div>
               <div className={`text-sm font-black mb-1 ${modo === "negocio" ? "text-cyan-400" : "text-white"}`}>Mi negocio local</div>
               <div className="text-[10px] text-[#7A7772] leading-snug">Peluquería, restaurante, tienda. Subes tus fotos y armas tu mes.</div>
             </button>
-            <button onClick={() => setModo("marca")}
+            <button onClick={() => cambiarModo("marca")}
               className={`text-left rounded-xl p-4 border transition-all ${modo === "marca" ? "border-yellow-400 bg-[rgba(250,204,21,0.07)]" : "border-[#1e1e1e] bg-[#111] hover:border-[#333]"}`}>
               <div className="text-2xl mb-2">⭐</div>
               <div className={`text-sm font-black mb-1 ${modo === "marca" ? "text-yellow-400" : "text-white"}`}>Marca personal</div>
