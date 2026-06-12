@@ -454,6 +454,14 @@ export default function RedesCampanas() {
   }
 
   function quitarImagen(i: number) {
+    const dia = resultado[i];
+    if (dia) {
+      try {
+        const imgs = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}");
+        delete imgs[dia.diaNumero];
+        sessionStorage.setItem("redescamp_imagenes", JSON.stringify(imgs));
+      } catch {}
+    }
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: undefined, editandoImg: false, instruccionImg: "" } : r));
   }
 
