@@ -142,7 +142,33 @@ export default function RedesCampanas() {
       if (e.mPilares) setMPilares(e.mPilares);
       if (e.mVoz) setMVoz(e.mVoz);
       if (e.mHistorias) setMHistorias(e.mHistorias);
-      if (e.resultado) setResultado(e.resultado.map((r: DiaResultado) => ({ ...r, cargando: false, generandoImg: false, editandoImg: false })));
+      if (e.resultado) {
+        let imgs: Record<number, string> = {};
+        let gen: number[] = [];
+        try { imgs = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
+        try { gen = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
+        if (!Array.isArray(gen)) gen = [];
+        setResultado(e.resultado.map((r: DiaResultado) => ({
+          ...r, cargando: false, editandoImg: false,
+          imagen: imgs[r.diaNumero] || r.imagen,
+          generandoImg: gen.includes(r.diaNumero),
+        })));
+        if (gen.length > 0) {
+          const vigilante = setInterval(() => {
+            let actual: number[] = [];
+            let imagenesAhora: Record<number, string> = {};
+            try { actual = JSON.parse(sessionStorage.getItem("redescamp_generando") || "[]"); } catch {}
+            try { imagenesAhora = JSON.parse(sessionStorage.getItem("redescamp_imagenes") || "{}"); } catch {}
+            if (!Array.isArray(actual)) actual = [];
+            setResultado(prev => prev.map(r => ({
+              ...r,
+              imagen: imagenesAhora[r.diaNumero] || r.imagen,
+              generandoImg: actual.includes(r.diaNumero),
+            })));
+            if (actual.length === 0) clearInterval(vigilante);
+          }, 1000);
+        }
+      }
     } catch {}
   }, []);
 
@@ -208,6 +234,34 @@ export default function RedesCampanas() {
     } catch {}
   }, [modo, nivelId, pais, tono, pNombre, pImagen, pPrecioOferta, pPrecioAnterior, pBeneficio, pProblema, nNombre, nFotos, nOfrece, nCiudad, mNombre, mFotos, mQueHace, mPromociona, mCiudad, mMensaje, mPilares, mVoz, mHistorias, resultado]);
 
+ function guardarImagenSessionRedes(diaNumero: number, url: string) {
+    try {
+      const raw = sessionStorage.getItem("redescamp_imagenes");
+      const imgs = raw ? JSON.parse(raw) : {};
+      imgs[diaNumero] = url;
+      sessionStorage.setItem("redescamp_imagenes", JSON.stringify(imgs));
+    } catch {}
+  }
+  function marcarGenerando(diaNumero: number) {
+    try {
+      const raw = sessionStorage.getItem("redescamp_generando");
+      let lista: number[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(lista)) lista = [];
+      if (!lista.includes(diaNumero)) lista.push(diaNumero);
+      sessionStorage.setItem("redescamp_generando", JSON.stringify(lista));
+    } catch {}
+  }
+
+  function desmarcarGenerando(diaNumero: number) {
+    try {
+      const raw = sessionStorage.getItem("redescamp_generando");
+      let lista: number[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(lista)) lista = [];
+      lista = lista.filter(d => d !== diaNumero);
+      if (lista.length > 0) sessionStorage.setItem("redescamp_generando", JSON.stringify(lista));
+      else sessionStorage.removeItem("redescamp_generando");
+    } catch {}
+  }
   function mostrarToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
@@ -324,6 +378,8 @@ export default function RedesCampanas() {
   async function generarImagenDia(i: number) {
     const dia = resultado[i];
     if (!dia || dia.generandoImg) return;
+    const diaNum = dia.diaNumero;
+    marcarGenerando(diaNum);
     setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: true } : r));
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
@@ -342,7 +398,9 @@ export default function RedesCampanas() {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, dia.diaNumero);
         const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenSessionRedes(diaNum, imagenFinal);
         setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, imagen: imagenFinal, generandoImg: false } : r));
+        desmarcarGenerando(diaNum);
         mostrarToast(`✓ Imagen del día ${dia.diaNumero}`);
       } else {
         setResultado(prev => prev.map((r, idx) => idx === i ? { ...r, generandoImg: false } : r));
