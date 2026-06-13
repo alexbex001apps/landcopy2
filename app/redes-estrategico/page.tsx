@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const CLAVE_ESTADO = "redesestrat_estado";
 
@@ -158,6 +159,73 @@ export default function RedesEstrategico() {
   }
 
   const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
+
+  function fotosBase(): string[] {
+    if (modo === "producto") return pImagen ? [pImagen] : [];
+    return [];
+  }
+
+  async function subirImagen(supabase: any, imagen: string, idx: number): Promise<string | null> {
+    if (!imagen) return null;
+    if (imagen.startsWith("http")) return imagen;
+    if (!imagen.startsWith("data:")) return null;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const blob = await fetch(imagen).then(r => r.blob());
+      const path = `${user?.id}/${Date.now()}_redesestrat_${idx}.jpg`;
+      await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/jpeg" });
+      const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
+      return urlData.publicUrl;
+    } catch { return null; }
+  }
+
+  async function generarImagenPieza(i: number) {
+    const pieza = plan?.piezas?.[i];
+    if (!pieza || pieza.generandoImg) return;
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      piezas[i] = { ...piezas[i], generandoImg: true };
+      return { ...prev, piezas };
+    });
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          modo, tono,
+          diaNumero: pieza.dia,
+          diaTitulo: pieza.promptVisual || pieza.titulo,
+          textoImagen: pieza.titulo,
+          fotos: fotosBase(),
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, i);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          piezas[i] = { ...piezas[i], imagen: imagenFinal, generandoImg: false };
+          return { ...prev, piezas };
+        });
+        mostrarToast(`✓ Imagen del día ${pieza.dia}`);
+      } else {
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          piezas[i] = { ...piezas[i], generandoImg: false };
+          return { ...prev, piezas };
+        });
+        mostrarToast("No se pudo generar la imagen");
+      }
+    } catch {
+      setPlan((prev: any) => {
+        const piezas = [...prev.piezas];
+        piezas[i] = { ...piezas[i], generandoImg: false };
+        return { ...prev, piezas };
+      });
+      mostrarToast("Error al generar la imagen");
+    }
+  }
   const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
 
@@ -424,6 +492,27 @@ export default function RedesEstrategico() {
                 <div className="text-[14px] font-bold text-white mb-1">{p.titulo}</div>
                 {p.copy && <p className="text-[12px] text-[#EDE8DC] leading-relaxed mb-2 whitespace-pre-wrap">{p.copy}</p>}
                 {p.cta && <div className="text-[12px] text-[#86EFAC] font-bold mb-2">📣 {p.cta}</div>}
+
+                {/* IMAGEN REAL */}
+                <div className="my-3">
+                  {p.generandoImg ? (
+                    <div className="w-full max-w-[260px] aspect-square rounded-lg bg-[#0d0d0d] border border-[#2a2a2a] flex flex-col items-center justify-center gap-2">
+                      <div className="w-7 h-7 border-2 border-[#FFF500] border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[10px] text-[#7A7772]">Creando imagen...</span>
+                    </div>
+                  ) : p.imagen ? (
+                    <div className="max-w-[260px]">
+                      <img src={p.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`día ${p.dia}`} />
+                      <button onClick={() => generarImagenPieza(i)} className="w-full mt-1.5 text-[10px] font-bold py-2 rounded-lg bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Generar otra</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => generarImagenPieza(i)} disabled={modo === "producto" && !pImagen}
+                      className="text-[11px] font-bold py-2.5 px-4 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40 transition-all">
+                      🎨 Generar imagen real
+                      {modo === "producto" && !pImagen && <span className="block text-[8px] text-[#7A7772] font-normal mt-0.5">Sube una foto del producto arriba primero</span>}
+                    </button>
+                  )}
+                </div>
 
                 {/* Cara REEL */}
                 {p.hook && (
