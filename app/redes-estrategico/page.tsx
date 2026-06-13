@@ -50,15 +50,52 @@ export default function RedesEstrategico() {
     setPIdentificando(false);
   }
 
+  async function handleFotosLista(e: React.ChangeEvent<HTMLInputElement>, lista: string[], setLista: (v: string[]) => void) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const espacio = 5 - lista.length;
+    const aProcesar = files.slice(0, espacio);
+    const nuevas: string[] = [];
+    for (const f of aProcesar) nuevas.push(await comprimir(f));
+    setLista([...lista, ...nuevas].slice(0, 5));
+  }
+
+  async function identificarRegistrado(fotos: string[], setNom: (v: string) => void, setQue: (v: string) => void, setLoad: (v: boolean) => void, tipo: string) {
+    if (fotos.length === 0) return;
+    setLoad(true);
+    try {
+      const resp = await fetch("/api/campaigns/identificar", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagen: fotos[0] }),
+      });
+      const data = await resp.json();
+      if (data.nombre) setNom(data.nombre);
+      if (data.beneficio) setQue(data.beneficio);
+      mostrarToast(`✓ ${tipo} identificado`);
+    } catch { mostrarToast("No se pudo identificar"); }
+    setLoad(false);
+  }
+
   // Negocio
   const [nNombre, setNNombre] = useState("");
   const [nOfrece, setNOfrece] = useState("");
   const [nCiudad, setNCiudad] = useState("");
+  const [nFotos, setNFotos] = useState<string[]>([]);
+  const [nIdentificando, setNIdentificando] = useState(false);
+  const nFileRef = useRef<HTMLInputElement>(null);
 
   // Marca
   const [mNombre, setMNombre] = useState("");
   const [mQueHace, setMQueHace] = useState("");
   const [mPromociona, setMPromociona] = useState("");
+  const [mCiudad, setMCiudad] = useState("");
+  const [mFotos, setMFotos] = useState<string[]>([]);
+  const [mMensaje, setMMensaje] = useState("");
+  const [mPilares, setMPilares] = useState("");
+  const [mVoz, setMVoz] = useState("");
+  const [mHistorias, setMHistorias] = useState("");
+  const [mIdentificando, setMIdentificando] = useState(false);
+  const mFileRef = useRef<HTMLInputElement>(null);
 
   const [generando, setGenerando] = useState(false);
   const [plan, setPlan] = useState<any>(null);
@@ -283,7 +320,8 @@ export default function RedesEstrategico() {
       mostrarToast("Error al generar la imagen");
     }
   }
-  const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
+ const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
+  const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
 
   return (
@@ -379,24 +417,93 @@ export default function RedesEstrategico() {
           )}
 
           {modo === "negocio" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div><span className={labelCls}>Nombre del negocio *</span>
-                <input value={nNombre} onChange={e => setNNombre(e.target.value)} placeholder="Ej: Peluquería Maru" className={inputCls} /></div>
-              <div><span className={labelCls}>¿Qué ofreces?</span>
-                <input value={nOfrece} onChange={e => setNOfrece(e.target.value)} placeholder="Cortes, color, peinados" className={inputCls} /></div>
-              <div><span className={labelCls}>Ciudad</span>
-                <input value={nCiudad} onChange={e => setNCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
+            <div className="space-y-4">
+              <div>
+                <span className={labelCls}>Fotos de tu negocio (hasta 5) — local, equipo, productos</span>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {nFotos.map((f, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#2a2a2a]">
+                      <img src={f} className="w-full h-full object-cover" alt={`foto ${i + 1}`} />
+                      <button onClick={() => setNFotos(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
+                    </div>
+                  ))}
+                  {nFotos.length < 5 && (
+                    <button onClick={() => nFileRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-cyan-500/40 hover:border-cyan-500 flex flex-col items-center justify-center bg-[rgba(56,189,248,0.04)] transition-colors">
+                      <span className="text-cyan-400 text-2xl">＋</span>
+                      <span className="text-cyan-400 text-[8px] font-bold">Agregar</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={nFileRef} type="file" accept="image/*" multiple onChange={(e) => handleFotosLista(e, nFotos, setNFotos)} className="hidden" />
+                {nFotos.length > 0 && (
+                  <button onClick={() => identificarRegistrado(nFotos, setNNombre, setNOfrece, setNIdentificando, "Negocio")} disabled={nIdentificando}
+                    className="mt-2 bg-cyan-500 text-black text-[11px] font-bold py-2 px-4 rounded-lg disabled:opacity-40">
+                    {nIdentificando ? "⏳ Identificando..." : "🔍 Identificar negocio registrado"}
+                  </button>
+                )}
+                <p className="text-[10px] text-[#7A7772] mt-1.5">💡 Registra tu negocio con sus fotos y datos, y la IA llenará todo para las campañas.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div><span className={labelCls}>Nombre del negocio *</span>
+                  <input value={nNombre} onChange={e => setNNombre(e.target.value)} placeholder="Ej: Peluquería Maru" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué ofreces?</span>
+                  <input value={nOfrece} onChange={e => setNOfrece(e.target.value)} placeholder="Cortes, color, peinados" className={inputCls} /></div>
+                <div><span className={labelCls}>Ciudad</span>
+                  <input value={nCiudad} onChange={e => setNCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
+              </div>
             </div>
           )}
 
-          {modo === "marca" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div><span className={labelCls}>Tu nombre / artístico *</span>
-                <input value={mNombre} onChange={e => setMNombre(e.target.value)} placeholder="Ej: Alejandro Bec" className={inputCls} /></div>
-              <div><span className={labelCls}>¿Qué haces?</span>
-                <input value={mQueHace} onChange={e => setMQueHace(e.target.value)} placeholder="Autor de libros de fe y finanzas" className={inputCls} /></div>
-              <div><span className={labelCls}>¿Qué promocionas ahora?</span>
-                <input value={mPromociona} onChange={e => setMPromociona(e.target.value)} placeholder="Mi libro 'Raíces de Iniquidad'" className={inputCls} /></div>
+           {modo === "marca" && (
+            <div className="space-y-4">
+              <div>
+                <span className={labelCls}>Tus fotos (hasta 5) — tú, tus libros, predicando, en escena</span>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {mFotos.map((f, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#2a2a2a]">
+                      <img src={f} className="w-full h-full object-cover" alt={`foto ${i + 1}`} />
+                      <button onClick={() => setMFotos(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">✕</button>
+                    </div>
+                  ))}
+                  {mFotos.length < 5 && (
+                    <button onClick={() => mFileRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-yellow-400/40 hover:border-yellow-400 flex flex-col items-center justify-center bg-[rgba(250,204,21,0.04)] transition-colors">
+                      <span className="text-yellow-400 text-2xl">＋</span>
+                      <span className="text-yellow-400 text-[8px] font-bold">Agregar</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={mFileRef} type="file" accept="image/*" multiple onChange={(e) => handleFotosLista(e, mFotos, setMFotos)} className="hidden" />
+                {mFotos.length > 0 && (
+                  <button onClick={() => identificarRegistrado(mFotos, setMNombre, setMQueHace, setMIdentificando, "Marca")} disabled={mIdentificando}
+                    className="mt-2 bg-yellow-400 text-black text-[11px] font-bold py-2 px-4 rounded-lg disabled:opacity-40">
+                    {mIdentificando ? "⏳ Identificando..." : "🔍 Identificar marca registrada"}
+                  </button>
+                )}
+                <p className="text-[10px] text-[#7A7772] mt-1.5">💡 Registra tu marca con tus fotos y datos, y la IA llenará todo para las campañas.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div><span className={labelCls}>Tu nombre / artístico *</span>
+                  <input value={mNombre} onChange={e => setMNombre(e.target.value)} placeholder="Ej: Alejandro Bec" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué haces?</span>
+                  <input value={mQueHace} onChange={e => setMQueHace(e.target.value)} placeholder="Autor de libros de fe y finanzas" className={inputCls} /></div>
+                <div><span className={labelCls}>¿Qué promocionas ahora?</span>
+                  <input value={mPromociona} onChange={e => setMPromociona(e.target.value)} placeholder="Mi libro 'Raíces de Iniquidad'" className={inputCls} /></div>
+              </div>
+              <div className="bg-[#0d0d0d] border border-[rgba(250,204,21,0.2)] rounded-xl p-3 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-400">ADN de tu marca <span className="text-[#7A7772] normal-case font-normal">(opcional — entre más llenes, mejores campañas)</span></p>
+                <div><span className={labelCls}>💎 Mensaje madre — tu gran idea</span>
+                  <textarea value={mMensaje} onChange={e => setMMensaje(e.target.value)} rows={2} placeholder="La idea central que repites de mil formas. Ej: del ruido al propósito." className={areaCls} /></div>
+                <div><span className={labelCls}>🎯 Pilares — tus 3-4 temas</span>
+                  <input value={mPilares} onChange={e => setMPilares(e.target.value)} placeholder="Fe · Familia · Finanzas · Propósito" className={inputCls} /></div>
+                <div><span className={labelCls}>🗣️ Tu voz — cómo hablas</span>
+                  <textarea value={mVoz} onChange={e => setMVoz(e.target.value)} rows={2} placeholder="Frases típicas, tu tono, palabras que usas. Ej: cercano, directo, con humor." className={areaCls} /></div>
+                <div><span className={labelCls}>📖 Tus historias — testimonios reales</span>
+                  <textarea value={mHistorias} onChange={e => setMHistorias(e.target.value)} rows={2} placeholder="Momentos tuyos que conectan: cómo empezaste, tu caída, tu cambio." className={areaCls} /></div>
+              </div>
             </div>
           )}
 
