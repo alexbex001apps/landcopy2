@@ -304,16 +304,105 @@ export default function RedesEstrategico() {
           </div>
         )}
 
-        {/* PLACEHOLDER del plan (la Parte B mostrará esto bonito) */}
+        {/* PLAN COMPLETO */}
         {plan && (
-          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">✨ Campaña diseñada</span>
-            <div className="text-[13px] text-[#FFF500] mb-1">💎 {plan.promesaPrincipal}</div>
-            <div className="text-[11px] text-[#7A7772] mb-3">🎬 {Array.isArray(plan.arcoNarrativo) ? plan.arcoNarrativo.join(" → ") : ""}</div>
-            <div className="text-[11px] text-[#C8C3B7]">
-              ✓ La IA diseñó {Array.isArray(plan.piezas) ? plan.piezas.length : 0} piezas. (La Parte B las mostrará bonitas con su calendario y caras por formato.)
+          <>
+            {/* Resumen estrategia */}
+            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">✨ Tu campaña estratégica</span>
+              <div className="text-[14px] text-white font-bold mb-2">💎 {plan.promesaPrincipal}</div>
+              {Array.isArray(plan.arcoNarrativo) && (
+                <div className="flex flex-wrap gap-1.5 items-center mb-3">
+                  {plan.arcoNarrativo.map((a: string, i: number) => (
+                    <span key={i} className="text-[10px] text-[#EDE8DC] bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">{a}{i < plan.arcoNarrativo.length - 1 ? " →" : ""}</span>
+                  ))}
+                </div>
+              )}
+              {plan.balanceMarca && (
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(plan.balanceMarca).map(([k, v]: any) => (
+                    <span key={k} className="text-[9px] font-bold uppercase tracking-wide text-[#C8C3B7] bg-[#111] border border-[#222] px-2 py-1 rounded-full">● {k} {v}%</span>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+
+            {/* Calendario visual */}
+            {Array.isArray(plan.piezas) && (
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">📅 Calendario visual</span>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[#1e1e1e]">
+                        <th className="text-left text-[9px] font-bold uppercase tracking-wide text-[#7A7772] py-2 px-2">Día</th>
+                        <th className="text-left text-[9px] font-bold uppercase tracking-wide text-[#7A7772] py-2 px-2">Tipo</th>
+                        <th className="text-left text-[9px] font-bold uppercase tracking-wide text-[#7A7772] py-2 px-2">Objetivo</th>
+                        <th className="text-left text-[9px] font-bold uppercase tracking-wide text-[#7A7772] py-2 px-2">Tema</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {plan.piezas.map((p: any, i: number) => (
+                        <tr key={i} className="border-b border-[#141414]">
+                          <td className="text-[11px] font-black text-[#7A7772] py-2 px-2 whitespace-nowrap">DÍA {p.dia}</td>
+                          <td className="py-2 px-2"><span className="text-[10px] font-bold text-[#FFF500] bg-[rgba(255,245,0,0.08)] px-2 py-0.5 rounded whitespace-nowrap">{p.tipo}</span></td>
+                          <td className="text-[11px] text-cyan-300 py-2 px-2 whitespace-nowrap">{p.objetivoPsicologico}</td>
+                          <td className="text-[11px] text-[#EDE8DC] py-2 px-2">{p.titulo}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Las piezas con su cara por formato */}
+            {Array.isArray(plan.piezas) && plan.piezas.map((p: any, i: number) => (
+              <div key={i} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <span className="text-[11px] font-black text-white">DÍA {p.dia}</span>
+                  <span className="text-[10px] font-bold text-[#FFF500] bg-[rgba(255,245,0,0.1)] px-2 py-0.5 rounded uppercase">{p.tipo}</span>
+                  <span className="text-[10px] font-bold text-purple-300 bg-[rgba(168,85,247,0.15)] px-2 py-0.5 rounded">🎯 {p.objetivoPsicologico}</span>
+                  {Array.isArray(p.red) && <span className="text-[10px] text-[#7A7772]">· {p.red.join(", ")}</span>}
+                </div>
+
+                <div className="text-[14px] font-bold text-white mb-1">{p.titulo}</div>
+                {p.copy && <p className="text-[12px] text-[#EDE8DC] leading-relaxed mb-2 whitespace-pre-wrap">{p.copy}</p>}
+                {p.cta && <div className="text-[12px] text-[#86EFAC] font-bold mb-2">📣 {p.cta}</div>}
+
+                {/* Cara REEL */}
+                {p.hook && (
+                  <div className="bg-[#0d0d0d] border border-[rgba(168,85,247,0.25)] rounded-lg p-3 mt-2 space-y-2">
+                    <div><span className="text-[9px] font-bold uppercase tracking-wide text-purple-300">🎣 Hook</span><p className="text-[12px] text-white font-bold mt-0.5">{p.hook}</p></div>
+                    {p.guion && <div><span className="text-[9px] font-bold uppercase tracking-wide text-cyan-300">🎞️ Guion</span><p className="text-[11px] text-[#EDE8DC] mt-0.5 whitespace-pre-wrap">{p.guion}</p></div>}
+                    {Array.isArray(p.escenas) && p.escenas.length > 0 && <div><span className="text-[9px] font-bold uppercase tracking-wide text-orange-300">🎬 Escenas</span><ul className="mt-0.5">{p.escenas.map((e: string, j: number) => <li key={j} className="text-[11px] text-[#C8C3B7]">• {e}</li>)}</ul></div>}
+                    {p.textoEnPantalla && <div><span className="text-[9px] font-bold uppercase tracking-wide text-[#86EFAC]">💬 Texto en pantalla</span><p className="text-[11px] text-[#EDE8DC] mt-0.5">{p.textoEnPantalla}</p></div>}
+                  </div>
+                )}
+
+                {/* Cara CARRUSEL */}
+                {Array.isArray(p.laminas) && p.laminas.length > 0 && (
+                  <div className="mt-2">
+                    <span className="text-[9px] font-bold uppercase tracking-wide text-cyan-300 mb-1.5 block">🖼️ {p.laminas.length} láminas</span>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {p.laminas.map((l: any, j: number) => (
+                        <div key={j} className="min-w-[140px] bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-2.5">
+                          <div className="text-[9px] font-black text-[#7A7772]">LÁMINA {j + 1}</div>
+                          <div className="text-[11px] text-white font-bold mt-1">{l.texto}</div>
+                          {l.promptVisual && <div className="text-[9px] text-[#666] mt-1.5">🎨 {l.promptVisual}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Prompt visual (para todas) */}
+                {p.promptVisual && !p.hook && (
+                  <div className="text-[10px] text-[#666] mt-2 bg-[#111] rounded p-2">🎨 {p.promptVisual}</div>
+                )}
+              </div>
+            ))}
+          </>
         )}
 
       </div>
