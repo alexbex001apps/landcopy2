@@ -98,7 +98,7 @@ export default function RedesEstrategico() {
         pNombre, pImagen, pBeneficio, pProblema,
         nNombre, nOfrece, nCiudad,
         mNombre, mQueHace, mPromociona,
-        plan: plan ? { ...plan, piezas: Array.isArray(plan.piezas) ? plan.piezas.map((p: any) => ({ ...p, generandoImg: false })) : plan.piezas } : plan,
+        plan,
       };
       sessionStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
     } catch {}
@@ -221,6 +221,63 @@ export default function RedesEstrategico() {
       setPlan((prev: any) => {
         const piezas = [...prev.piezas];
         piezas[i] = { ...piezas[i], generandoImg: false };
+        return { ...prev, piezas };
+      });
+      mostrarToast("Error al generar la imagen");
+    }
+  }
+
+  async function generarImagenLamina(i: number, j: number) {
+    const pieza = plan?.piezas?.[i];
+    const lamina = pieza?.laminas?.[j];
+    if (!lamina || lamina.generandoImg) return;
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      const laminas = [...piezas[i].laminas];
+      laminas[j] = { ...laminas[j], generandoImg: true };
+      piezas[i] = { ...piezas[i], laminas };
+      return { ...prev, piezas };
+    });
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          modo, tono,
+          diaNumero: pieza.dia,
+          diaTitulo: lamina.promptVisual || lamina.texto,
+          textoImagen: lamina.texto,
+          fotos: fotosBase(),
+        }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, i * 100 + j);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          const laminas = [...piezas[i].laminas];
+          laminas[j] = { ...laminas[j], imagen: imagenFinal, generandoImg: false };
+          piezas[i] = { ...piezas[i], laminas };
+          return { ...prev, piezas };
+        });
+        mostrarToast(`✓ Lámina ${j + 1} lista`);
+      } else {
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          const laminas = [...piezas[i].laminas];
+          laminas[j] = { ...laminas[j], generandoImg: false };
+          piezas[i] = { ...piezas[i], laminas };
+          return { ...prev, piezas };
+        });
+        mostrarToast("No se pudo generar la imagen");
+      }
+    } catch {
+      setPlan((prev: any) => {
+        const piezas = [...prev.piezas];
+        const laminas = [...piezas[i].laminas];
+        laminas[j] = { ...laminas[j], generandoImg: false };
+        piezas[i] = { ...piezas[i], laminas };
         return { ...prev, piezas };
       });
       mostrarToast("Error al generar la imagen");
@@ -534,6 +591,22 @@ export default function RedesEstrategico() {
                           <div className="text-[9px] font-black text-[#7A7772]">LÁMINA {j + 1}</div>
                           <div className="text-[11px] text-white font-bold mt-1">{l.texto}</div>
                           {l.promptVisual && <div className="text-[9px] text-[#666] mt-1.5">🎨 {l.promptVisual}</div>}
+                          {l.generandoImg ? (
+                            <div className="w-full aspect-square rounded-lg bg-[#0d0d0d] border border-[#2a2a2a] flex flex-col items-center justify-center gap-1.5 mt-2">
+                              <div className="w-5 h-5 border-2 border-[#FFF500] border-t-transparent rounded-full animate-spin"></div>
+                              <span className="text-[8px] text-[#7A7772]">Creando...</span>
+                            </div>
+                          ) : l.imagen ? (
+                            <div className="mt-2">
+                              <img src={l.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`lámina ${j + 1}`} />
+                              <button onClick={() => generarImagenLamina(i, j)} className="w-full mt-1 text-[8px] font-bold py-1.5 rounded bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => generarImagenLamina(i, j)} disabled={modo === "producto" && !pImagen}
+                              className="w-full mt-2 text-[9px] font-bold py-2 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40">
+                              🎨 Generar imagen
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
