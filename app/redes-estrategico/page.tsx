@@ -98,7 +98,7 @@ export default function RedesEstrategico() {
         pNombre, pImagen, pBeneficio, pProblema,
         nNombre, nOfrece, nCiudad,
         mNombre, mQueHace, mPromociona,
-        plan,
+        plan: plan ? { ...plan, piezas: Array.isArray(plan.piezas) ? plan.piezas.map((p: any) => ({ ...p, generandoImg: false })) : plan.piezas } : plan,
       };
       sessionStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
     } catch {}
