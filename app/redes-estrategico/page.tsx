@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const CLAVE_ESTADO = "redesestrat_estado";
+const CLAVE_GENERANDO = "redesestrat_generando";
+const CLAVE_IMAGENES = "redesestrat_imagenes";
 
 type Modo = "producto" | "negocio" | "marca";
 
@@ -121,7 +123,59 @@ export default function RedesEstrategico() {
       if (e.mNombre) setMNombre(e.mNombre);
       if (e.mQueHace) setMQueHace(e.mQueHace);
       if (e.mPromociona) setMPromociona(e.mPromociona);
-      if (e.plan) setPlan(e.plan);
+      if (e.plan) {
+        // Limpiar spinners fantasma: apagar generandoImg que NO esté en la caja del vigilante
+        let activos: string[] = [];
+        try { activos = JSON.parse(sessionStorage.getItem(CLAVE_GENERANDO) || "[]"); } catch {}
+        if (!Array.isArray(activos)) activos = [];
+        const planLimpio = { ...e.plan };
+        if (Array.isArray(planLimpio.piezas)) {
+          planLimpio.piezas = planLimpio.piezas.map((pz: any, pi: number) => {
+            const nuevaPz = { ...pz, generandoImg: activos.includes(`p${pi}`) };
+            if (Array.isArray(pz.laminas)) {
+              nuevaPz.laminas = pz.laminas.map((lm: any, li: number) => ({
+                ...lm, generandoImg: activos.includes(`p${pi}_l${li}`),
+              }));
+            }
+            return nuevaPz;
+          });
+        }
+        setPlan(planLimpio);
+      }
+    } catch {}
+    // VIGILANTE: si quedaron imágenes generándose, arrancar el guardián
+    try {
+      const gen = JSON.parse(sessionStorage.getItem(CLAVE_GENERANDO) || "[]");
+      if (Array.isArray(gen) && gen.length > 0) {
+        const intervalo = setInterval(() => {
+          let activos: string[] = [];
+          let imgs: Record<string, string> = {};
+          try { activos = JSON.parse(sessionStorage.getItem(CLAVE_GENERANDO) || "[]"); } catch {}
+          try { imgs = JSON.parse(sessionStorage.getItem(CLAVE_IMAGENES) || "{}"); } catch {}
+          if (!Array.isArray(activos)) activos = [];
+          setPlan((prev: any) => {
+            if (!prev?.piezas) return prev;
+            const piezas = prev.piezas.map((pz: any, pi: number) => {
+              const nuevaPz = { ...pz };
+              const idP = `p${pi}`;
+              if (imgs[idP]) nuevaPz.imagen = imgs[idP];
+              nuevaPz.generandoImg = activos.includes(idP);
+              if (Array.isArray(pz.laminas)) {
+                nuevaPz.laminas = pz.laminas.map((lm: any, li: number) => {
+                  const nuevaLm = { ...lm };
+                  const idL = `p${pi}_l${li}`;
+                  if (imgs[idL]) nuevaLm.imagen = imgs[idL];
+                  nuevaLm.generandoImg = activos.includes(idL);
+                  return nuevaLm;
+                });
+              }
+              return nuevaPz;
+            });
+            return { ...prev, piezas };
+          });
+          if (activos.length === 0) clearInterval(intervalo);
+        }, 1000);
+      }
     } catch {}
     setHidratado(true);
   }, []);
@@ -141,6 +195,36 @@ export default function RedesEstrategico() {
     } catch {}
   }, [hidratado, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, mNombre, mQueHace, mPromociona, plan]);
 
+  // === VIGILANTE: marcar/desmarcar qué se está generando (sobrevive al salir) ===
+  function marcarGenerando(id: string) {
+    try {
+      const raw = sessionStorage.getItem(CLAVE_GENERANDO);
+      let lista: string[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(lista)) lista = [];
+      if (!lista.includes(id)) lista.push(id);
+      sessionStorage.setItem(CLAVE_GENERANDO, JSON.stringify(lista));
+    } catch {}
+  }
+  function desmarcarGenerando(id: string) {
+    try {
+      const raw = sessionStorage.getItem(CLAVE_GENERANDO);
+      let lista: string[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(lista)) lista = [];
+      lista = lista.filter(x => x !== id);
+      if (lista.length > 0) sessionStorage.setItem(CLAVE_GENERANDO, JSON.stringify(lista));
+      else sessionStorage.removeItem(CLAVE_GENERANDO);
+    } catch {}
+  }
+  function guardarImagenCaja(id: string, url: string) {
+    try {
+      const raw = sessionStorage.getItem(CLAVE_IMAGENES);
+      const imgs = raw ? JSON.parse(raw) : {};
+      imgs[id] = url;
+      sessionStorage.setItem(CLAVE_IMAGENES, JSON.stringify(imgs));
+    } catch {}
+  }
+
+  
   function comprimir(file: File): Promise<string> {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -199,8 +283,9 @@ export default function RedesEstrategico() {
 
   function fotosBase(): string[] {
     if (modo === "producto") return pImagen ? [pImagen] : [];
-    return [];
-  }
+    if (modo === "negocio") return nFotos;
+    return mFotos;
+  } 
 
   async function subirImagen(supabase: any, imagen: string, idx: number): Promise<string | null> {
     if (!imagen) return null;
@@ -219,6 +304,8 @@ export default function RedesEstrategico() {
   async function generarImagenPieza(i: number) {
     const pieza = plan?.piezas?.[i];
     if (!pieza || pieza.generandoImg) return;
+    const idGen = `p${i}`;
+    marcarGenerando(idGen);
     setPlan((prev: any) => {
       const piezas = [...prev.piezas];
       piezas[i] = { ...piezas[i], generandoImg: true };
@@ -240,6 +327,8 @@ export default function RedesEstrategico() {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i);
         const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenCaja(idGen, imagenFinal);
+        desmarcarGenerando(idGen);
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           piezas[i] = { ...piezas[i], imagen: imagenFinal, generandoImg: false };
@@ -252,9 +341,11 @@ export default function RedesEstrategico() {
           piezas[i] = { ...piezas[i], generandoImg: false };
           return { ...prev, piezas };
         });
+        desmarcarGenerando(idGen);
         mostrarToast("No se pudo generar la imagen");
       }
     } catch {
+      desmarcarGenerando(idGen);
       setPlan((prev: any) => {
         const piezas = [...prev.piezas];
         piezas[i] = { ...piezas[i], generandoImg: false };
@@ -268,6 +359,8 @@ export default function RedesEstrategico() {
     const pieza = plan?.piezas?.[i];
     const lamina = pieza?.laminas?.[j];
     if (!lamina || lamina.generandoImg) return;
+    const idGen = `p${i}_l${j}`;
+    marcarGenerando(idGen);
     setPlan((prev: any) => {
       const piezas = [...prev.piezas];
       const laminas = [...piezas[i].laminas];
@@ -291,6 +384,8 @@ export default function RedesEstrategico() {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i * 100 + j);
         const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenCaja(idGen, imagenFinal);
+        desmarcarGenerando(idGen);
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           const laminas = [...piezas[i].laminas];
@@ -307,9 +402,11 @@ export default function RedesEstrategico() {
           piezas[i] = { ...piezas[i], laminas };
           return { ...prev, piezas };
         });
+        desmarcarGenerando(idGen);
         mostrarToast("No se pudo generar la imagen");
       }
     } catch {
+      desmarcarGenerando(idGen);
       setPlan((prev: any) => {
         const piezas = [...prev.piezas];
         const laminas = [...piezas[i].laminas];
