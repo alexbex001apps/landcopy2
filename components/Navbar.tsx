@@ -91,6 +91,7 @@ export default function Navbar() {
     { href: "/campaigns", label: "Campañas", Icon: LogoCampanas },
     { href: "/copy", label: "Copy", Icon: LogoCopy },
     { href: "/redes-campanas", label: "Redes", Icon: LogoRedes },
+    { href: "/redes-estrategico", label: "R.IA", Icon: LogoRedes },
     { href: "/landing", label: "Landing", Icon: LogoLanding },
     { href: "/anuncios", label: "Anuncios", Icon: LogoAnuncios },
     { href: "/biblioteca", label: "Biblioteca", Icon: LogoCopy },

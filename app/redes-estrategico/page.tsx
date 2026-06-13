@@ -1,5 +1,7 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+
+const CLAVE_ESTADO = "redesestrat_estado";
 
 type Modo = "producto" | "negocio" | "marca";
 
@@ -60,6 +62,46 @@ export default function RedesEstrategico() {
   const [generando, setGenerando] = useState(false);
   const [plan, setPlan] = useState<any>(null);
   const [error, setError] = useState("");
+  const [hidratado, setHidratado] = useState(false);
+
+  // Al abrir: recuperar lo guardado (datos + plan)
+  useEffect(() => {
+    try {
+      const e = JSON.parse(sessionStorage.getItem(CLAVE_ESTADO) || "{}");
+      if (e.modo) setModo(e.modo);
+      if (e.dias) setDias(e.dias);
+      if (e.objetivo) setObjetivo(e.objetivo);
+      if (e.pais) setPais(e.pais);
+      if (e.tono) setTono(e.tono);
+      if (e.pNombre) setPNombre(e.pNombre);
+      if (e.pImagen) setPImagen(e.pImagen);
+      if (e.pBeneficio) setPBeneficio(e.pBeneficio);
+      if (e.pProblema) setPProblema(e.pProblema);
+      if (e.nNombre) setNNombre(e.nNombre);
+      if (e.nOfrece) setNOfrece(e.nOfrece);
+      if (e.nCiudad) setNCiudad(e.nCiudad);
+      if (e.mNombre) setMNombre(e.mNombre);
+      if (e.mQueHace) setMQueHace(e.mQueHace);
+      if (e.mPromociona) setMPromociona(e.mPromociona);
+      if (e.plan) setPlan(e.plan);
+    } catch {}
+    setHidratado(true);
+  }, []);
+
+  // Guardar cada vez que algo cambia (datos + plan)
+  useEffect(() => {
+    if (!hidratado) return;
+    try {
+      const estado = {
+        modo, dias, objetivo, pais, tono,
+        pNombre, pImagen, pBeneficio, pProblema,
+        nNombre, nOfrece, nCiudad,
+        mNombre, mQueHace, mPromociona,
+        plan,
+      };
+      sessionStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
+    } catch {}
+  }, [hidratado, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, mNombre, mQueHace, mPromociona, plan]);
 
   function comprimir(file: File): Promise<string> {
     return new Promise((resolve) => {
@@ -296,6 +338,19 @@ export default function RedesEstrategico() {
             </p>
           )}
         </div>
+
+        {/* ANIMACIÓN MIENTRAS GENERA */}
+        {generando && (
+          <div className="bg-[#0a0a0a] border border-[rgba(168,85,247,0.3)] rounded-2xl p-6">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 border-3 border-[#a855f7] border-t-transparent rounded-full animate-spin"></div>
+              <div className="text-[14px] font-bold text-white">🧠 Tu Director de Marketing está trabajando...</div>
+              <div className="text-[11px] text-[#C8C3B7]">Diseñando una campaña estratégica de {dias} días para {objetivo}.</div>
+              <div className="text-[10px] text-[#7A7772] animate-pulse">Analizando producto · armando narrativa · eligiendo formatos · escribiendo copys...</div>
+              <div className="text-[10px] text-[#555] mt-1">Esto toma 20-40 segundos. No cierres la página.</div>
+            </div>
+          </div>
+        )}
 
         {/* ERROR */}
         {error && (
