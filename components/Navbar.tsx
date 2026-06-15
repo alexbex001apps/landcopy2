@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
  
@@ -14,6 +15,21 @@ const LogoCopy = () => (
   </svg>
 );
  
+const LogoSocialPlanner = () => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+    <rect x="5" y="7" width="22" height="20" rx="3" stroke="white" strokeWidth="1.6"/>
+    <path d="M5 12h22" stroke="white" strokeWidth="1.6"/>
+    <path d="M11 4v5M21 4v5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+    <path d="M16 16l1.4 3.1 3.4.3-2.6 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.6-2.2 3.4-.3z" fill="white"/>
+  </svg>
+);
+
+const LogoRedExpress = () => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+    <path d="M18 3L7 18h7l-2 11 11-15h-7l2-11z" fill="white" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+  </svg>
+);
+
 const LogoRedes = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
@@ -54,6 +70,7 @@ const LogoAnuncios = () => (
  
  
 export default function Navbar() {
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const LogoCampanas = () => (
@@ -90,8 +107,8 @@ export default function Navbar() {
   const modulos = [
     { href: "/campaigns", label: "Campañas", Icon: LogoCampanas },
     { href: "/copy", label: "Copy", Icon: LogoCopy },
-    { href: "/redes-campanas", label: "Redes", Icon: LogoRedes },
-    { href: "/redes-estrategico", label: "R.IA", Icon: LogoRedes },
+    { href: "/redes-campanas", label: "RED-EXPRESS", Icon: LogoRedExpress },
+    { href: "/redes-estrategico", label: "SOCIAL PLANNER", Icon: LogoSocialPlanner },
     { href: "/landing", label: "Landing", Icon: LogoLanding },
     { href: "/anuncios", label: "Anuncios", Icon: LogoAnuncios },
     { href: "/biblioteca", label: "Biblioteca", Icon: LogoCopy },
@@ -108,10 +125,10 @@ export default function Navbar() {
           <div className="flex items-center gap-1 md:justify-center w-max md:w-full">
             {modulos.map(m => (
               <Link key={m.href} href={m.href} className="flex flex-col items-center gap-1 px-2 md:px-3 py-1.5 rounded-xl hover:bg-zinc-900 transition-colors group flex-shrink-0">
-                <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#0d0d0d] border border-[#1a1a1a] group-hover:border-orange-500 flex items-center justify-center transition-colors">
+                <div className={`w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#0d0d0d] border flex items-center justify-center transition-colors ${pathname === m.href ? "border-[#FFF500]" : "border-[#1a1a1a] group-hover:border-orange-500"}`}>
                   <m.Icon />
                 </div>
-                <span className="text-[8px] md:text-[9px] font-bold text-white group-hover:text-orange-500 transition-colors whitespace-nowrap">{m.label}</span>
+                <span className={`text-[8px] md:text-[9px] font-bold transition-colors whitespace-nowrap ${pathname === m.href ? "text-[#FFF500]" : "text-white group-hover:text-orange-500"}`}>{m.label}</span>
               </Link>
             ))}
             <a href="/precios" className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-zinc-400 hover:text-white transition-colors flex-shrink-0 whitespace-nowrap">Precios</a>
