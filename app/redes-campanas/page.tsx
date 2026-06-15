@@ -665,6 +665,29 @@ export default function RedesCampanas() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
 
+      {generando && (
+        <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center px-6">
+          <div className="text-center max-w-md w-full">
+            <div className="relative w-28 h-28 mx-auto mb-7 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-2 border-[#FFF500]/15"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#FFF500] animate-spin"></div>
+              <div className="absolute inset-2 rounded-full border border-transparent border-b-[#ff5000] animate-spin" style={{ animationDuration: "2.2s", animationDirection: "reverse" }}></div>
+              <span className="text-4xl">🧠</span>
+            </div>
+            <p className="text-[11px] tracking-[3px] text-[#ff7a3c] font-bold mb-4 font-mono">R.IA · PROCESANDO</p>
+            <p className="text-2xl text-white font-bold mb-2">Generando tus copys</p>
+            <p className="text-sm text-[#9a9a9a] mb-6 font-mono">el cerebro está escribiendo<span className="animate-pulse">_</span></p>
+            <div className="bg-[#ff5000]/10 border border-[#ff5000]/40 rounded-lg px-5 py-3 mb-5 flex items-center gap-2 justify-center">
+              <span className="text-xl">🔒</span>
+              <span className="text-sm text-[#ffb38a] font-semibold">No salgas — el proceso se cancela si cierras</span>
+            </div>
+            <div className="h-[3px] bg-[#FFF500]/10 rounded-full overflow-hidden">
+              <div className="h-full w-2/5 bg-[#FFF500] rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">{toast}</div>
       )}
