@@ -675,7 +675,17 @@ export default function RedesCampanas() {
               <span className="text-4xl">🧠</span>
             </div>
             <p className="text-[11px] tracking-[3px] text-[#ff7a3c] font-bold mb-4 font-mono">R.IA · PROCESANDO</p>
-            <p className="text-2xl text-white font-bold mb-2">Generando tus copys</p>
+            <p className="text-2xl text-white font-bold mb-1">Generando tu campaña</p>
+            {(modo === "producto" ? pNombre : modo === "negocio" ? nNombre : mNombre) && (
+              <p className="text-xl font-bold mb-2" style={{ color: modo === "marca" ? "#facc15" : "#38bdf8" }}>
+                {modo === "producto" ? pNombre : modo === "negocio" ? nNombre : mNombre}
+              </p>
+            )}
+            <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 border" style={{ borderColor: modo === "marca" ? "#facc1555" : "#38bdf855", background: modo === "marca" ? "#facc1518" : "#38bdf818" }}>
+              <span className="text-xs font-semibold" style={{ color: modo === "marca" ? "#facc15" : "#7cc6f0" }}>
+                Campaña de {modo}
+              </span>
+            </div>
             <p className="text-sm text-[#9a9a9a] mb-6 font-mono">el cerebro está escribiendo<span className="animate-pulse">_</span></p>
             <div className="bg-[#ff5000]/10 border border-[#ff5000]/40 rounded-lg px-5 py-3 mb-5 flex items-center gap-2 justify-center">
               <span className="text-xl">🔒</span>
