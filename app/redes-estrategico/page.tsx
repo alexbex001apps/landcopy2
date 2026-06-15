@@ -462,7 +462,7 @@ export default function RedesEstrategico() {
       )}
 
       {/* HEADER */}
-      <div className="max-w-[1100px] mx-auto px-4 md:px-6 pt-8 text-center">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 text-center">
         <div className="inline-flex items-center gap-2 text-white text-[9px] font-bold px-4 py-1.5 rounded-full mb-3 tracking-widest uppercase"
           style={{ background: "linear-gradient(90deg,#ff5000,#a855f7)" }}>
           ★ Powered by IA · Estrategia automática
@@ -475,7 +475,7 @@ export default function RedesEstrategico() {
         </p>
       </div>
 
-      <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-6 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20 mt-6 space-y-6">
 
         {/* PASO 1 — MODO */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">

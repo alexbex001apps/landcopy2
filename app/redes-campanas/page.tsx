@@ -714,7 +714,7 @@ export default function RedesCampanas() {
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">{toast}</div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-0">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 pb-0">
         <div className="flex flex-col md:flex-row items-center mb-4">
           <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
             <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center">
