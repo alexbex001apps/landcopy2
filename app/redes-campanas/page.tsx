@@ -162,6 +162,7 @@ export default function RedesCampanas() {
   // Refs para que el vigilante y los closures sepan SIEMPRE el modo activo
   const modoRef = useRef<Modo>("producto");
   const vigilanteRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelarRef = useRef(false);
 
   function pararVigilante() {
     if (vigilanteRef.current) {
@@ -414,7 +415,9 @@ export default function RedesCampanas() {
     }));
     setResultado(base);
     const datos = datosDelModo();
+    cancelarRef.current = false;
     for (let i = 0; i < dias.length; i++) {
+      if (cancelarRef.current) break;
       const d = dias[i];
       try {
         const resp = await fetch("/api/redes-campanas/generar", {
@@ -428,7 +431,12 @@ export default function RedesCampanas() {
       }
     }
     setGenerando(false);
-    mostrarToast("✓ Campaña generada");
+    if (cancelarRef.current) {
+      cancelarRef.current = false;
+      mostrarToast("Generación cancelada");
+    } else {
+      mostrarToast("✓ Campaña generada");
+    }
   }
 
   async function generarImagenDia(i: number) {
@@ -694,6 +702,10 @@ export default function RedesCampanas() {
             <div className="h-[3px] bg-[#FFF500]/10 rounded-full overflow-hidden">
               <div className="h-full w-2/5 bg-[#FFF500] rounded-full animate-pulse"></div>
             </div>
+            <button onClick={() => { cancelarRef.current = true; }}
+              className="mt-6 border border-white/20 text-[#bdbdbd] text-[13px] font-semibold px-6 py-2.5 rounded-lg hover:bg-white/5 hover:text-white transition-all">
+              Cancelar generación
+            </button>
           </div>
         </div>
       )}
