@@ -62,6 +62,7 @@ async function editarImagenes(buffers: Buffer[], prompt: string): Promise<string
     `--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\ngpt-image-2`,
     `--${boundary}\r\nContent-Disposition: form-data; name="n"\r\n\r\n1`,
     `--${boundary}\r\nContent-Disposition: form-data; name="size"\r\n\r\n1024x1024`,
+    `--${boundary}\r\ncontent-disposition: form-data; name="quality"\r\n\r\nmedium`,
     `--${boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\n${prompt}`,
   ];
   const textParts = Buffer.from(parts.join("\r\n") + "\r\n");
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ model: "gpt-image-2", prompt, n: 1, size: "1024x1024" }),
+        body: JSON.stringify({ model: "gpt-image-2", prompt, n: 1, size: "1024x1024", quality: "medium" }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error?.message || "Error generando imagen");
