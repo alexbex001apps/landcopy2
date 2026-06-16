@@ -682,7 +682,7 @@ export default function RedesCampanas() {
               <div className="absolute inset-2 rounded-full border border-transparent border-b-[#ff5000] animate-spin" style={{ animationDuration: "2.2s", animationDirection: "reverse" }}></div>
               <span className="text-4xl">🧠</span>
             </div>
-            <p className="text-[11px] tracking-[3px] text-[#ff7a3c] font-bold mb-4 font-mono">R.IA · PROCESANDO</p>
+            <p className="text-[11px] tracking-[3px] text-[#ff7a3c] font-bold mb-4 font-mono">RED-EXPRESS · PROCESANDO</p>
             <p className="text-2xl text-white font-bold mb-1">Generando tu campaña</p>
             {(modo === "producto" ? pNombre : modo === "negocio" ? nNombre : mNombre) && (
               <p className="text-xl font-bold mb-2" style={{ color: modo === "marca" ? "#facc15" : "#38bdf8" }}>
