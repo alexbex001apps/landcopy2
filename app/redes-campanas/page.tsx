@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -715,35 +715,18 @@ export default function RedesCampanas() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 pb-0">
-        <div className="flex flex-col md:flex-row items-center mb-4">
-          <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
-            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center">
-              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" className="md:w-[42px] md:h-[42px]">
-                <circle cx="16" cy="16" r="10" stroke="white" strokeWidth="1.5" opacity="0.3"/>
-                <circle cx="16" cy="16" r="6" stroke="white" strokeWidth="1.5" opacity="0.6"/>
-                <circle cx="16" cy="16" r="2.5" fill="white"/>
-                <line x1="16" y1="6" x2="16" y2="10" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="16" y1="22" x2="16" y2="26" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="6" y1="16" x2="10" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="22" y1="16" x2="26" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <p className="text-white text-[15px] md:text-[18px] font-bold tracking-[0.10em] uppercase leading-tight">Redes ·<br/>Campañas</p>
+        <div className="max-w-[700px] mx-auto text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+            IA GENERATIVA · CAMPAÑAS DE REDES
           </div>
-          <div className="flex-1 text-center">
-            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
-              IA GENERATIVA · CAMPAÑAS DE REDES
-            </div>
-            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
-              Lanza campañas completas que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
-            </h1>
-            <p className="text-yellow-400 text-[11px] px-2">Elige el modo y el nivel · la IA arma los días completos para cada red</p>
-          </div>
-          <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
+          <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
+            Lanza campañas completas que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
+          </h1>
+          <p className="text-yellow-400 text-[11px] px-2">Elige el modo y el nivel · la IA arma los días completos para cada red</p>
         </div>
       </div>
 
-      <div className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20 mt-4 space-y-6">
 
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>

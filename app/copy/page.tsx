@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
  
@@ -333,27 +333,18 @@ export default function Copy() {
  
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 pb-6">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 pb-6">
  
-        <div className="flex flex-col md:flex-row items-center mb-6">
-          <div className="flex items-center justify-center gap-3 flex-shrink-0 mb-3 md:mb-0">
-            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#1a0a00] border border-[#2a2a2a] flex items-center justify-center">
-              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" className="md:w-[42px] md:h-[42px]"><rect x="6" y="4" width="14" height="18" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5"/><rect x="10" y="8" width="14" height="18" rx="2" fill="white" fillOpacity="0.4" stroke="white" strokeWidth="1.5"/><line x1="13" y1="13" x2="21" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="16" x2="21" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="19" x2="18" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
-            </div>
-            <p className="text-white text-[20px] font-bold tracking-[0.12em] uppercase">Copy</p>
+        <div className="max-w-[700px] mx-auto text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+            IA GENERATIVA · COPY PROFESIONAL
           </div>
-          <div className="flex-1 text-center">
-            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
-              IA GENERATIVA · COPY PROFESIONAL
-            </div>
-            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
-              Crea copy que <span className="text-orange-500">vende</span>,{" "}
-              <span className="text-cyan-400">conecta</span> y{" "}
-              <span className="text-green-400">convierte</span>
-            </h1>
-            <p className="text-yellow-400 text-[11px] px-2">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
-          </div>
-          <div className="flex-shrink-0 hidden md:block" style={{width:"99px"}}></div>
+          <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
+            Crea copy que <span className="text-orange-500">vende</span>,{" "}
+            <span className="text-cyan-400">conecta</span> y{" "}
+            <span className="text-green-400">convierte</span>
+          </h1>
+          <p className="text-yellow-400 text-[11px] px-2">Producto · la IA genera landing, campaña, anuncios y contenido en segundos</p>
         </div>
  
        <style>{`@keyframes pulsoFabrica { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }`}</style>

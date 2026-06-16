@@ -403,7 +403,7 @@ export default function Biblioteca() {
       )}
  
       {/* Header — responsivo */}
-      <div className="max-w-[1400px] mx-auto px-4 pt-6 pb-0">
+      <div className="max-w-[1400px] mx-auto px-4 pt-16 pb-0">
         <div className="flex flex-col md:flex-row items-center mb-0">
           <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
             <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0a0a1a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
