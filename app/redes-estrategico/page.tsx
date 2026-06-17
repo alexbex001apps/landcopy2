@@ -123,6 +123,8 @@ export default function RedesEstrategico() {
       if (e.mNombre) setMNombre(e.mNombre);
       if (e.mQueHace) setMQueHace(e.mQueHace);
       if (e.mPromociona) setMPromociona(e.mPromociona);
+      if (Array.isArray(e.nFotos)) setNFotos(e.nFotos);
+      if (Array.isArray(e.mFotos)) setMFotos(e.mFotos);
       if (e.plan) {
         // Limpiar spinners fantasma: apagar generandoImg que NO esté en la caja del vigilante
         let activos: string[] = [];
@@ -189,11 +191,12 @@ export default function RedesEstrategico() {
         pNombre, pImagen, pBeneficio, pProblema,
         nNombre, nOfrece, nCiudad,
         mNombre, mQueHace, mPromociona,
+        nFotos, mFotos,
         plan,
       };
       sessionStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
     } catch {}
-  }, [hidratado, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, mNombre, mQueHace, mPromociona, plan]);
+  }, [hidratado, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, mNombre, mQueHace, mPromociona,nFotos, mFotos, plan]);
 
   // === VIGILANTE: marcar/desmarcar qué se está generando (sobrevive al salir) ===
   function marcarGenerando(id: string) {
