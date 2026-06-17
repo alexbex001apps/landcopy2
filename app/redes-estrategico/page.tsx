@@ -417,7 +417,98 @@ export default function RedesEstrategico() {
       mostrarToast("Error al generar la imagen");
     }
   }
- const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
+ // ===== BOTONES POR IMAGEN (descargar, quitar, guardar, editar IA) =====
+  function descargarImg(url: string, nombre: string) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nombre;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function quitarImgPieza(i: number) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      piezas[i] = { ...piezas[i], imagen: null };
+      return { ...prev, piezas };
+    });
+    desmarcarGenerando(`p${i}`);
+    mostrarToast("Imagen quitada");
+  }
+
+  function quitarImgLamina(i: number, j: number) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      const laminas = [...piezas[i].laminas];
+      laminas[j] = { ...laminas[j], imagen: null };
+      piezas[i] = { ...piezas[i], laminas };
+      return { ...prev, piezas };
+    });
+    desmarcarGenerando(`p${i}_l${j}`);
+    mostrarToast("Imagen quitada");
+  }
+
+  function nombreSujeto() {
+    if (modo === "producto") return pNombre || "producto";
+    if (modo === "negocio") return nNombre || "negocio";
+    return mNombre || "marca";
+  }
+
+  async function guardarImgBiblioteca(imagen: string, titulo: string, extra: any) {
+    if (!imagen) { mostrarToast("Genera la imagen primero"); return; }
+    const supabase = createClient();
+    const imageUrl = await subirImagen(supabase, imagen, Date.now());
+    await fetch("/api/biblioteca", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "imagen", modulo: "redes-estrategico",
+        nombre: `${nombreSujeto()} — ${titulo}`, producto: nombreSujeto(),
+        contenido: null, imagen_url: imageUrl,
+        metadata: { modo, objetivo, pais, tono, ...extra },
+      }),
+    });
+    sessionStorage.removeItem("biblioteca_items");
+    mostrarToast("✓ Guardado en Biblioteca");
+  }
+
+  function toggleEditarPieza(i: number) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      piezas[i] = { ...piezas[i], editandoImg: !piezas[i].editandoImg };
+      return { ...prev, piezas };
+    });
+  }
+
+  function cambiarInstruccionPieza(i: number, v: string) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      piezas[i] = { ...piezas[i], instruccionImg: v };
+      return { ...prev, piezas };
+    });
+  }
+
+  function toggleEditarLamina(i: number, j: number) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      const laminas = [...piezas[i].laminas];
+      laminas[j] = { ...laminas[j], editandoImg: !laminas[j].editandoImg };
+      piezas[i] = { ...piezas[i], laminas };
+      return { ...prev, piezas };
+    });
+  }
+
+  function cambiarInstruccionLamina(i: number, j: number, v: string) {
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      const laminas = [...piezas[i].laminas];
+      laminas[j] = { ...laminas[j], instruccionImg: v };
+      piezas[i] = { ...piezas[i], laminas };
+      return { ...prev, piezas };
+    });
+  }
+  const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
   const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
 
@@ -787,7 +878,24 @@ export default function RedesEstrategico() {
                   ) : p.imagen ? (
                     <div className="max-w-[260px]">
                       <img src={p.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`día ${p.dia}`} />
-                      <button onClick={() => generarImagenPieza(i)} className="w-full mt-1.5 text-[10px] font-bold py-2 rounded-lg bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Generar otra</button>
+                      <div className="grid grid-cols-2 gap-1 mt-1.5">
+                        <button onClick={() => generarImagenPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                        <button onClick={() => descargarImg(p.imagen, `dia-${p.dia}.png`)} className="text-[9px] font-bold py-1.5 rounded bg-[#FFF500] text-black">↓ Bajar</button>
+                        <button onClick={() => toggleEditarPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar IA</button>
+                        <button onClick={() => quitarImgPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
+                      </div>
+                      <button onClick={() => guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo })} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Biblioteca</button>
+                      {p.editandoImg && (
+                        <div className="mt-2 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-2">
+                          <input value={p.instruccionImg || ""} onChange={e => cambiarInstruccionPieza(i, e.target.value)}
+                            placeholder="Ej: ponle más luz, fondo más oscuro..."
+                            className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[10px] px-2 py-1.5 rounded outline-none mb-1.5" />
+                          <button onClick={() => generarImagenPieza(i)} disabled={!p.instruccionImg}
+                            className="w-full text-[10px] font-bold py-1.5 rounded bg-purple-500 text-white disabled:opacity-40">
+                            🖌️ Aplicar cambio
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <button onClick={() => generarImagenPieza(i)} disabled={modo === "producto" && !pImagen}
@@ -826,7 +934,24 @@ export default function RedesEstrategico() {
                           ) : l.imagen ? (
                             <div className="mt-2">
                               <img src={l.imagen} className="w-full rounded-lg border border-[#2a2a2a]" alt={`lámina ${j + 1}`} />
-                              <button onClick={() => generarImagenLamina(i, j)} className="w-full mt-1 text-[8px] font-bold py-1.5 rounded bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                              <div className="grid grid-cols-2 gap-1 mt-1">
+                                <button onClick={() => generarImagenLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(255,245,0,0.12)] border border-[rgba(255,245,0,0.3)] text-[#FFF500]">↻ Otra</button>
+                                <button onClick={() => descargarImg(l.imagen, `dia-${p.dia}-lamina-${j + 1}.png`)} className="text-[8px] font-bold py-1 rounded bg-[#FFF500] text-black">↓ Bajar</button>
+                                <button onClick={() => toggleEditarLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar</button>
+                                <button onClick={() => quitarImgLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
+                              </div>
+                              <button onClick={() => guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto })} className="w-full mt-1 text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar</button>
+                              {l.editandoImg && (
+                                <div className="mt-1.5 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-1.5">
+                                  <input value={l.instruccionImg || ""} onChange={e => cambiarInstruccionLamina(i, j, e.target.value)}
+                                    placeholder="Ej: más luz, fondo oscuro..."
+                                    className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[9px] px-2 py-1 rounded outline-none mb-1" />
+                                  <button onClick={() => generarImagenLamina(i, j)} disabled={!l.instruccionImg}
+                                    className="w-full text-[9px] font-bold py-1 rounded bg-purple-500 text-white disabled:opacity-40">
+                                    🖌️ Aplicar
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <button onClick={() => generarImagenLamina(i, j)} disabled={modo === "producto" && !pImagen}
