@@ -347,6 +347,29 @@ export default function Landing() {
     setImagenGenerando(prev => prev.filter(x => x !== seccionId));
   };
  
+  const generarHTML = () => {
+    const bloques = secciones
+      .filter(s => contenido[s.id] || imagenes[s.id])
+      .map(s => {
+        const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
+        const txt = contenido[s.id] ? `<div class="lc-txt"><p>${(contenido[s.id] || "").replace(/\n/g, "<br>")}</p></div>` : "";
+        return `  <section class="lc-sec">${img}${txt}</section>`;
+      })
+      .join("\n");
+    return `<div class="lc-landing">
+  <style>
+    .lc-landing{max-width:560px;margin:0 auto;font-family:system-ui,-apple-system,sans-serif;color:#fff;line-height:1.5;background:#0a3a52}
+    .lc-landing *{box-sizing:border-box;margin:0}
+    .lc-sec{display:block}
+    .lc-img{width:100%;display:block}
+    .lc-txt{background:#0a3a52;padding:16px 20px;text-align:center}
+    .lc-txt p{font-size:16px;color:#fff;font-weight:500}
+    @media(max-width:480px){.lc-txt{padding:13px 16px}.lc-txt p{font-size:14px}}
+  </style>
+${bloques}
+</div>`;
+  };
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
@@ -855,8 +878,8 @@ export default function Landing() {
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
                 <div className="space-y-1.5">
-                  <button className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
-                  <button className="w-full border border-orange-500/40 text-orange-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🔗 Link compartible</button>
+                  <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
+                  <button onClick={() => { const html = generarHTML(); const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(datosActivos.producto || "landing").toLowerCase().replace(/\s+/g, "-")}.html`; a.click(); URL.revokeObjectURL(url); showToast("✓ HTML descargado"); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
                   <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">💾 Guardar en Biblioteca</button>
                   <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
                 </div>
