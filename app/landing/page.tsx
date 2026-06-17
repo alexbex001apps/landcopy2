@@ -120,6 +120,7 @@ export default function Landing() {
   const [instruccionImagen, setInstruccionImagen] = useState("");
   const [aplicandoEdicion, setAplicandoEdicion] = useState(false);
  
+  
   const supabase = createClient();
  
   useEffect(() => {
@@ -154,7 +155,13 @@ export default function Landing() {
     }
   }, []);
  
-  const secciones = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+  const [ordenSecciones, setOrdenSecciones] = useState<typeof SECCIONES_INDIVIDUAL>([]);
+
+  useEffect(() => {
+    setOrdenSecciones(campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL);
+  }, [campaign]);
+
+  const secciones = ordenSecciones.length > 0 ? ordenSecciones : (campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL);
  
   const toggleSeccion = (id: string) => {
     setSeccionesSeleccionadas(prev =>
