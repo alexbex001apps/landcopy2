@@ -459,6 +459,49 @@ export default function RedesEstrategico() {
     return mNombre || "marca";
   }
 
+  const [guardandoCampana, setGuardandoCampana] = useState(false);
+
+  async function guardarCampanaPrincipales() {
+    if (!plan?.piezas || guardandoCampana) return;
+    setGuardandoCampana(true);
+    let n = 0;
+    for (let i = 0; i < plan.piezas.length; i++) {
+      const p = plan.piezas[i];
+      if (p.imagen) {
+        await guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo, copy: [p.titulo, p.copy, p.cta].filter(Boolean).join("\n\n") });
+        n++;
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+    setGuardandoCampana(false);
+    mostrarToast(n > 0 ? `✓ ${n} imágenes guardadas` : "No hay imágenes para guardar");
+  }
+
+  async function guardarCampanaTodo() {
+    if (!plan?.piezas || guardandoCampana) return;
+    setGuardandoCampana(true);
+    let n = 0;
+    for (let i = 0; i < plan.piezas.length; i++) {
+      const p = plan.piezas[i];
+      if (p.imagen) {
+        await guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo });
+        n++;
+        await new Promise(r => setTimeout(r, 400));
+      }
+      if (Array.isArray(p.laminas)) {
+        for (let j = 0; j < p.laminas.length; j++) {
+          const l = p.laminas[j];
+          if (l.imagen) {
+             await guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto, copy: l.texto });
+            n++;
+            await new Promise(r => setTimeout(r, 400));
+          }
+        }
+      }
+    }
+    setGuardandoCampana(false);
+    mostrarToast(n > 0 ? `✓ ${n} imágenes guardadas` : "No hay imágenes para guardar");
+  }
   async function guardarImgBiblioteca(imagen: string, titulo: string, extra: any) {
     if (!imagen) { mostrarToast("Genera la imagen primero"); return; }
     const supabase = createClient();
@@ -468,7 +511,7 @@ export default function RedesEstrategico() {
       body: JSON.stringify({
         tipo: "imagen", modulo: "redes-estrategico",
         nombre: `${nombreSujeto()} — ${titulo}`, producto: nombreSujeto(),
-        contenido: null, imagen_url: imageUrl,
+        contenido: extra?.copy || null, imagen_url: imageUrl,
         metadata: { modo, objetivo, pais, tono, ...extra },
       }),
     });
@@ -991,7 +1034,7 @@ export default function RedesEstrategico() {
                         <button onClick={() => toggleEditarPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar IA</button>
                         <button onClick={() => quitarImgPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                       </div>
-                      <button onClick={() => guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo })} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Biblioteca</button>
+                      <button onClick={() => guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo, copy: [p.titulo, p.copy, p.cta].filter(Boolean).join("\n\n") })} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Biblioteca</button>
                       {p.editandoImg && (
                         <div className="mt-2 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-2">
                           <input value={p.instruccionImg || ""} onChange={e => cambiarInstruccionPieza(i, e.target.value)}
@@ -1047,7 +1090,7 @@ export default function RedesEstrategico() {
                                 <button onClick={() => toggleEditarLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar</button>
                                 <button onClick={() => quitarImgLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                               </div>
-                              <button onClick={() => guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto })} className="w-full mt-1 text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar</button>
+                              <button onClick={() => guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto, copy: l.texto })} className="w-full mt-1 text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar</button>
                               {l.editandoImg && (
                                 <div className="mt-1.5 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-1.5">
                                   <input value={l.instruccionImg || ""} onChange={e => cambiarInstruccionLamina(i, j, e.target.value)}
@@ -1078,6 +1121,22 @@ export default function RedesEstrategico() {
                 )}
               </div>
             ))}
+          {Array.isArray(plan.piezas) && plan.piezas.some((p: any) => p.imagen || (Array.isArray(p.laminas) && p.laminas.some((l: any) => l.imagen))) && (
+              <div className="bg-[#0a0a0a] border border-[rgba(168,85,247,0.3)] rounded-2xl p-5">
+                <span className="text-xs font-bold tracking-widest uppercase text-purple-300 mb-3 block">📚 Guardar toda la campaña en Biblioteca</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button onClick={guardarCampanaPrincipales} disabled={guardandoCampana}
+                    className="text-[11px] font-bold py-2.5 rounded-lg bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300 disabled:opacity-40">
+                    {guardandoCampana ? "⏳ Guardando..." : "📚 Guardar imágenes principales"}
+                  </button>
+                  <button onClick={guardarCampanaTodo} disabled={guardandoCampana}
+                    className="text-[11px] font-bold py-2.5 rounded-lg bg-purple-500 text-white disabled:opacity-40">
+                    {guardandoCampana ? "⏳ Guardando..." : "📚 Guardar todo (incluye carruseles)"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-[#7A7772] mt-2">💡 "Principales" guarda la imagen de cada día. "Todo" incluye también las láminas de los carruseles.</p>
+              </div>
+            )}
           </>
         )}
 
