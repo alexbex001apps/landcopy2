@@ -158,11 +158,35 @@ export default function Landing() {
   const [ordenSecciones, setOrdenSecciones] = useState<typeof SECCIONES_INDIVIDUAL>([]);
 
   useEffect(() => {
-    setOrdenSecciones(campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL);
+    const base = campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+    const guardado = sessionStorage.getItem("landing_orden");
+    if (guardado) {
+      try {
+        const orden = JSON.parse(guardado);
+        const valido = orden.length === base.length && base.every(b => orden.some((o: { id: string }) => o.id === b.id));
+        setOrdenSecciones(valido ? orden : base);
+      } catch { setOrdenSecciones(base); }
+    } else {
+      setOrdenSecciones(base);
+    }
   }, [campaign]);
 
   const secciones = ordenSecciones.length > 0 ? ordenSecciones : (campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL);
  
+  const [arrastrando, setArrastrando] = useState<number | null>(null);
+
+  const soltarEn = (destino: number) => {
+    if (arrastrando === null || arrastrando === destino) { setArrastrando(null); return; }
+    setOrdenSecciones(prev => {
+      const copia = [...prev];
+      const [movida] = copia.splice(arrastrando, 1);
+      copia.splice(destino, 0, movida);
+      try { sessionStorage.setItem("landing_orden", JSON.stringify(copia)); } catch {}
+      return copia;
+    });
+    setArrastrando(null);
+  };
+
   const toggleSeccion = (id: string) => {
     setSeccionesSeleccionadas(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -684,8 +708,9 @@ export default function Landing() {
                 <p className="text-zinc-600 text-[8px]">🖼 marca para imagen</p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
-                {secciones.map(s => (
-                  <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500/40 bg-orange-500/5" : "border-transparent hover:border-[#1a1a1a]"}`}>
+                {secciones.map((s, idx) => (
+                  <div key={s.id} draggable onDragStart={() => setArrastrando(idx)} onDragOver={(e) => e.preventDefault()} onDrop={() => soltarEn(idx)} onClick={() => setSeccionActiva(s.id)} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${arrastrando === idx ? "opacity-40" : ""} ${seccionActiva === s.id ? "border-orange-500/40 bg-orange-500/5" : "border-transparent hover:border-[#1a1a1a]"}`}>
+                    <div className="text-zinc-600 cursor-grab active:cursor-grabbing flex-shrink-0 text-[12px] leading-none select-none" title="Arrastra para reordenar">⠿</div>
                     <div onClick={(e) => { e.stopPropagation(); toggleSeccionParaImagen(s.id); }} className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${seccionesParaImagen.includes(s.id) ? "bg-orange-500 border-orange-500" : "border-[#333] hover:border-orange-500/60"}`}>
                       {seccionesParaImagen.includes(s.id) && <span className="text-white text-[9px] font-black">✓</span>}
                     </div>
