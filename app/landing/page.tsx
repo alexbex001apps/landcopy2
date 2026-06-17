@@ -188,6 +188,27 @@ export default function Landing() {
     { id: "hueso", hex: "#f4f1ea", texto: "#2a2620" },
   ];
 
+  const FUENTES_LANDING = [
+    { id: "sistema", nombre: "Sistema", css: "system-ui, -apple-system, sans-serif" },
+    { id: "poppins", nombre: "Poppins", css: "'Poppins', sans-serif" },
+    { id: "montserrat", nombre: "Montserrat", css: "'Montserrat', sans-serif" },
+    { id: "playfair", nombre: "Playfair Display", css: "'Playfair Display', serif" },
+    { id: "lobster", nombre: "Lobster", css: "'Lobster', cursive" },
+    { id: "oswald", nombre: "Oswald", css: "'Oswald', sans-serif" },
+  ];
+
+  const [fuenteLanding, setFuenteLanding] = useState("sistema");
+
+  useEffect(() => {
+    const guardada = sessionStorage.getItem("landing_fuente");
+    if (guardada) setFuenteLanding(guardada);
+  }, []);
+
+  const elegirFuente = (id: string) => {
+    setFuenteLanding(id);
+    try { sessionStorage.setItem("landing_fuente", id); } catch {}
+  };
+
   const [colorLanding, setColorLanding] = useState("negro");
 
   useEffect(() => {
@@ -910,6 +931,16 @@ ${bloques}
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
                       <button key={c.id} onClick={() => elegirColor(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${colorLanding === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Tipo de letra</p>
+                  <div className="space-y-1">
+                    {FUENTES_LANDING.map(f => (
+                      <button key={f.id} onClick={() => elegirFuente(f.id)} className={`w-full text-left px-2.5 py-1.5 rounded-lg border transition-all ${fuenteLanding === f.id ? "border-yellow-400 bg-yellow-400/10" : "border-[#1a1a1a] hover:border-[#333]"}`} style={{ fontFamily: f.css }}>
+                        <span className="text-[13px] text-[#f0ead6]">{f.nombre}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
