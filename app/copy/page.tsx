@@ -649,6 +649,8 @@ export default function Copy() {
               {[
                 {id:"landing",label:"Landing",color:"bg-orange-500"},
                 {id:"campana",label:"Campaña",color:"bg-green-400"},
+                {id:"whatsapp",label:"WhatsApp",color:"bg-green-500"},
+                {id:"metaads",label:"Meta Ads",color:"bg-blue-500"},
                 {id:"prompts",label:"Prompts IA",color:"bg-purple-500"},
                 {id:"extras",label:"Extras",color:"bg-zinc-600"},
               ].map(t => (
@@ -801,6 +803,42 @@ export default function Copy() {
                   </div>
                 )}
  
+                {tabActivo === "whatsapp" && (
+                  <div className="space-y-4">
+                    {resultado?.whatsapp ? (
+                      <div className="border border-green-500 rounded-xl overflow-hidden">
+                        <div className="bg-green-500/10 px-4 py-2 flex items-center justify-between">
+                          <span className="text-green-400 text-[11px] font-bold uppercase tracking-wide">💬 WhatsApp · 3 mensajes</span>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => copiar(resultado.whatsapp, "whatsapp")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "whatsapp" ? "✓ Copiado" : "Copiar"}</button>
+                            <button onClick={() => guardar(resultado.whatsapp, "WhatsApp")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.whatsapp}</div>
+                      </div>
+                    ) : (
+                      <div className="text-center text-zinc-500 text-xs py-8">Selecciona "WhatsApp x3" abajo y genera para ver los mensajes aquí.</div>
+                    )}
+                  </div>
+                )}
+                {tabActivo === "metaads" && (
+                  <div className="space-y-4">
+                    {resultado?.metaads ? (
+                      <div className="border border-blue-500 rounded-xl overflow-hidden">
+                        <div className="bg-blue-500/10 px-4 py-2 flex items-center justify-between">
+                          <span className="text-blue-400 text-[11px] font-bold uppercase tracking-wide">📣 Meta Ads</span>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => copiar(resultado.metaads, "metaads")} className="bg-[#111] border border-[#1e1e1e] text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-md">{copiado === "metaads" ? "✓ Copiado" : "Copiar"}</button>
+                            <button onClick={() => guardar(resultado.metaads, "Meta Ads")} className="bg-green-400/10 border border-green-400/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded-md">❤ Guardar</button>
+                          </div>
+                        </div>
+                        <div className="bg-[#070707] px-4 py-3 text-[#f0ead6] text-xs leading-relaxed whitespace-pre-wrap select-text cursor-text">{resultado.metaads}</div>
+                      </div>
+                    ) : (
+                      <div className="text-center text-zinc-500 text-xs py-8">Selecciona "Meta Ads" abajo y genera para ver los anuncios aquí.</div>
+                    )}
+                  </div>
+                )}
                 {tabActivo === "prompts" && (
                   <div className="border border-purple-500 rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-500/20">
