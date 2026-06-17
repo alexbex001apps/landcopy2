@@ -173,6 +173,33 @@ export default function Landing() {
 
   const secciones = ordenSecciones.length > 0 ? ordenSecciones : (campaign?.es_combo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL);
  
+  const COLORES_LANDING = [
+    { id: "negro", hex: "#111111", texto: "#ffffff" },
+    { id: "marino", hex: "#0a3a52", texto: "#ffffff" },
+    { id: "celeste", hex: "#7ec8e3", texto: "#0a2530" },
+    { id: "naranja", hex: "#ff5000", texto: "#ffffff" },
+    { id: "rojo", hex: "#c0392b", texto: "#ffffff" },
+    { id: "rosa", hex: "#e8b4c4", texto: "#4a2730" },
+    { id: "lavanda", hex: "#b9abd9", texto: "#2e2640" },
+    { id: "verde", hex: "#0f6e56", texto: "#ffffff" },
+    { id: "morado", hex: "#7a1f5c", texto: "#ffffff" },
+    { id: "beige", hex: "#d9c8a9", texto: "#403828" },
+    { id: "gris", hex: "#1a1a1a", texto: "#ffffff" },
+    { id: "hueso", hex: "#f4f1ea", texto: "#2a2620" },
+  ];
+
+  const [colorLanding, setColorLanding] = useState("negro");
+
+  useEffect(() => {
+    const guardado = sessionStorage.getItem("landing_color");
+    if (guardado) setColorLanding(guardado);
+  }, []);
+
+  const elegirColor = (id: string) => {
+    setColorLanding(id);
+    try { sessionStorage.setItem("landing_color", id); } catch {}
+  };
+
   const [arrastrando, setArrastrando] = useState<number | null>(null);
 
   const soltarEn = (destino: number) => {
@@ -348,6 +375,7 @@ export default function Landing() {
   };
  
   const generarHTML = () => {
+    const col = COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0];
     const bloques = secciones
       .filter(s => contenido[s.id] || imagenes[s.id])
       .map(s => {
@@ -358,12 +386,12 @@ export default function Landing() {
       .join("\n");
     return `<div class="lc-landing">
   <style>
-    .lc-landing{max-width:560px;margin:0 auto;font-family:system-ui,-apple-system,sans-serif;color:#fff;line-height:1.5;background:#0a3a52}
+    .lc-landing{max-width:560px;margin:0 auto;font-family:system-ui,-apple-system,sans-serif;color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
     .lc-sec{display:block}
     .lc-img{width:100%;display:block}
-    .lc-txt{background:#0a3a52;padding:16px 20px;text-align:center}
-    .lc-txt p{font-size:16px;color:#fff;font-weight:500}
+    .lc-txt{background:${col.hex};padding:16px 20px;text-align:center}
+    .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
     @media(max-width:480px){.lc-txt{padding:13px 16px}.lc-txt p{font-size:14px}}
   </style>
 ${bloques}
@@ -877,6 +905,14 @@ ${bloques}
  
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de la landing</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {COLORES_LANDING.map(c => (
+                      <button key={c.id} onClick={() => elegirColor(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${colorLanding === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
+                    ))}
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
                   <button onClick={() => { const html = generarHTML(); const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(datosActivos.producto || "landing").toLowerCase().replace(/\s+/g, "-")}.html`; a.click(); URL.revokeObjectURL(url); showToast("✓ HTML descargado"); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
