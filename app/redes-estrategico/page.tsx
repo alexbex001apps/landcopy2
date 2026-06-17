@@ -499,6 +499,110 @@ export default function RedesEstrategico() {
     });
   }
 
+  async function editarImgPieza(i: number) {
+    const pieza = plan?.piezas?.[i];
+    if (!pieza || !pieza.imagen || !pieza.instruccionImg || pieza.generandoImg) return;
+    const idGen = `p${i}`;
+    marcarGenerando(idGen);
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      piezas[i] = { ...piezas[i], generandoImg: true };
+      return { ...prev, piezas };
+    });
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ diaNumero: pieza.dia, imagenPrevia: pieza.imagen, instruccion: pieza.instruccionImg }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, i);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenCaja(idGen, imagenFinal);
+        desmarcarGenerando(idGen);
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          piezas[i] = { ...piezas[i], imagen: imagenFinal, generandoImg: false, editandoImg: false, instruccionImg: "" };
+          return { ...prev, piezas };
+        });
+        mostrarToast("✓ Imagen editada");
+      } else {
+        desmarcarGenerando(idGen);
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          piezas[i] = { ...piezas[i], generandoImg: false };
+          return { ...prev, piezas };
+        });
+        mostrarToast("No se pudo editar");
+      }
+    } catch {
+      desmarcarGenerando(idGen);
+      setPlan((prev: any) => {
+        const piezas = [...prev.piezas];
+        piezas[i] = { ...piezas[i], generandoImg: false };
+        return { ...prev, piezas };
+      });
+      mostrarToast("Error al editar");
+    }
+  }
+
+  async function editarImgLamina(i: number, j: number) {
+    const pieza = plan?.piezas?.[i];
+    const lamina = pieza?.laminas?.[j];
+    if (!lamina || !lamina.imagen || !lamina.instruccionImg || lamina.generandoImg) return;
+    const idGen = `p${i}_l${j}`;
+    marcarGenerando(idGen);
+    setPlan((prev: any) => {
+      const piezas = [...prev.piezas];
+      const laminas = [...piezas[i].laminas];
+      laminas[j] = { ...laminas[j], generandoImg: true };
+      piezas[i] = { ...piezas[i], laminas };
+      return { ...prev, piezas };
+    });
+    try {
+      const resp = await fetch("/api/redes-campanas/imagen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ diaNumero: pieza.dia, imagenPrevia: lamina.imagen, instruccion: lamina.instruccionImg }),
+      });
+      const data = await resp.json();
+      if (data.imageUrl) {
+        const supabase = createClient();
+        const urlGuardada = await subirImagen(supabase, data.imageUrl, i * 100 + j);
+        const imagenFinal = urlGuardada || data.imageUrl;
+        guardarImagenCaja(idGen, imagenFinal);
+        desmarcarGenerando(idGen);
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          const laminas = [...piezas[i].laminas];
+          laminas[j] = { ...laminas[j], imagen: imagenFinal, generandoImg: false, editandoImg: false, instruccionImg: "" };
+          piezas[i] = { ...piezas[i], laminas };
+          return { ...prev, piezas };
+        });
+        mostrarToast("✓ Lámina editada");
+      } else {
+        desmarcarGenerando(idGen);
+        setPlan((prev: any) => {
+          const piezas = [...prev.piezas];
+          const laminas = [...piezas[i].laminas];
+          laminas[j] = { ...laminas[j], generandoImg: false };
+          piezas[i] = { ...piezas[i], laminas };
+          return { ...prev, piezas };
+        });
+        mostrarToast("No se pudo editar");
+      }
+    } catch {
+      desmarcarGenerando(idGen);
+      setPlan((prev: any) => {
+        const piezas = [...prev.piezas];
+        const laminas = [...piezas[i].laminas];
+        laminas[j] = { ...laminas[j], generandoImg: false };
+        piezas[i] = { ...piezas[i], laminas };
+        return { ...prev, piezas };
+      });
+      mostrarToast("Error al editar");
+    }
+  }
   function cambiarInstruccionLamina(i: number, j: number, v: string) {
     setPlan((prev: any) => {
       const piezas = [...prev.piezas];
@@ -890,7 +994,7 @@ export default function RedesEstrategico() {
                           <input value={p.instruccionImg || ""} onChange={e => cambiarInstruccionPieza(i, e.target.value)}
                             placeholder="Ej: ponle más luz, fondo más oscuro..."
                             className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[10px] px-2 py-1.5 rounded outline-none mb-1.5" />
-                          <button onClick={() => generarImagenPieza(i)} disabled={!p.instruccionImg}
+                          <button onClick={() => editarImgPieza(i)} disabled={!p.instruccionImg}
                             className="w-full text-[10px] font-bold py-1.5 rounded bg-purple-500 text-white disabled:opacity-40">
                             🖌️ Aplicar cambio
                           </button>
@@ -946,7 +1050,7 @@ export default function RedesEstrategico() {
                                   <input value={l.instruccionImg || ""} onChange={e => cambiarInstruccionLamina(i, j, e.target.value)}
                                     placeholder="Ej: más luz, fondo oscuro..."
                                     className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[9px] px-2 py-1 rounded outline-none mb-1" />
-                                  <button onClick={() => generarImagenLamina(i, j)} disabled={!l.instruccionImg}
+                                  <button onClick={() => editarImgLamina(i, j)} disabled={!l.instruccionImg}
                                     className="w-full text-[9px] font-bold py-1 rounded bg-purple-500 text-white disabled:opacity-40">
                                     🖌️ Aplicar
                                   </button>
