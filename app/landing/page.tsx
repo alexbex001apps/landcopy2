@@ -446,12 +446,12 @@ export default function Landing() {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/\*\*/g, "").replace(/^\s*(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN|CIERRE|GARANTIA|GARANTÍA|CÓMO FUNCIONA|COMO FUNCIONA|OFERTA)\s*:?\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
-        const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
+        const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
         const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
-    const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
+    const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
     const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
     return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}<div class="lc-landing">${menu}
   <style>
