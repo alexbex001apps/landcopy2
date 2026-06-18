@@ -453,7 +453,7 @@ export default function Landing() {
       .join("\n");
     const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
     const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
-    return `${linkFuente}<div class="lc-landing">${menu}
+    return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}<div class="lc-landing">${menu}
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
@@ -482,7 +482,7 @@ ${bloques}
     <p class="lc-foot-sello"><span>Envío gratis</span> · <span>Pago contra entrega</span></p>
     <p class="lc-foot-copy">© 2026 ${datosActivos.nombre || datosActivos.producto || "Mi producto"}</p>
   </footer>
-</div>`;
+</div></body></html>`;
   };
 
   const showToast = (msg: string) => {
