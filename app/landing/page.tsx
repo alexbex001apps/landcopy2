@@ -444,7 +444,7 @@ export default function Landing() {
     const bloques = conContenido
       .map((s, i) => {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
-        const limpio = (contenido[s.id] || "").replace(/^(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN)\s*:\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
+        const limpio = (contenido[s.id] || "").replace(/\*\*/g, "").replace(/^\s*(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN|CIERRE|GARANTIA|GARANTÍA|CÓMO FUNCIONA|COMO FUNCIONA|OFERTA)\s*:?\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
         const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
@@ -457,7 +457,7 @@ export default function Landing() {
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
-    .lc-menu{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(0,0,0,0.25);position:sticky;top:0}
+    .lc-menu{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:${col.hex};position:sticky;top:0;z-index:999}
     .lc-marca{font-size:18px;font-weight:600;letter-spacing:0.02em}
     .lc-menu-btn{background:#25d366;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:20px;text-decoration:none}
     .lc-sec{display:block}
