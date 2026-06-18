@@ -439,9 +439,20 @@ export default function Landing() {
     .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
     .lc-cta{text-align:center;padding:0 20px 22px;background:${col.hex}}
     .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:16px;font-weight:600;padding:13px 32px;border-radius:30px;text-decoration:none}
+    .lc-footer{background:rgba(0,0,0,0.35);padding:40px 24px 32px;text-align:center}
+    .lc-foot-marca{font-size:22px;font-weight:600;margin-bottom:8px;letter-spacing:0.02em}
+    .lc-foot-sub{font-size:13px;opacity:0.6;margin-bottom:22px;max-width:300px;margin-left:auto;margin-right:auto}
+    .lc-foot-sello{display:inline-block;font-size:12px;color:#fff;font-weight:600;margin-bottom:12px;background:#25d366;padding:7px 16px;border-radius:20px}
+    .lc-foot-copy{font-size:10px;opacity:0.5}
     @media(max-width:480px){.lc-txt{padding:13px 16px}.lc-txt p{font-size:14px}}
   </style>
 ${bloques}
+  <footer class="lc-footer">
+    <p class="lc-foot-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</p>
+    ${datosActivos.beneficio ? `<p class="lc-foot-sub">${datosActivos.beneficio}</p>` : ""}
+    <p class="lc-foot-sello"><span>Envío gratis</span> · <span>Pago contra entrega</span></p>
+    <p class="lc-foot-copy">© 2026 ${datosActivos.nombre || datosActivos.producto || "Mi producto"}</p>
+  </footer>
 </div>`;
   };
 
