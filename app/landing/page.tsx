@@ -403,7 +403,8 @@ export default function Landing() {
       .filter(s => contenido[s.id] || imagenes[s.id])
       .map(s => {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
-        const txt = contenido[s.id] ? `<div class="lc-txt"><p>${(contenido[s.id] || "").replace(/\n/g, "<br>")}</p></div>` : "";
+        const limpio = (contenido[s.id] || "").replace(/^(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN)\s*:\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
+        const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
         return `  <section class="lc-sec">${img}${txt}</section>`;
       })
       .join("\n");
