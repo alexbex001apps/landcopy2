@@ -209,6 +209,18 @@ export default function Landing() {
     try { sessionStorage.setItem("landing_fuente", id); } catch {}
   };
 
+  const [whatsappNum, setWhatsappNum] = useState("");
+
+  useEffect(() => {
+    const guardado = sessionStorage.getItem("landing_whatsapp");
+    if (guardado) setWhatsappNum(guardado);
+  }, []);
+
+  const cambiarWhatsapp = (v: string) => {
+    setWhatsappNum(v);
+    try { sessionStorage.setItem("landing_whatsapp", v); } catch {}
+  };
+
   const [colorLanding, setColorLanding] = useState("negro");
 
   useEffect(() => {
@@ -405,7 +417,9 @@ export default function Landing() {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/^(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN)\s*:\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
-        return `  <section class="lc-sec">${img}${txt}</section>`;
+        const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
+        const btn = whatsappNum ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a></div>` : "";
+        return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
     return `${linkFuente}<div class="lc-landing">
@@ -416,6 +430,8 @@ export default function Landing() {
     .lc-img{width:100%;display:block}
     .lc-txt{background:${col.hex};padding:16px 20px;text-align:center}
     .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
+    .lc-cta{text-align:center;padding:0 20px 22px;background:${col.hex}}
+    .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:16px;font-weight:600;padding:13px 32px;border-radius:30px;text-decoration:none}
     @media(max-width:480px){.lc-txt{padding:13px 16px}.lc-txt p{font-size:14px}}
   </style>
 ${bloques}
@@ -929,6 +945,11 @@ ${bloques}
  
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">WhatsApp para vender</p>
+                  <input value={whatsappNum} onChange={e => cambiarWhatsapp(e.target.value)} placeholder="57 300 123 4567" className="w-full bg-[#f0ead6] text-black text-[12px] px-2.5 py-2 rounded-lg outline-none" />
+                  <p className="text-zinc-600 text-[9px] mt-1">Con código de país, sin + ni espacios</p>
+                </div>
                 <div className="mb-3">
                   <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de la landing</p>
                   <div className="flex flex-wrap gap-1.5">
