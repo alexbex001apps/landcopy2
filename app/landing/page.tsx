@@ -422,10 +422,15 @@ export default function Landing() {
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
-    return `${linkFuente}<div class="lc-landing">
+    const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
+    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
+    return `${linkFuente}<div class="lc-landing">${menu}
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
+    .lc-menu{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(0,0,0,0.25);position:sticky;top:0}
+    .lc-marca{font-size:18px;font-weight:600;letter-spacing:0.02em}
+    .lc-menu-btn{background:#25d366;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:20px;text-decoration:none}
     .lc-sec{display:block}
     .lc-img{width:100%;display:block}
     .lc-txt{background:${col.hex};padding:16px 20px;text-align:center}
