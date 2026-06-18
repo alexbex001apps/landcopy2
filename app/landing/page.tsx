@@ -413,14 +413,15 @@ export default function Landing() {
     const col = COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0];
     const fnt = FUENTES_LANDING.find(f => f.id === fuenteLanding) || FUENTES_LANDING[0];
     const linkFuente = fnt.id === "sistema" ? "" : `<link href="https://fonts.googleapis.com/css2?family=${fnt.nombre.replace(/ /g, "+")}:wght@400;700&display=swap" rel="stylesheet">`;
-    const bloques = secciones
-      .filter(s => contenido[s.id] || imagenes[s.id])
-      .map(s => {
+    const conContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
+    const posBtn = [0, Math.floor(conContenido.length / 2), conContenido.length - 1];
+    const bloques = conContenido
+      .map((s, i) => {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/^(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN)\s*:\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
-        const btn = whatsappNum ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a></div>` : "";
+        const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><p class="lc-cta-sello">Pago contra entrega</p></div>` : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
@@ -439,6 +440,7 @@ export default function Landing() {
     .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
     .lc-cta{text-align:center;padding:0 20px 22px;background:${col.hex}}
     .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:16px;font-weight:600;padding:13px 32px;border-radius:30px;text-decoration:none}
+    .lc-cta-sello{font-size:11px;opacity:0.7;margin-top:8px}
     .lc-footer{background:rgba(0,0,0,0.35);padding:40px 24px 32px;text-align:center}
     .lc-foot-marca{font-size:22px;font-weight:600;margin-bottom:8px;letter-spacing:0.02em}
     .lc-foot-sub{font-size:13px;opacity:0.6;margin-bottom:22px;max-width:300px;margin-left:auto;margin-right:auto}
