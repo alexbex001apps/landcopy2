@@ -421,7 +421,7 @@ export default function Landing() {
         const limpio = (contenido[s.id] || "").replace(/^(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN)\s*:\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
-        const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><p class="lc-cta-sello">Pago contra entrega</p></div>` : "";
+        const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
@@ -439,8 +439,9 @@ export default function Landing() {
     .lc-txt{background:${col.hex};padding:16px 20px;text-align:center}
     .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
     .lc-cta{text-align:center;padding:0 20px 22px;background:${col.hex}}
-    .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:16px;font-weight:600;padding:13px 32px;border-radius:30px;text-decoration:none}
-    .lc-cta-sello{font-size:11px;opacity:0.7;margin-top:8px}
+    .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:15px;font-weight:700;padding:11px 32px;border-radius:12px;text-decoration:none;box-shadow:0 4px 0 #1ba34d;font-family:system-ui,-apple-system,sans-serif}
+    .lc-menu-btn,.lc-sello{font-family:system-ui,-apple-system,sans-serif}
+    .lc-sello{display:block;margin-top:12px;color:${col.texto};opacity:0.85;font-size:12px;font-weight:600;letter-spacing:0.06em}
     .lc-footer{background:rgba(0,0,0,0.35);padding:40px 24px 32px;text-align:center}
     .lc-foot-marca{font-size:22px;font-weight:600;margin-bottom:8px;letter-spacing:0.02em}
     .lc-foot-sub{font-size:13px;opacity:0.6;margin-bottom:22px;max-width:300px;margin-left:auto;margin-right:auto}
