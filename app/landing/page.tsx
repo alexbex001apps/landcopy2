@@ -297,6 +297,7 @@ export default function Landing() {
   };
  
   const datosActivos = campaign ? {
+    nombre: campaign.nombre,
     producto: campaign.producto,
     problema: campaign.problema,
     beneficio: campaign.beneficio,
@@ -310,6 +311,7 @@ export default function Landing() {
     imagen_url_3: campaign.imagen_url_3,
     es_combo: campaign.es_combo,
   } : {
+    nombre: fNombre,
     producto: fProducto,
     problema: fProblema,
     beneficio: fBeneficio,
@@ -423,7 +425,7 @@ export default function Landing() {
       })
       .join("\n");
     const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.producto || "el producto"}`);
-    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
+    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
     return `${linkFuente}<div class="lc-landing">${menu}
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
