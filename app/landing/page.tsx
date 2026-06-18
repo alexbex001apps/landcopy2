@@ -227,6 +227,25 @@ export default function Landing() {
     try { sessionStorage.setItem("landing_whatsapp", v); } catch {}
   };
 
+  const TAMANOS_LANDING = [
+    { id: "chico", nombre: "Chico", px: 14 },
+    { id: "normal", nombre: "Normal", px: 16 },
+    { id: "grande", nombre: "Grande", px: 20 },
+    { id: "xl", nombre: "XL", px: 24 },
+  ];
+
+  const [tamanoLanding, setTamanoLanding] = useState("normal");
+
+  useEffect(() => {
+    const guardado = sessionStorage.getItem("landing_tamano");
+    if (guardado) setTamanoLanding(guardado);
+  }, []);
+
+  const elegirTamano = (id: string) => {
+    setTamanoLanding(id);
+    try { sessionStorage.setItem("landing_tamano", id); } catch {}
+  };
+
   const [colorLanding, setColorLanding] = useState("negro");
 
   useEffect(() => {
@@ -418,6 +437,7 @@ export default function Landing() {
   const generarHTML = () => {
     const col = COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0];
     const fnt = FUENTES_LANDING.find(f => f.id === fuenteLanding) || FUENTES_LANDING[0];
+    const tam = TAMANOS_LANDING.find(t => t.id === tamanoLanding) || TAMANOS_LANDING[1];
     const linkFuente = fnt.id === "sistema" ? "" : `<link href="https://fonts.googleapis.com/css2?family=${fnt.nombre.replace(/ /g, "+")}:wght@400;700&display=swap" rel="stylesheet">`;
     const conContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
     const posBtn = [0, Math.floor(conContenido.length / 2), conContenido.length - 1];
@@ -443,7 +463,7 @@ export default function Landing() {
     .lc-sec{display:block}
     .lc-img{width:100%;display:block}
     .lc-txt{background:${col.hex};padding:16px 20px;text-align:center}
-    .lc-txt p{font-size:16px;color:${col.texto};font-weight:500}
+    .lc-txt p{font-size:${tam.px}px;color:${col.texto};font-weight:500}
     .lc-cta{text-align:center;padding:0 20px 22px;background:${col.hex}}
     .lc-btn{display:inline-block;background:#25d366;color:#fff;font-size:15px;font-weight:700;padding:11px 32px;border-radius:12px;text-decoration:none;box-shadow:0 4px 0 #1ba34d;font-family:system-ui,-apple-system,sans-serif}
     .lc-menu-btn,.lc-sello{font-family:system-ui,-apple-system,sans-serif}
@@ -982,6 +1002,14 @@ ${bloques}
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
                       <button key={c.id} onClick={() => elegirColor(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${colorLanding === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Tamaño del texto</p>
+                  <div className="flex gap-1.5">
+                    {TAMANOS_LANDING.map(t => (
+                      <button key={t.id} onClick={() => elegirTamano(t.id)} className={`flex-1 py-1.5 rounded-lg border transition-all ${tamanoLanding === t.id ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-[#1a1a1a] text-zinc-400 hover:border-[#333]"}`} style={{ fontSize: `${Math.min(t.px - 3, 15)}px` }}>{t.nombre}</button>
                     ))}
                   </div>
                 </div>
