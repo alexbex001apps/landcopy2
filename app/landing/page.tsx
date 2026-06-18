@@ -201,6 +201,12 @@ export default function Landing() {
     { id: "dancing", nombre: "Dancing Script", css: "'Dancing Script', cursive" },
     { id: "caveat", nombre: "Caveat", css: "'Caveat', cursive" },
     { id: "righteous", nombre: "Righteous", css: "'Righteous', sans-serif" },
+    { id: "archivo", nombre: "Archivo Black", css: "'Archivo Black', sans-serif" },
+    { id: "fredoka", nombre: "Fredoka", css: "'Fredoka', sans-serif" },
+    { id: "baloo", nombre: "Baloo 2", css: "'Baloo 2', sans-serif" },
+    { id: "sora", nombre: "Sora", css: "'Sora', sans-serif" },
+    { id: "outfit", nombre: "Outfit", css: "'Outfit', sans-serif" },
+    { id: "bricolage", nombre: "Bricolage Grotesque", css: "'Bricolage Grotesque', sans-serif" },
   ];
 
   const [fuenteLanding, setFuenteLanding] = useState("sistema");
@@ -445,7 +451,8 @@ export default function Landing() {
       .map((s, i) => {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/\*\*/g, "").replace(/^\s*(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN|CIERRE|GARANTIA|GARANTÍA|CÓMO FUNCIONA|COMO FUNCIONA|OFERTA)\s*:?\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
-        const txt = contenido[s.id] ? `<div class="lc-txt"><p>${limpio.replace(/\n/g, "<br>")}</p></div>` : "";
+        const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2");
+        const txt = contenido[s.id] ? `<div class="lc-txt"><p>${conPipes.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
         const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
@@ -1037,7 +1044,7 @@ ${bloques}
                 </div>
                 <div className="mb-3">
                   <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Tipo de letra</p>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
                     {FUENTES_LANDING.map(f => (
                       <button key={f.id} onClick={() => elegirFuente(f.id)} className={`w-full text-left px-2.5 py-1.5 rounded-lg border transition-all ${fuenteLanding === f.id ? "border-yellow-400 bg-yellow-400/10" : "border-[#1a1a1a] hover:border-[#333]"}`} style={{ fontFamily: f.css }}>
                         <span className="text-[13px] text-[#f0ead6]">{f.nombre}</span>
