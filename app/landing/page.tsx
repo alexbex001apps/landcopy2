@@ -914,7 +914,7 @@ ${bloques}
               </div>
             </div>
  
-            <div className="space-y-3">
+            <div className="space-y-3 lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto lg:sticky lg:top-4 pr-1">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">{secciones.find(s => s.id === seccionActiva)?.nombre}</p>
                 <div className="space-y-1.5">
