@@ -397,6 +397,8 @@ export default function Landing() {
  
   const generarHTML = () => {
     const col = COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0];
+    const fnt = FUENTES_LANDING.find(f => f.id === fuenteLanding) || FUENTES_LANDING[0];
+    const linkFuente = fnt.id === "sistema" ? "" : `<link href="https://fonts.googleapis.com/css2?family=${fnt.nombre.replace(/ /g, "+")}:wght@400;700&display=swap" rel="stylesheet">`;
     const bloques = secciones
       .filter(s => contenido[s.id] || imagenes[s.id])
       .map(s => {
@@ -405,9 +407,9 @@ export default function Landing() {
         return `  <section class="lc-sec">${img}${txt}</section>`;
       })
       .join("\n");
-    return `<div class="lc-landing">
+    return `${linkFuente}<div class="lc-landing">
   <style>
-    .lc-landing{max-width:560px;margin:0 auto;font-family:system-ui,-apple-system,sans-serif;color:${col.texto};line-height:1.5;background:${col.hex}}
+    .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
     .lc-sec{display:block}
     .lc-img{width:100%;display:block}
