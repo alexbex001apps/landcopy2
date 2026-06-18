@@ -529,6 +529,28 @@ ${bloques}
     showToast(`✓ ${seccionNombre} guardada en Biblioteca`);
   };
  
+  
+  const [linkPublicado, setLinkPublicado] = useState("");
+  const [publicando, setPublicando] = useState(false);
+
+  const publicarLanding = async () => {
+    setPublicando(true);
+    try {
+      const html = generarHTML();
+      const { data: { user } } = await supabase.auth.getUser();
+      const resp = await fetch("/api/publicar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: datosActivos.nombre || datosActivos.producto, html, userId: user?.id }),
+      });
+      const data = await resp.json();
+      if (data.id) {
+        setLinkPublicado(`${window.location.origin}/v/${data.id}`);
+      }
+    } catch {}
+    setPublicando(false);
+  };
+
   const guardarEnBiblioteca = async () => {
     const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
     if (seccionesConContenido.length === 0) return;
@@ -1027,6 +1049,14 @@ ${bloques}
                   <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
                   <button onClick={() => { const html = generarHTML(); const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(datosActivos.producto || "landing").toLowerCase().replace(/\s+/g, "-")}.html`; a.click(); URL.revokeObjectURL(url); showToast("✓ HTML descargado"); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
                   <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">💾 Guardar en Biblioteca</button>
+                <button onClick={publicarLanding} disabled={publicando} className="w-full bg-[#25d366] text-white text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 mt-2">{publicando ? "⟳ Publicando..." : "🔗 Publicar y obtener link"}</button>
+                {linkPublicado && (
+                  <div className="mt-2 bg-[#0e0e0e] border border-[#25d366] rounded-lg p-2.5">
+                    <p className="text-zinc-500 text-[9px] mb-1">Tu link:</p>
+                    <p className="text-[#25d366] text-[11px] break-all mb-2">{linkPublicado}</p>
+                    <button onClick={() => { navigator.clipboard.writeText(linkPublicado); showToast("✓ Link copiado"); }} className="w-full bg-yellow-400 text-black text-[11px] font-bold py-2 rounded-lg">📋 Copiar link</button>
+                  </div>
+                )}
                   <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
                 </div>
               </div>
