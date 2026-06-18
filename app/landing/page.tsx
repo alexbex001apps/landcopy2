@@ -195,6 +195,12 @@ export default function Landing() {
     { id: "playfair", nombre: "Playfair Display", css: "'Playfair Display', serif" },
     { id: "lobster", nombre: "Lobster", css: "'Lobster', cursive" },
     { id: "oswald", nombre: "Oswald", css: "'Oswald', sans-serif" },
+    { id: "bebas", nombre: "Bebas Neue", css: "'Bebas Neue', sans-serif" },
+    { id: "pacifico", nombre: "Pacifico", css: "'Pacifico', cursive" },
+    { id: "anton", nombre: "Anton", css: "'Anton', sans-serif" },
+    { id: "dancing", nombre: "Dancing Script", css: "'Dancing Script', cursive" },
+    { id: "caveat", nombre: "Caveat", css: "'Caveat', cursive" },
+    { id: "righteous", nombre: "Righteous", css: "'Righteous', sans-serif" },
   ];
 
   const [fuenteLanding, setFuenteLanding] = useState("sistema");
