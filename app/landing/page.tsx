@@ -451,7 +451,7 @@ export default function Landing() {
       .map((s, i) => {
         const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/\*\*/g, "").replace(/^\s*(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN|CIERRE|GARANTIA|GARANTÍA|CÓMO FUNCIONA|COMO FUNCIONA|OFERTA)\s*:?\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
-        const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2");
+        const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2").replace(/\s*—\s*([A-ZÁÉÍÓÚÑ][^\n]*)$/gim, '<br><strong style="opacity:0.8">— $1</strong>\n');
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${conPipes.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
         const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
