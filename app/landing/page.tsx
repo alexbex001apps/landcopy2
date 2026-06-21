@@ -222,15 +222,23 @@ export default function Landing() {
   };
 
   const [whatsappNum, setWhatsappNum] = useState("");
+  const [modoBoton, setModoBoton] = useState("whatsapp");
 
   useEffect(() => {
     const guardado = sessionStorage.getItem("landing_whatsapp");
     if (guardado) setWhatsappNum(guardado);
+    const modoG = sessionStorage.getItem("landing_modo_boton");
+    if (modoG) setModoBoton(modoG);
   }, []);
 
   const cambiarWhatsapp = (v: string) => {
     setWhatsappNum(v);
     try { sessionStorage.setItem("landing_whatsapp", v); } catch {}
+  };
+
+  const cambiarModo = (m: string) => {
+    setModoBoton(m);
+    try { sessionStorage.setItem("landing_modo_boton", m); } catch {}
   };
 
   const TAMANOS_LANDING = [
@@ -1025,6 +1033,14 @@ ${bloques}
                   <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">WhatsApp para vender</p>
                   <input value={whatsappNum} onChange={e => cambiarWhatsapp(e.target.value)} placeholder="57 300 123 4567" className="w-full bg-[#f0ead6] text-black text-[12px] px-2.5 py-2 rounded-lg outline-none" />
                   <p className="text-zinc-600 text-[9px] mt-1">Con código de país, sin + ni espacios</p>
+                </div>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Botón comprar</p>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => cambiarModo("whatsapp")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "whatsapp" ? "bg-[#25d366] text-black" : "bg-transparent text-zinc-500 border border-[#333]"}`}>WhatsApp directo</button>
+                    <button onClick={() => cambiarModo("formulario")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "formulario" ? "bg-[#ff5000] text-white" : "bg-transparent text-zinc-500 border border-[#333]"}`}>Formulario</button>
+                  </div>
+                  <p className="text-zinc-600 text-[9px] mt-1.5">{modoBoton === "whatsapp" ? "El botón Comprar abre WhatsApp al instante." : "El cliente llena sus datos antes de ir a WhatsApp."}</p>
                 </div>
                 <div className="mb-3">
                   <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de la landing</p>
