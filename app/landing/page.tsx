@@ -453,6 +453,50 @@ export default function Landing() {
     const fnt = FUENTES_LANDING.find(f => f.id === fuenteLanding) || FUENTES_LANDING[0];
     const tam = TAMANOS_LANDING.find(t => t.id === tamanoLanding) || TAMANOS_LANDING[1];
     const linkFuente = fnt.id === "sistema" ? "" : `<link href="https://fonts.googleapis.com/css2?family=${fnt.nombre.replace(/ /g, "+")}:wght@400;700&display=swap" rel="stylesheet">`;
+    const formHTML = modoBoton === "formulario" ? `
+  <div id="lc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-end;justify-content:center">
+    <div style="background:#f0ead6;width:100%;max-width:480px;max-height:94%;overflow-y:auto;border-radius:18px 18px 0 0;box-sizing:border-box">
+      <div id="lc-form-view" style="padding:18px 18px 22px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#1a1a1a;font-family:system-ui">Bienvenido a la familia Dunamixfy</div>
+            <div style="font-size:11.5px;color:#8a7e5e;margin-top:2px;font-family:system-ui">Pago contra entrega · te cuidamos como en casa</div>
+          </div>
+          <span onclick="document.getElementById('lc-modal').style.display='none'" style="font-size:24px;color:#777;cursor:pointer;line-height:1">×</span>
+        </div>
+        <div style="margin:14px 0 9px"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Nombre completo</label><input id="lc-nom" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+        <div style="display:flex;gap:8px;margin-bottom:9px">
+          <div style="flex:1"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Cédula</label><input id="lc-ced" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+          <div style="flex:1"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Teléfono</label><input id="lc-tel" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:9px">
+          <div style="flex:1"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Departamento</label><input id="lc-dep" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+          <div style="flex:1"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Ciudad</label><input id="lc-ciu" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+        </div>
+        <div style="margin-bottom:16px"><label style="font-size:11.5px;font-weight:600;color:#3a3a3a;font-family:system-ui">Dirección completa</label><input id="lc-dir" style="width:100%;box-sizing:border-box;padding:10px 11px;margin-top:4px;border:1.5px solid #d8d2bf;border-radius:8px;font-size:14px;font-family:system-ui" /></div>
+        <button onclick="lcEnviar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#25d366;color:#073d1c;font-size:15px;font-weight:700;cursor:pointer;font-family:system-ui">Confirmar pedido</button>
+      </div>
+      <div id="lc-thanks-view" style="display:none;padding:34px 24px 30px;text-align:center">
+        <div style="font-size:19px;font-weight:700;color:#1a1a1a;font-family:system-ui;margin-bottom:8px">¡Gracias por confiar en nosotros!</div>
+        <div style="font-size:13.5px;color:#5a5340;line-height:1.6;font-family:system-ui">Ya eres parte de la familia Dunamixfy. Te escribimos enseguida por WhatsApp para coordinar tu entrega.</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function lcAbrir(){document.getElementById('lc-modal').style.display='flex';}
+    function lcEnviar(){
+      var n=document.getElementById('lc-nom').value;
+      var ce=document.getElementById('lc-ced').value;
+      var t=document.getElementById('lc-tel').value;
+      var dep=document.getElementById('lc-dep').value;
+      var c=document.getElementById('lc-ciu').value;
+      var d=document.getElementById('lc-dir').value;
+      var msg='Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}.%0A%0ANombre: '+n+'%0ACédula: '+ce+'%0ATeléfono: '+t+'%0ADepartamento: '+dep+'%0ACiudad: '+c+'%0ADirección: '+d;
+      document.getElementById('lc-form-view').style.display='none';
+      document.getElementById('lc-thanks-view').style.display='block';
+      setTimeout(function(){window.location.href='https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text='+msg;},1500);
+    }
+  </script>` : "";
     const conContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
     const posBtn = [0, Math.floor(conContenido.length / 2), conContenido.length - 1];
     const bloques = conContenido
@@ -462,13 +506,13 @@ export default function Landing() {
         const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2").replace(/\s*—\s*([A-ZÁÉÍÓÚÑ][^\n]*)$/gim, '<br><strong style="opacity:0.8">— $1</strong>\n');
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${conPipes.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
-        const btn = (whatsappNum && posBtn.includes(i)) ? `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : "";
+        const btn = (whatsappNum && posBtn.includes(i)) ? (modoBoton === "formulario" ? `<div class="lc-cta"><a class="lc-btn" href="javascript:void(0)" onclick="lcAbrir()">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>`) : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
     const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
-    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>` : ""}</header>`;
-    return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}<div class="lc-landing">${menu}
+    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? (modoBoton === "formulario" ? `<a class="lc-menu-btn" href="javascript:void(0)" onclick="lcAbrir()">Comprar</a>` : `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>`) : ""}</header>`;
+    return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}<div class="lc-landing">${menu}${formHTML}
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
