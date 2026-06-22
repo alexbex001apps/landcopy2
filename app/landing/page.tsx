@@ -516,7 +516,7 @@ export default function Landing() {
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
-    .lc-menu{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:${col.hex};position:sticky;top:0;z-index:999}
+    .lc-menu{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:${col.hex};position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;z-index:999}
     .lc-marca{font-size:18px;font-weight:600;letter-spacing:0.02em}
     .lc-menu-btn{background:#25d366;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:20px;text-decoration:none}
     .lc-sec{display:block}
