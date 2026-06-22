@@ -9,8 +9,10 @@ export default function Login() {
   const [modo, setModo] = useState<"login" | "registro">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [registrado, setRegistrado] = useState(false);
 
   async function handleLogin() {
     if (!email || !password) return;
@@ -27,15 +29,25 @@ export default function Login() {
   }
 
   async function handleRegistro() {
-    if (!email || !password) return;
+    if (!email || !password || !whatsapp) {
+      setError("Completa correo, contraseña y WhatsApp");
+      return;
+    }
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setError(error.message);
-    } else {
-      setError("Revisa tu correo para confirmar tu cuenta");
+      setLoading(false);
+      return;
     }
+    if (data.user) {
+      await supabase.from("users").update({
+        whatsapp: whatsapp,
+        plan: "sin_acceso",
+      }).eq("id", data.user.id);
+    }
+    setRegistrado(true);
     setLoading(false);
   }
 
@@ -47,15 +59,31 @@ export default function Login() {
           <p className="text-zinc-400 mt-2">Entra a tu cuenta o crea una nueva</p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
+          {registrado ? (
+            <div className="text-center py-6">
+              <div className="text-4xl mb-4">🎉</div>
+              <h2 className="text-white font-bold text-xl mb-3">¡Gracias por registrarte!</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-6">Tu cuenta está en revisión. Te contactaremos por WhatsApp muy pronto para darte la bienvenida y activar tu acceso.</p>
+              <button onClick={() => { setRegistrado(false); setModo("login"); setEmail(""); setPassword(""); setWhatsapp(""); }} className="text-yellow-400 text-sm font-bold hover:text-orange-500 transition-colors">Volver al inicio</button>
+            </div>
+          ) : (
+          <>
           <div className="flex gap-2 mb-8">
-            <button onClick={() => setModo("login")} className={`flex-1 font-medium py-2 rounded-lg text-sm transition-colors ${modo === "login" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}>Entrar</button>
-            <button onClick={() => setModo("registro")} className={`flex-1 font-medium py-2 rounded-lg text-sm transition-colors ${modo === "registro" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}>Registrarse</button>
+            <button onClick={() => { setModo("login"); setError(""); }} className={`flex-1 font-medium py-2 rounded-lg text-sm transition-colors ${modo === "login" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}>Entrar</button>
+            <button onClick={() => { setModo("registro"); setError(""); }} className={`flex-1 font-medium py-2 rounded-lg text-sm transition-colors ${modo === "registro" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}>Registrarse</button>
           </div>
           <div className="space-y-4">
             <div>
               <label className="text-zinc-400 text-sm mb-1 block">Correo electrónico</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@correo.com" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors" />
             </div>
+            {modo === "registro" && (
+              <div>
+                <label className="text-zinc-400 text-sm mb-1 block">WhatsApp</label>
+                <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="57 300 123 4567" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors" />
+                <p className="text-zinc-600 text-xs mt-1">Con código de país. Te contactaremos aquí para activarte.</p>
+              </div>
+            )}
             <div>
               <label className="text-zinc-400 text-sm mb-1 block">Contraseña</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors" />
@@ -75,6 +103,8 @@ export default function Login() {
               </button>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
