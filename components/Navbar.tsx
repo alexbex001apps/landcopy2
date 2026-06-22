@@ -74,6 +74,7 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [esAdmin, setEsAdmin] = useState(false);
   const LogoCampanas = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="4" y="8" width="24" height="16" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>
@@ -92,7 +93,8 @@ export default function Navbar() {
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
-        supabase.from("users").select("plan").eq("id", u.id).single().then(({ data }) => {
+        supabase.from("users").select("plan, es_admin").eq("id", u.id).single().then(({ data }) => {
+          if (data && data.es_admin) setEsAdmin(true);
           if (data && data.plan === "sin_acceso" && pathname !== "/espera") {
             router.replace("/espera");
           }
@@ -157,6 +159,11 @@ export default function Navbar() {
                     <p className="text-xs text-zinc-500">Conectado como</p>
                     <p className="text-sm text-white truncate">{user.email}</p>
                   </div>
+                  {esAdmin && (
+                    <a href="/admin" className="block w-full text-left px-4 py-3 text-sm text-yellow-400 hover:bg-zinc-800 transition-colors border-b border-zinc-800">
+                      ⚙ Panel Admin
+                    </a>
+                  )}
                   <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors">
                     Cerrar sesión
                   </button>
