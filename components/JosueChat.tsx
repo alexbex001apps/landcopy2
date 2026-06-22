@@ -105,6 +105,7 @@ export default function JosueChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
+  if (pathname?.startsWith("/v/")) return null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
