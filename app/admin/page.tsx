@@ -24,9 +24,9 @@ export default function Admin() {
 
   useEffect(() => {
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { window.location.href = "/login"; return; }
-      const { data: yo } = await supabase.from("users").select("es_admin").eq("id", session.user.id).single();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { window.location.href = "/login"; return; }
+      const { data: yo } = await supabase.from("users").select("es_admin").eq("id", user.id).single();
       if (!yo || !yo.es_admin) { window.location.href = "/copy"; return; }
       setAutorizado(true);
       const { data } = await supabase.from("users").select("id, email, plan, whatsapp").order("email");
