@@ -86,7 +86,15 @@ export default function MastermindPage() {
             <input type="file" accept="image/*" onChange={subirImagen} className="hidden" />
           </label>
           {imagen && (
-            <img src={imagen} alt="preview" className="mt-2 max-h-40 w-full rounded-lg object-contain bg-neutral-100" />
+            <div className="mt-2 relative">
+              <img src={imagen} alt="preview" className="max-h-40 w-full rounded-lg object-contain bg-neutral-100" />
+              <button
+                onClick={() => setImagen(null)}
+                className="absolute top-1 right-1 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white hover:bg-black/80"
+              >
+                ✕ Quitar
+              </button>
+            </div>
           )}
           <button
             onClick={analizar}
