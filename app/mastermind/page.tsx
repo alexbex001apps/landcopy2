@@ -12,12 +12,21 @@ function colorSalud(v: number) {
 export default function MastermindPage() {
   const router = useRouter();
   const [landing, setLanding] = useState("");
+  const [imagen, setImagen] = useState<string | null>(null);
   const [analizando, setAnalizando] = useState(false);
   const [resultado, setResultado] = useState<any>(null);
   const [error, setError] = useState("");
 
+  const subirImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImagen(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const analizar = async () => {
-    if (!landing.trim()) return;
+    if (!landing.trim() && !imagen) return;
     setAnalizando(true);
     setError("");
     setResultado(null);
@@ -25,7 +34,7 @@ export default function MastermindPage() {
       const resp = await fetch("/api/mastermind", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ landing }),
+        body: JSON.stringify({ landing, imagen }),
       });
       const data = await resp.json();
       if (data.analisis) {
@@ -72,9 +81,16 @@ export default function MastermindPage() {
             placeholder="Pega aquí el texto de tu landing (titular, beneficios, oferta, CTA...)"
             className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm text-neutral-700 outline-none focus:border-neutral-400 resize-none"
           />
+          <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 py-2.5 text-sm text-neutral-600 transition hover:bg-neutral-50">
+            🖼 {imagen ? "Imagen cargada ✓ (toca para cambiar)" : "Subir imagen de la landing o anuncio"}
+            <input type="file" accept="image/*" onChange={subirImagen} className="hidden" />
+          </label>
+          {imagen && (
+            <img src={imagen} alt="preview" className="mt-2 max-h-40 w-full rounded-lg object-contain bg-neutral-100" />
+          )}
           <button
             onClick={analizar}
-            disabled={analizando || !landing.trim()}
+            disabled={analizando || (!landing.trim() && !imagen)}
             className="mt-3 w-full rounded-lg py-2.5 text-sm font-medium text-white transition disabled:opacity-40"
             style={{ background: "#D85A30" }}
           >

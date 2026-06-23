@@ -38,9 +38,21 @@ Los puntajes deben ser HONESTOS y variar según la calidad real. No regales 10s.
 
 export async function POST(req: Request) {
   try {
-    const { landing } = await req.json();
-    if (!landing) {
-      return NextResponse.json({ error: "Sin landing para analizar" }, { status: 400 });
+    const { landing, imagen } = await req.json();
+    if (!landing && !imagen) {
+      return NextResponse.json({ error: "Sin landing ni imagen para analizar" }, { status: 400 });
+    }
+
+    let userContent: any;
+    if (imagen) {
+      const base64 = imagen.split(",")[1];
+      const mediaType = imagen.split(";")[0].split(":")[1];
+      userContent = [
+        { type: "text", text: `Analiza esta landing (imagen) contra las 7 leyes. ${landing ? "Contexto adicional: " + landing : ""}` },
+        { type: "image_url", image_url: { url: `data:${mediaType};base64,${base64}` } },
+      ];
+    } else {
+      userContent = `Analiza esta landing:\n\n${typeof landing === "string" ? landing : JSON.stringify(landing)}`;
     }
 
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -50,11 +62,11 @@ export async function POST(req: Request) {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: imagen ? "gpt-4o" : "gpt-4o-mini",
         max_tokens: 700,
         messages: [
           { role: "system", content: BIBLIOTECA },
-          { role: "user", content: `Analiza esta landing:\n\n${typeof landing === "string" ? landing : JSON.stringify(landing)}` },
+          { role: "user", content: userContent },
         ],
       }),
     });
