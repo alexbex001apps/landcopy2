@@ -988,7 +988,21 @@ ${bloques}
                         </div>
                       </div>
                     ) : imagenes[s.id] ? (
-                      <img src={imagenes[s.id]} className="w-full rounded-lg mb-2 max-h-96 object-contain" />
+                      <div className="mb-2">
+                        <div className="relative">
+                          <img src={imagenes[s.id]} className="w-full rounded-lg max-h-96 object-contain" />
+                          <button onClick={(e) => { e.stopPropagation(); setSeccionActiva(s.id); setInstruccionImagen(""); setEditandoImagen(true); }} className="absolute top-2 right-2 bg-cyan-500/90 hover:bg-cyan-500 text-black text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg backdrop-blur-sm active:scale-95 transition-all">✏️ Editar</button>
+                        </div>
+                        {editandoImagen && seccionActiva === s.id && (
+                          <div className="mt-2 bg-[#0d0d0d] border border-cyan-500/40 rounded-lg p-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+                            <textarea value={instruccionImagen} onChange={e => setInstruccionImagen(e.target.value)} rows={2} className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-[11px] px-2 py-2 rounded-lg outline-none resize-none" placeholder="¿Qué cambiar? 'título en amarillo' · 'más luz al producto'" />
+                            <div className="flex gap-1.5">
+                              <button onClick={() => setEditandoImagen(false)} className="flex-1 border border-[#1a1a1a] text-zinc-400 text-[11px] font-bold py-2 rounded-lg">Cancelar</button>
+                              <button onClick={editarImagenIA} disabled={aplicandoEdicion || !instruccionImagen.trim()} className="flex-1 bg-cyan-500 text-black text-[11px] font-bold py-2 rounded-lg disabled:opacity-40">{aplicandoEdicion ? "⟳ Aplicando..." : "Aplicar"}</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ) : null}
                     {contenido[s.id] ? (
                       <p className="text-[#f0ead6] text-[10px] leading-relaxed line-clamp-3">{contenido[s.id]}</p>
