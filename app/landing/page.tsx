@@ -1040,9 +1040,27 @@ ${bloques}
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
- 
+
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo de imagen</p>
+                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">Antes de generar la imagen, escoge:</p>
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de letras en imágenes</p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {[
+                    { id: "naranja", hex: "#ff5000" },
+                    { id: "lavanda", hex: "#b9abd9" },
+                    { id: "azul", hex: "#3b82f6" },
+                    { id: "verde", hex: "#22c55e" },
+                    { id: "amarillo", hex: "#facc15" },
+                    { id: "rosa", hex: "#ec4899" },
+                    { id: "cyan", hex: "#06b6d4" },
+                    { id: "rojo", hex: "#ef4444" },
+                    { id: "dorado", hex: "#d4af37" },
+                    { id: "blanco", hex: "#f0ead6" },
+                  ].map(c => (
+                    <button key={c.id} onClick={() => setAcentoSeleccionado(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${acentoSeleccionado === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
+                  ))}
+                </div>
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo para imágenes</p>
                 <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
                   <div className="flex items-center gap-2">
                     {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
@@ -1071,43 +1089,11 @@ ${bloques}
                   </div>
                 )}
               </div>
- 
+
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-2">Publicar</p>
+                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">Antes de generar la landing, escoge el estilo:</p>
                 <div className="mb-3">
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">WhatsApp para vender</p>
-                  <input value={whatsappNum} onChange={e => cambiarWhatsapp(e.target.value)} placeholder="57 300 123 4567" className="w-full bg-[#f0ead6] text-black text-[12px] px-2.5 py-2 rounded-lg outline-none" />
-                  <p className="text-zinc-600 text-[9px] mt-1">Con código de país, sin + ni espacios</p>
-                </div>
-                <div className="mb-3">
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Botón comprar</p>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => cambiarModo("whatsapp")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "whatsapp" ? "bg-[#25d366] text-black" : "bg-transparent text-zinc-500 border border-[#333]"}`}>WhatsApp directo</button>
-                    <button onClick={() => cambiarModo("formulario")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "formulario" ? "bg-[#ff5000] text-white" : "bg-transparent text-zinc-500 border border-[#333]"}`}>Formulario</button>
-                  </div>
-                  <p className="text-zinc-600 text-[9px] mt-1.5">{modoBoton === "whatsapp" ? "El botón Comprar abre WhatsApp al instante." : "El cliente llena sus datos antes de ir a WhatsApp."}</p>
-                </div>
-                <div className="mb-3">
-                  <div className="mb-3">
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de las letras</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: "naranja", hex: "#ff5000" },
-                      { id: "lavanda", hex: "#b9abd9" },
-                      { id: "azul", hex: "#3b82f6" },
-                      { id: "verde", hex: "#22c55e" },
-                      { id: "amarillo", hex: "#facc15" },
-                      { id: "rosa", hex: "#ec4899" },
-                      { id: "cyan", hex: "#06b6d4" },
-                      { id: "rojo", hex: "#ef4444" },
-                      { id: "dorado", hex: "#d4af37" },
-                      { id: "blanco", hex: "#f0ead6" },
-                    ].map(c => (
-                      <button key={c.id} onClick={() => setAcentoSeleccionado(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${acentoSeleccionado === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
-                    ))}
-                  </div>
-                </div>
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de la landing</p>
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de las cintas</p>
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
                       <button key={c.id} onClick={() => elegirColor(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${colorLanding === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
@@ -1115,7 +1101,7 @@ ${bloques}
                   </div>
                 </div>
                 <div className="mb-3">
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Tamaño del texto</p>
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Letras de las cintas (tamaño)</p>
                   <div className="flex gap-1.5">
                     {TAMANOS_LANDING.map(t => (
                       <button key={t.id} onClick={() => elegirTamano(t.id)} className={`flex-1 py-1.5 rounded-lg border transition-all ${tamanoLanding === t.id ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-[#1a1a1a] text-zinc-400 hover:border-[#333]"}`} style={{ fontSize: `${Math.min(t.px - 3, 15)}px` }}>{t.nombre}</button>
@@ -1132,19 +1118,35 @@ ${bloques}
                     ))}
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
+                <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">Cuando esté lista:</p>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">WhatsApp para vender</p>
+                  <input value={whatsappNum} onChange={e => cambiarWhatsapp(e.target.value)} placeholder="57 300 123 4567" className="w-full bg-[#f0ead6] text-black text-[12px] px-2.5 py-2 rounded-lg outline-none" />
+                  <p className="text-zinc-600 text-[9px] mt-1">Con código de país, sin + ni espacios</p>
+                </div>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Botón comprar</p>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => cambiarModo("whatsapp")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "whatsapp" ? "bg-[#25d366] text-black" : "bg-transparent text-zinc-500 border border-[#333]"}`}>WhatsApp directo</button>
+                    <button onClick={() => cambiarModo("formulario")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "formulario" ? "bg-[#ff5000] text-white" : "bg-transparent text-zinc-500 border border-[#333]"}`}>Formulario</button>
+                  </div>
+                  <p className="text-zinc-600 text-[9px] mt-1.5">{modoBoton === "whatsapp" ? "El botón Comprar abre WhatsApp al instante." : "El cliente llena sus datos antes de ir a WhatsApp."}</p>
+                </div>
                 <div className="space-y-1.5">
                   <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
                   <button onClick={() => { const html = generarHTML(); const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(datosActivos.producto || "landing").toLowerCase().replace(/\s+/g, "-")}.html`; a.click(); URL.revokeObjectURL(url); showToast("✓ HTML descargado"); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
                   <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">💾 Guardar en Biblioteca</button>
-                <button onClick={publicarLanding} disabled={publicando} className="w-full bg-[#25d366] text-white text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 mt-2">{publicando ? "⟳ Publicando..." : "🔗 Publicar y obtener link"}</button>
-                {linkPublicado && (
-                  <div className="mt-2 bg-[#0e0e0e] border border-[#25d366] rounded-lg p-2.5">
-                    <p className="text-zinc-500 text-[9px] mb-1">Tu link:</p>
-                    <p className="text-[#25d366] text-[11px] break-all mb-2">{linkPublicado}</p>
-                    <button onClick={() => { navigator.clipboard.writeText(linkPublicado); showToast("✓ Link copiado"); }} className="w-full bg-yellow-400 text-black text-[11px] font-bold py-2 rounded-lg">📋 Copiar link</button>
-                  </div>
-                )}
-                  <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
+                  <button onClick={publicarLanding} disabled={publicando} className="w-full bg-[#25d366] text-white text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 mt-2">{publicando ? "⟳ Publicando..." : "🔗 Publicar y obtener link"}</button>
+                  {linkPublicado && (
+                    <div className="mt-2 bg-[#0e0e0e] border border-[#25d366] rounded-lg p-2.5">
+                      <p className="text-zinc-500 text-[9px] mb-1">Tu link:</p>
+                      <p className="text-[#25d366] text-[11px] break-all mb-2">{linkPublicado}</p>
+                      <button onClick={() => { navigator.clipboard.writeText(linkPublicado); showToast("✓ Link copiado"); }} className="w-full bg-yellow-400 text-black text-[11px] font-bold py-2 rounded-lg">📋 Copiar link</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
