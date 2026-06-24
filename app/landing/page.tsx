@@ -99,6 +99,7 @@ export default function Landing() {
   const [imagenGenerando, setImagenGenerando] = useState<string[]>([]);
   const [seccionesParaImagen, setSeccionesParaImagen] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
+  const [acentoSeleccionado, setAcentoSeleccionado] = useState<string>("naranja");
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [guardandoSeccion, setGuardandoSeccion] = useState(false);
@@ -419,7 +420,7 @@ export default function Landing() {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, soloTitulos, textoEditado: contenido[seccionId] || "" }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, soloTitulos, textoEditado: contenido[seccionId] || "" }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -668,7 +669,7 @@ ${bloques}
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionActiva, ...datosActivos, fondoId: fondoSeleccionado, imagenPrevia: imagenes[seccionActiva], promptPropio: instruccionImagen }),
+        body: JSON.stringify({ seccion: seccionActiva, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, imagenPrevia: imagenes[seccionActiva], promptPropio: instruccionImagen }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -1087,6 +1088,25 @@ ${bloques}
                   <p className="text-zinc-600 text-[9px] mt-1.5">{modoBoton === "whatsapp" ? "El botón Comprar abre WhatsApp al instante." : "El cliente llena sus datos antes de ir a WhatsApp."}</p>
                 </div>
                 <div className="mb-3">
+                  <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de las letras</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: "naranja", hex: "#ff5000" },
+                      { id: "lavanda", hex: "#b9abd9" },
+                      { id: "azul", hex: "#3b82f6" },
+                      { id: "verde", hex: "#22c55e" },
+                      { id: "amarillo", hex: "#facc15" },
+                      { id: "rosa", hex: "#ec4899" },
+                      { id: "cyan", hex: "#06b6d4" },
+                      { id: "rojo", hex: "#ef4444" },
+                      { id: "dorado", hex: "#d4af37" },
+                      { id: "blanco", hex: "#f0ead6" },
+                    ].map(c => (
+                      <button key={c.id} onClick={() => setAcentoSeleccionado(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${acentoSeleccionado === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
+                    ))}
+                  </div>
+                </div>
                   <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de la landing</p>
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
