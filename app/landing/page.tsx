@@ -945,12 +945,16 @@ ${bloques}
                 ))}
               </div>
               <div className="mt-3 space-y-1.5">
-                {seccionesParaImagen.length > 0 && (
-                  <button onClick={generarImagenesSeleccionadas} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-[12px] font-black py-2.5 rounded-lg active:scale-95 transition-transform">
-                    ⚡ Generar imágenes ({seccionesParaImagen.length})
+                <div className="bg-green-500/5 border border-green-500/30 rounded-lg p-2">
+                  <p className="text-green-400 text-[8px] font-bold uppercase tracking-widest mb-2 text-center">⚡ Todas de una vez</p>
+                  <button onClick={() => { const todas = secciones.filter(s => contenido[s.id]).map(s => s.id); setSeccionesParaImagen([]); todas.forEach(id => generarImagen(id)); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-black py-2.5 rounded-lg active:scale-95 transition-transform mb-1.5">
+                    ⚡ Generar TODAS las imágenes
                   </button>
-                )}
-                <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">↻ Regenerar todo</button>
+                  <button onClick={generarImagenesSeleccionadas} disabled={seccionesParaImagen.length === 0} className="w-full bg-[#0d1a0a] border border-green-500/40 text-green-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform mb-1.5">
+                      Generar las marcadas ({seccionesParaImagen.length})
+                    </button>
+                  <button onClick={() => generarLanding()} className="w-full bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">↻ Regenerar todo</button>
+                </div>
                 <button onClick={() => { setContenido({}); setSeccionesSeleccionadas([]); setPaso(1); }} className="w-full border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Borrar todo</button>
               </div>
             </div>
