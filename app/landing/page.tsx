@@ -1082,7 +1082,10 @@ ${bloques}
                     <button key={c.id} onClick={() => setAcentoSeleccionado(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${acentoSeleccionado === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
                   ))}
                 </div>
-                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Fondo para imágenes</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Fondo para imágenes</p>
+                  <button onClick={() => setEjemploAbierto("fondo_img")} className="flex items-center gap-1 bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-cyan-500/25 transition-colors">👁 ver ejemplo</button>
+                </div>
                 <button onClick={() => setMostrarFondos(!mostrarFondos)} className="w-full flex items-center justify-between bg-[#111] border border-[#1a1a1a] px-3 py-2 rounded-lg mb-2">
                   <div className="flex items-center gap-2">
                     {fondoSeleccionado && <div className="w-4 h-4 rounded flex-shrink-0" style={{ background: FONDOS_DISPONIBLES.find(f => f.id === fondoSeleccionado)?.color }}></div>}
@@ -1226,6 +1229,30 @@ ${bloques}
                 </div>
                 <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
                   <span className="text-cyan-400 text-[10px]">El color que elijas pinta los textos de todas las imágenes.</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {ejemploAbierto === "fondo_img" && (
+            <div onClick={() => setEjemploAbierto(null)} className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+              <div onClick={(e) => e.stopPropagation()} className="bg-[#0a0a0a] border border-cyan-500/40 rounded-2xl p-5 max-w-xs w-full">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white text-sm font-bold">Fondo para imágenes</p>
+                  <button onClick={() => setEjemploAbierto(null)} className="text-zinc-500 text-xl leading-none">×</button>
+                </div>
+                <p className="text-zinc-400 text-[11px] leading-relaxed mb-4">Es el escenario detrás de tu producto en cada imagen: mármol, madera, neón, etc.</p>
+                <div className="flex items-start gap-3 justify-center">
+                  <div className="flex flex-col items-end gap-1 pt-2">
+                    <span className="text-yellow-400 text-2xl leading-none">→</span>
+                    <span className="text-yellow-400 text-[11px] font-bold leading-tight max-w-[80px] text-right">Esto es el fondo</span>
+                  </div>
+                  <div className="w-[140px] h-[120px] rounded-lg overflow-hidden border border-[#1a1a1a] relative flex items-center justify-center" style={{ background: "linear-gradient(135deg, #2a2a2a 0%, #4a3520 50%, #1a1a1a 100%)" }}>
+                    <span className="text-4xl drop-shadow-lg">🧴</span>
+                    <span className="absolute bottom-2 right-2 text-[8px] text-white/60 font-bold">fondo madera</span>
+                  </div>
+                </div>
+                <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
+                  <span className="text-cyan-400 text-[10px]">Elige un fondo que combine con tu producto. Hay más de 40.</span>
                 </div>
               </div>
             </div>
