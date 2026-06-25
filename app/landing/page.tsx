@@ -1062,7 +1062,10 @@ ${bloques}
 
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">Antes de generar la imagen, escoge:</p>
-                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de letras en imágenes</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Color de letras en imágenes</p>
+                  <button onClick={() => setEjemploAbierto("letras_img")} className="flex items-center gap-1 bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-cyan-500/25 transition-colors">👁 ver ejemplo</button>
+                </div>
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {[
                     { id: "naranja", hex: "#ff5000" },
@@ -1114,7 +1117,7 @@ ${bloques}
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Color de las cintas</p>
-                    <button onClick={() => setEjemploAbierto("cintas")} className="flex items-center gap-1 text-cyan-400 text-[9px] font-bold hover:text-cyan-300 transition-colors">👁 ver ejemplo</button>
+                    <button onClick={() => setEjemploAbierto("cintas")} className="flex items-center gap-1 bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-cyan-500/25 transition-colors">👁 ver ejemplo</button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
@@ -1198,6 +1201,31 @@ ${bloques}
                 </div>
                 <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
                   <span className="text-cyan-400 text-[10px]">El color que elijas pinta todas las cintas de la landing.</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {ejemploAbierto === "letras_img" && (
+            <div onClick={() => setEjemploAbierto(null)} className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+              <div onClick={(e) => e.stopPropagation()} className="bg-[#0a0a0a] border border-cyan-500/40 rounded-2xl p-5 max-w-xs w-full">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white text-sm font-bold">Color de letras en imágenes</p>
+                  <button onClick={() => setEjemploAbierto(null)} className="text-zinc-500 text-xl leading-none">×</button>
+                </div>
+                <p className="text-zinc-400 text-[11px] leading-relaxed mb-4">Es el color de los textos que la IA escribe DENTRO de cada imagen.</p>
+                <div className="flex items-start gap-3 justify-center">
+                  <div className="flex flex-col items-end gap-1 pt-6">
+                    <span className="text-yellow-400 text-2xl leading-none">→</span>
+                    <span className="text-yellow-400 text-[11px] font-bold leading-tight max-w-[80px] text-right">Así se verán las letras</span>
+                  </div>
+                  <div className="w-[140px] h-[120px] rounded-lg overflow-hidden border border-[#1a1a1a] bg-[#1a1a1a] flex flex-col items-center justify-center gap-1 px-2">
+                    <span className="text-2xl">🖼️</span>
+                    <span className="text-[15px] font-black leading-tight text-center" style={{ color: ({ naranja: "#ff5000", lavanda: "#b9abd9", azul: "#3b82f6", verde: "#22c55e", amarillo: "#facc15", rosa: "#ec4899", cyan: "#06b6d4", rojo: "#ef4444", dorado: "#d4af37", blanco: "#f0ead6" } as Record<string, string>)[acentoSeleccionado] || "#ff5000" }}>¡OFERTA!</span>
+                    <span className="text-[8px] font-bold leading-tight text-center" style={{ color: ({ naranja: "#ff5000", lavanda: "#b9abd9", azul: "#3b82f6", verde: "#22c55e", amarillo: "#facc15", rosa: "#ec4899", cyan: "#06b6d4", rojo: "#ef4444", dorado: "#d4af37", blanco: "#f0ead6" } as Record<string, string>)[acentoSeleccionado] || "#ff5000" }}>50% DCTO HOY</span>
+                  </div>
+                </div>
+                <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
+                  <span className="text-cyan-400 text-[10px]">El color que elijas pinta los textos de todas las imágenes.</span>
                 </div>
               </div>
             </div>
