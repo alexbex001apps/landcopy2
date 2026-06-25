@@ -120,6 +120,7 @@ export default function Landing() {
   const [editandoImagen, setEditandoImagen] = useState(false);
   const [instruccionImagen, setInstruccionImagen] = useState("");
   const [aplicandoEdicion, setAplicandoEdicion] = useState(false);
+  const [ejemploAbierto, setEjemploAbierto] = useState<string | null>(null);
  
   
   const supabase = createClient();
@@ -1111,7 +1112,10 @@ ${bloques}
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
                 <p className="text-orange-500 text-[9px] font-bold tracking-widest uppercase mb-3">Antes de generar la landing, escoge el estilo:</p>
                 <div className="mb-3">
-                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">Color de las cintas</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Color de las cintas</p>
+                    <button onClick={() => setEjemploAbierto("cintas")} className="flex items-center gap-1 text-cyan-400 text-[9px] font-bold hover:text-cyan-300 transition-colors">👁 ver ejemplo</button>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {COLORES_LANDING.map(c => (
                       <button key={c.id} onClick={() => elegirColor(c.id)} title={c.id} className={`w-6 h-6 rounded-md transition-all ${colorLanding === c.id ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-[#0a0a0a]" : "border border-[#333] hover:scale-110"}`} style={{ background: c.hex }}></button>
@@ -1168,6 +1172,36 @@ ${bloques}
                 </div>
               </div>
             </div>
+           {ejemploAbierto === "cintas" && (
+            <div onClick={() => setEjemploAbierto(null)} className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+              <div onClick={(e) => e.stopPropagation()} className="bg-[#0a0a0a] border border-cyan-500/40 rounded-2xl p-5 max-w-xs w-full">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white text-sm font-bold">¿Qué es una cinta?</p>
+                  <button onClick={() => setEjemploAbierto(null)} className="text-zinc-500 text-xl leading-none">×</button>
+                </div>
+                <p className="text-zinc-400 text-[11px] leading-relaxed mb-4">Son las franjas de color que unen las imágenes y donde va el botón comprar.</p>
+                <div className="flex items-start gap-3 justify-center">
+                  <div className="flex flex-col items-end gap-1 pt-1">
+                    <span className="text-yellow-400 text-2xl leading-none">→</span>
+                    <span className="text-yellow-400 text-[11px] font-bold leading-tight max-w-[80px] text-right">Así se verá tu cinta</span>
+                  </div>
+                  <div className="w-[140px] rounded-lg overflow-hidden border border-[#1a1a1a]">
+                    <div className="px-2.5 py-1.5 flex items-center justify-between" style={{ background: (COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0]).hex }}>
+                      <span className="text-[9px] font-bold" style={{ color: (COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0]).texto }}>Mi producto</span>
+                      <span className="bg-[#25d366] text-[#073d1c] text-[7px] font-bold px-2 py-0.5 rounded-full">Comprar</span>
+                    </div>
+                    <div className="h-16 bg-[#1a1a1a] flex items-center justify-center text-zinc-600 text-2xl">🖼️</div>
+                    <div className="px-2.5 py-2 text-center" style={{ background: (COLORES_LANDING.find(c => c.id === colorLanding) || COLORES_LANDING[0]).hex }}>
+                      <span className="bg-[#25d366] text-[#073d1c] text-[8px] font-bold px-3 py-1 rounded-full">Comprar ahora</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
+                  <span className="text-cyan-400 text-[10px]">El color que elijas pinta todas las cintas de la landing.</span>
+                </div>
+              </div>
+            </div>
+          )}
           </div>
         )}
       </div>
