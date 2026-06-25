@@ -70,8 +70,8 @@ export default function AyudaVenezuela() {
     : "--:--:--";
 
   return (
-    <main className="min-h-screen bg-neutral-50 text-neutral-900">
-      <div className="mx-auto max-w-md min-h-screen bg-white">
+    <main className="bg-neutral-50 text-neutral-900">
+      <div className="mx-auto max-w-md bg-white">
         <BanderaVenezuela />
 
         <header className="border-b border-neutral-200 px-5 pb-4 pt-5">
@@ -137,8 +137,8 @@ export default function AyudaVenezuela() {
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
-              Doblete sismico 7,2 y 7,5. La cifra puede subir. Desconfia de
-              numeros sin fuente.
+              Cifra oficial del gobierno. No incluye aun La Guaira, por lo
+              que subira. Confirma siempre en fuentes oficiales.
             </p>
           </section>
 
