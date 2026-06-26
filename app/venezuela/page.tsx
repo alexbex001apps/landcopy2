@@ -158,8 +158,8 @@ export default function AyudaVenezuela() {
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
-              Cifra oficial del gobierno. No incluye aun La Guaira, por lo
-              que subira. Confirma siempre en fuentes oficiales.
+              Fallecidos y heridos: cifras oficiales del gobierno. Desaparecidos: reportes de la ONU y plataformas ciudadanas, en verificacion.
+              Las cifras siguen subiendo. Confirma en fuentes oficiales.
             </p>
           </section>
 
@@ -327,6 +327,10 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
+
+
 
 
 
