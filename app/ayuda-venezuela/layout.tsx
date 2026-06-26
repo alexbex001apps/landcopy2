@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Venezuela necesita ayuda",
     description: "Canales verificados para donar, buscar a los tuyos y llevar ayuda. Sin rumores.",
-    images: ["/og-image.png"],
+    images: ["/og-v2.png"],
     type: "website",
   },
 };
@@ -14,4 +14,5 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+
 
