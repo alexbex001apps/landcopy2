@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const LIBRES = ["/login", "/espera", "/reset-password", "/"];
+const LIBRES = ["/login", "/espera", "/reset-password", "/", "/ayuda-venezuela"];
 
 export default function Guardian({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
