@@ -193,12 +193,18 @@ export default function AyudaVenezuela() {
                   WhatsApp +57 321 213 9525
                 </span>
               </a>
-              <div className="rounded-lg bg-neutral-100 p-3.5">
-                <p className="text-sm font-medium">Reportar o buscar</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Facebook Safety Check y plataforma Venezuela Te Busca
-                </p>
-              </div>
+              <a
+                href="https://venezuelatebusca.com"
+                className="block rounded-lg bg-neutral-100 p-3.5"
+              >
+                <p className="text-sm font-medium">Reportar o buscar desaparecidos</p>
+                <span className="mt-0.5 block text-xs text-blue-600">
+                  Plataforma Venezuela Te Busca
+                </span>
+                <span className="mt-0.5 block text-[11px] text-neutral-500">
+                  Iniciativa ciudadana, no oficial. Verifica los datos.
+                </span>
+              </a>
               <div className="rounded-lg bg-neutral-100 p-3.5">
                 <p className="text-sm font-medium">Heridos hospitalizados</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
@@ -232,12 +238,15 @@ export default function AyudaVenezuela() {
                   Hospital de campana, rescatistas y ayuda desde varios paises.
                 </p>
               </div>
-              <div className="rounded-lg border border-neutral-200 p-3.5">
+              <a
+                href="https://wck.org"
+                className="block rounded-lg border border-neutral-200 p-3.5"
+              >
                 <p className="text-sm font-medium">World Central Kitchen</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Ya reparte comidas en las zonas afectadas.
-                </p>
-              </div>
+                <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">
+                  Ya reparte comidas en las zonas afectadas. Toca para donar.
+                </span>
+              </a>
             </div>
           </section>
 
@@ -254,6 +263,10 @@ export default function AyudaVenezuela() {
                 <p className="mt-1 text-xs text-amber-700">
                   Solo insumos medicos y de primeros auxilios
                 </p>
+                <div className="mt-2 flex gap-2">
+                  <a href="https://www.google.com/maps/search/?api=1&query=Restaurante+Tepuy+Laureles+Medellin" className="text-xs font-medium text-blue-600">Ver Laureles</a>
+                  <a href="https://www.google.com/maps/search/?api=1&query=Restaurante+Tepuy+Envigado" className="text-xs font-medium text-blue-600">Ver Envigado</a>
+                </div>
               </div>
               <div className="rounded-lg border border-neutral-200 p-3.5">
                 <p className="text-sm font-medium">Grupo Mega</p>
@@ -263,6 +276,10 @@ export default function AyudaVenezuela() {
                 <p className="mt-1 text-xs text-neutral-600">
                   Comida, agua, ropa, higiene, paniales
                 </p>
+                <div className="mt-2 flex gap-2">
+                  <a href="https://www.google.com/maps/search/?api=1&query=Mall+Itagui+Itagui" className="text-xs font-medium text-blue-600">Ver Itagui</a>
+                  <a href="https://www.google.com/maps/search/?api=1&query=Grupo+Mega+Bello+Carrera+50" className="text-xs font-medium text-blue-600">Ver Bello</a>
+                </div>
               </div>
               <p className="px-1 text-[11px] leading-relaxed text-neutral-400">
                 Medellin aun no tiene acopio oficial por logistica de envio.
