@@ -77,7 +77,7 @@ export default function AyudaVenezuela() {
 
         <header className="border-b border-neutral-200 px-5 pb-4 pt-5">
           <p className="text-[11px] font-medium tracking-wide text-neutral-500">
-            IGLESIA BETHEL - DUNAMIFY
+            IGLESIA BETHEL - DUNAMIXFY
           </p>
           <h1 className="mt-1.5 text-2xl font-medium">Venezuela te ayuda</h1>
           <p className="mt-1 text-sm leading-relaxed text-neutral-600">
@@ -327,4 +327,5 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
