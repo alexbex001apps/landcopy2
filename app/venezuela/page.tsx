@@ -86,7 +86,7 @@ export default function AyudaVenezuela() {
           </p>
           <div className="mt-3 flex gap-2">
             <a
-              href="https://wa.me/?text=Ante%20la%20tragedia%20en%20Venezuela%2C%20esta%20pagina%20reune%20canales%20verificados%20para%20donar%2C%20buscar%20familiares%20y%20llevar%20ayuda.%20Sin%20rumores.%20Compartela%20con%20quien%20la%20necesite.%20https%3A//landcopy2.vercel.app/ayuda-venezuela"
+              href="https://wa.me/?text=Ante%20la%20tragedia%20en%20Venezuela%2C%20esta%20pagina%20reune%20canales%20verificados%20para%20donar%2C%20buscar%20familiares%20y%20llevar%20ayuda.%20Sin%20rumores.%20Compartela%20con%20quien%20la%20necesite.%20https%3A//landcopy2.vercel.app/venezuela"
               className="flex-1 rounded-lg bg-green-50 py-2.5 text-center text-sm font-medium text-green-700"
             >
               Compartir
@@ -103,12 +103,12 @@ export default function AyudaVenezuela() {
           </p>
           <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2">
             <span className="flex-1 truncate text-xs text-neutral-600">
-              landcopy2.vercel.app/ayuda-venezuela
+              landcopy2.vercel.app/venezuela
             </span>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(
-                  "https://landcopy2.vercel.app/ayuda-venezuela"
+                  "https://landcopy2.vercel.app/venezuela"
                 );
                 setCopiado(true);
                 setTimeout(() => setCopiado(false), 2000);
@@ -327,6 +327,8 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
 
 
 
