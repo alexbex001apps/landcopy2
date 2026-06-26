@@ -8,11 +8,13 @@ export const metadata: Metadata = {
     description: "Canales verificados para donar, buscar a los tuyos y llevar ayuda. Sin rumores.",
     images: ["/og-v2.png"],
     type: "website",
+    url: "https://landcopy2.vercel.app/ayuda-venezuela",
   },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+
 
 
