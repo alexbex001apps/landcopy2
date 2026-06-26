@@ -40,7 +40,7 @@ function BanderaVenezuela() {
                   transform: `translateY(${6 - offset}px)`,
                 }}
               >
-                â˜…
+                {"\u2605"}
               </span>
             );
           })}
@@ -54,6 +54,7 @@ function BanderaVenezuela() {
 export default function AyudaVenezuela() {
   const [mounted, setMounted] = useState(false);
   const [ahora, setAhora] = useState<number>(() => Date.now());
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -96,6 +97,26 @@ export default function AyudaVenezuela() {
             >
               Donar
             </a>
+          </div>
+          <p className="mt-3 text-center text-xs font-medium text-neutral-700">
+            Comparte esta info, puede ser de muchisima ayuda
+          </p>
+          <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2">
+            <span className="flex-1 truncate text-xs text-neutral-600">
+              landcopy2.vercel.app/ayuda-venezuela
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  "https://landcopy2.vercel.app/ayuda-venezuela"
+                );
+                setCopiado(true);
+                setTimeout(() => setCopiado(false), 2000);
+              }}
+              className="shrink-0 rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white"
+            >
+              {copiado ? "Copiado" : "Copiar"}
+            </button>
           </div>
         </header>
 
