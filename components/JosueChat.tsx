@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -105,7 +105,7 @@ export default function JosueChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
-  if (pathname?.startsWith("/v/") || pathname?.startsWith("/ayuda-venezuela")) return null;
+  if (pathname?.startsWith("/v/") || pathname?.startsWith("/ayuda-venezuela") || pathname?.startsWith("/venezuela")) return null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

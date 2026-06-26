@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [esAdmin, setEsAdmin] = useState(false);
-  if (pathname?.startsWith("/v/") || pathname?.startsWith("/ayuda-venezuela")) return null;
+  if (pathname?.startsWith("/v/") || pathname?.startsWith("/ayuda-venezuela") || pathname?.startsWith("/venezuela")) return null;
   const LogoCampanas = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
     <rect x="4" y="8" width="24" height="16" rx="2" stroke="white" strokeWidth="1.5" fill="white" fillOpacity="0.1"/>

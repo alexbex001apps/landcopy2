@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const LIBRES = ["/login", "/espera", "/reset-password", "/", "/ayuda-venezuela"];
+const LIBRES = ["/login", "/espera", "/reset-password", "/", "/ayuda-venezuela", "/venezuela"];
 
 export default function Guardian({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -38,3 +38,4 @@ export default function Guardian({ children }: { children: React.ReactNode }) {
   }
   return <>{children}</>;
 }
+

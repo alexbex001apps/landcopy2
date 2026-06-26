@@ -1,7 +1,7 @@
-import { createServerClient } from "@supabase/ssr";
+﻿import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 const protectedRoutes = ["/copy", "/redes", "/landing"];
-const publicRoutes = ["/ayuda-venezuela"];
+const publicRoutes = ["/ayuda-venezuela", "/venezuela"];
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (publicRoutes.some(r => pathname.startsWith(r))) {
@@ -45,3 +45,4 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
+
