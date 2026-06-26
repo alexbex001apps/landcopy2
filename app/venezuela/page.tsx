@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 //  EDITA SOLO ESTAS LINEAS CADA 2 HORAS CON CIFRAS VERIFICADAS
 //  Formato de fecha: "AAAA-MM-DDTHH:MM:SS-05:00" (hora Colombia)
 // ============================================================
-const ULTIMA_ACTUALIZACION = "2026-06-25T16:00:00-05:00";
-const FALLECIDOS = "188+";
-const HERIDOS = "1.520";
-const DESAPARECIDOS = "157";
+const ULTIMA_ACTUALIZACION = "2026-06-26T14:00:00-05:00";
+const FALLECIDOS = "920";
+const HERIDOS = "3.360";
+const DESAPARECIDOS = "+50.000";
 // ============================================================
 
 function haceCuanto(ms: number): string {
@@ -327,6 +327,7 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
 
