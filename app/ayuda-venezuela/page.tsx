@@ -79,7 +79,7 @@ export default function AyudaVenezuela() {
           <p className="text-[11px] font-medium tracking-wide text-neutral-500">
             IGLESIA BETHEL - DUNAMIXFY
           </p>
-          <h1 className="mt-1.5 text-2xl font-medium">Venezuela te ayuda</h1>
+          <h1 className="mt-1.5 text-2xl font-medium">Venezuela necesita ayuda</h1>
           <p className="mt-1 text-sm leading-relaxed text-neutral-600">
             Canales verificados para donar, buscar a los tuyos y llevar ayuda.
             Sin rumores.
@@ -327,5 +327,6 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
