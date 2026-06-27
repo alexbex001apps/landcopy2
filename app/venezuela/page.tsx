@@ -213,15 +213,7 @@ export default function AyudaVenezuela() {
               BUSCAR A LOS TUYOS
             </p>
             <div className="space-y-2">
-              <a
-                href="https://wa.me/573212139525"
-                className="block rounded-lg bg-neutral-100 p-3.5"
-              >
-                <span className="text-sm font-medium">Cruz Roja Colombiana</span>
-                <span className="mt-0.5 block text-xs text-blue-600">
-                  WhatsApp +57 321 213 9525
-                </span>
-              </a>
+              
               <a
                 href="https://venezuelatebusca.com"
                 className="block rounded-lg bg-neutral-100 p-3.5"
@@ -244,6 +236,32 @@ export default function AyudaVenezuela() {
             </div>
           </section>
 
+          <section className="mt-4">
+            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">PLATAFORMAS PARA BUSCAR Y AYUDAR</p>
+            <p className="mb-2.5 text-[11px] text-neutral-500">Iniciativas ciudadanas, no oficiales. Verifica siempre los datos.</p>
+            <div className="space-y-2">
+              <a href="https://venezuelareporta.org" className="block rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Venezuela Reporta</p>
+                <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">El registro mas completo: busca por nombre o cedula, con fotos. Incluye mapa.</span>
+                <span className="mt-1 block text-xs font-medium text-blue-600">Entrar</span>
+              </a>
+              <a href="https://pacientesterremotovzla.lovable.app" className="block rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Pacientes en hospitales</p>
+                <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">Localiza personas atendidas en hospitales. Informacion verificada. Respeta la privacidad: usala solo para buscar a tu familiar.</span>
+                <span className="mt-1 block text-xs font-medium text-blue-600">Entrar</span>
+              </a>
+              <a href="https://refugiosvenezuela.com" className="block rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Refugios y comida</p>
+                <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">Mapa de refugios con cupo y centros de comida cercanos.</span>
+                <span className="mt-1 block text-xs font-medium text-blue-600">Entrar</span>
+              </a>
+              <a href="https://ayudaparavenezuela.com" className="block rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Centros de acopio</p>
+                <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">Donde llevar insumos y que se necesita por zona.</span>
+                <span className="mt-1 block text-xs font-medium text-blue-600">Entrar</span>
+              </a>
+            </div>
+          </section>
           <section>
             <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
               COMO VA LA AYUDA INTERNACIONAL
@@ -335,6 +353,10 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
+
+
 
 
 
