@@ -168,7 +168,7 @@ export default function AyudaVenezuela() {
             <p className="text-sm font-semibold text-amber-900">{"\u00bf"}Quieres que oremos por ti?</p>
             <p className="mt-1 text-xs leading-relaxed text-amber-800">En medio de esta crisis no est{"\u00e1"}s solo. Tenemos un grupo de intercesi{"\u00f3"}n que orar{"\u00e1"} por ti, por tu familia o por quien lo necesite. Escribe tu petici{"\u00f3"}n. Puedes poner tu nombre o dejarla an{"\u00f3"}nima.</p>
             <textarea value={peticion} onChange={(e) => setPeticion(e.target.value)} placeholder="Escribe aqui tu peticion de oracion..." rows={3} className="mt-3 w-full resize-none rounded-lg border border-amber-300 bg-white p-2.5 text-sm text-neutral-800 outline-none focus:border-amber-500" />
-            <a href={peticion.trim() ? `https://wa.me/573044968052?text=${encodeURIComponent("Hola, quiero que el grupo de intercesion ore por esto:\n\n" + peticion)}` : undefined} onClick={(e) => { if (!peticion.trim()) e.preventDefault(); }} className={`mt-2 block rounded-lg py-2.5 text-center text-sm font-medium ${peticion.trim() ? "bg-amber-600 text-white" : "cursor-not-allowed bg-amber-200 text-amber-500"}`}>Enviar mi peticion de oracion</a>
+            <a href={peticion.trim() ? `https://wa.me/573022235321?text=${encodeURIComponent("Hola, quiero que el grupo de intercesion ore por esto:\n\n" + peticion)}` : undefined} onClick={(e) => { if (!peticion.trim()) e.preventDefault(); }} className={`mt-2 block rounded-lg py-2.5 text-center text-sm font-medium ${peticion.trim() ? "bg-amber-600 text-white" : "cursor-not-allowed bg-amber-200 text-amber-500"}`}>Enviar mi peticion de oracion</a>
             <p className="mt-2 text-center text-[11px] text-amber-700">Tu peticion llega directo por WhatsApp. No se guarda en ningun sistema.</p>
           </section>
           <section id="donar">
@@ -353,6 +353,7 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
 
