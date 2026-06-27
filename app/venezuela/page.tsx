@@ -226,13 +226,7 @@ export default function AyudaVenezuela() {
                   Iniciativa ciudadana, no oficial. Verifica los datos.
                 </span>
               </a>
-              <div className="rounded-lg bg-neutral-100 p-3.5">
-                <p className="text-sm font-medium">Heridos hospitalizados</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Hay 20 hospitales habilitados en el area de Caracas. Para
-                  localizar a un herido, usa los canales de busqueda de arriba.
-                </p>
-              </div>
+
             </div>
           </section>
 
@@ -353,6 +347,7 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
 
