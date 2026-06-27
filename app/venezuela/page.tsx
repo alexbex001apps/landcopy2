@@ -276,19 +276,31 @@ export default function AyudaVenezuela() {
               <div className="rounded-lg border border-neutral-200 p-3.5">
                 <p className="text-sm font-medium">Naciones Unidas</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Coordina equipos de busqueda y rescate de todo el mundo.
+                  Mas de 1.000 rescatistas de 17 paises desplegados. Libero 15 millones de dolares de emergencia.
                 </p>
               </div>
               <div className="rounded-lg border border-neutral-200 p-3.5">
                 <p className="text-sm font-medium">Estados Unidos</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Anuncio 150 millones de dolares y equipos de rescate.
+                  150 millones de dolares y equipos de rescate de Virginia y Los Angeles.
                 </p>
               </div>
               <div className="rounded-lg border border-neutral-200 p-3.5">
-                <p className="text-sm font-medium">Espana, Mexico y mas</p>
+                <p className="text-sm font-medium">El Salvador</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
-                  Hospital de campana, rescatistas y ayuda desde varios paises.
+                  300 rescatistas, personal medico y 50 toneladas de suministros.
+                </p>
+              </div>
+              <div className="rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Cruz Roja Internacional</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
+                  17 toneladas de ayuda desde Panama. Busca asistir a 300.000 personas.
+                </p>
+              </div>
+              <div className="rounded-lg border border-neutral-200 p-3.5">
+                <p className="text-sm font-medium">Espana, Mexico, Chile y mas</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
+                  Rescatistas y ayuda tambien desde Colombia, Ecuador, Peru, Italia, Suiza, Alemania, Francia, Qatar y mas.
                 </p>
               </div>
               <a
@@ -357,6 +369,7 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
 
