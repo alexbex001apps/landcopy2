@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 //  EDITA SOLO ESTAS LINEAS CADA 2 HORAS CON CIFRAS VERIFICADAS
 //  Formato de fecha: "AAAA-MM-DDTHH:MM:SS-05:00" (hora Colombia)
 // ============================================================
-const ULTIMA_ACTUALIZACION = "2026-06-26T14:00:00-05:00";
+const ULTIMA_ACTUALIZACION = "2026-06-27T00:00:00-05:00";
 const FALLECIDOS = "920";
 const HERIDOS = "3.360";
-const DESAPARECIDOS = "+50.000";
+const DESAPARECIDOS = "51.681";
 // ============================================================
 
 function haceCuanto(ms: number): string {
@@ -19,6 +19,23 @@ function haceCuanto(ms: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return m > 0 ? `hace ${h} h ${m} min` : `hace ${h} h`;
+}
+
+function Cinta({ texto, color }: { texto: string; color: string }) {
+  return (
+    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${color}`}>
+      {texto}
+    </span>
+  );
+}
+
+function TituloSeccion({ texto, color, barra }: { texto: string; color: string; barra: string }) {
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <span className={`h-4 w-1 rounded-full ${barra}`}></span>
+      <p className={`text-xs font-semibold tracking-wide ${color}`}>{texto}</p>
+    </div>
+  );
 }
 
 function BanderaVenezuela() {
@@ -88,13 +105,13 @@ export default function AyudaVenezuela() {
           <div className="mt-3 flex gap-2">
             <a
               href="https://wa.me/?text=Ante%20la%20tragedia%20en%20Venezuela%2C%20esta%20pagina%20reune%20canales%20verificados%20para%20donar%2C%20buscar%20familiares%20y%20llevar%20ayuda.%20Sin%20rumores.%20Compartela%20con%20quien%20la%20necesite.%20https%3A//landcopy2.vercel.app/venezuela"
-              className="flex-1 rounded-lg bg-green-50 py-2.5 text-center text-sm font-medium text-green-700"
+              className="flex-1 rounded-lg bg-green-600 py-2.5 text-center text-sm font-semibold text-white"
             >
               Compartir
             </a>
             <a
               href="#donar"
-              className="flex-1 rounded-lg bg-blue-50 py-2.5 text-center text-sm font-medium text-blue-700"
+              className="flex-1 rounded-lg bg-blue-600 py-2.5 text-center text-sm font-semibold text-white"
             >
               Donar
             </a>
@@ -122,14 +139,14 @@ export default function AyudaVenezuela() {
         </header>
 
         <div className="space-y-6 px-5 py-5">
-          <section className="rounded-lg bg-neutral-100 p-4">
+          <section className="rounded-xl border border-red-100 bg-red-50 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-600"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-600"></span>
                 </span>
-                <span className="text-[11px] font-medium tracking-wide text-green-700">
+                <span className="text-[11px] font-semibold tracking-wide text-red-700">
                   EN VIVO
                 </span>
               </div>
@@ -145,36 +162,34 @@ export default function AyudaVenezuela() {
 
             <div className="mt-3 flex gap-3">
               <div className="flex-1">
-                <p className="text-xl font-medium tabular-nums">{FALLECIDOS}</p>
+                <p className="text-xl font-semibold tabular-nums text-red-800">{FALLECIDOS}</p>
                 <p className="text-[11px] text-neutral-600">fallecidos</p>
               </div>
               <div className="flex-1">
-                <p className="text-xl font-medium tabular-nums">{HERIDOS}</p>
+                <p className="text-xl font-semibold tabular-nums text-red-800">{HERIDOS}</p>
                 <p className="text-[11px] text-neutral-600">heridos</p>
               </div>
               <div className="flex-1">
-                <p className="text-xl font-medium tabular-nums">{DESAPARECIDOS}</p>
+                <p className="text-xl font-semibold tabular-nums text-red-800">{DESAPARECIDOS}</p>
                 <p className="text-[11px] text-neutral-600">desaparecidos</p>
               </div>
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
               Fallecidos y heridos: cifras oficiales del gobierno. Desaparecidos: reportes de la ONU y plataformas ciudadanas, en verificacion.
-              Las cifras siguen subiendo. Confirma en fuentes oficiales.
+              Las cifras siguen subiendo. Confirma en fuentes oficiales. El Servicio Geologico de EE.UU. (USGS) advierte que la cifra real de fallecidos podria superar los 10.000.
             </p>
           </section>
 
           <section className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm font-semibold text-amber-900">{"\u00bf"}Quieres que oremos por ti?</p>
+            <div className="mb-1.5"><Cinta texto="GRUPO DE INTERCESION" color="bg-amber-200 text-amber-800" /></div><p className="text-sm font-semibold text-amber-900">{"\u00bf"}Quieres que oremos por ti?</p>
             <p className="mt-1 text-xs leading-relaxed text-amber-800">En medio de esta crisis no est{"\u00e1"}s solo. Tenemos un grupo de intercesi{"\u00f3"}n que orar{"\u00e1"} por ti, por tu familia o por quien lo necesite. Escribe tu petici{"\u00f3"}n. Puedes poner tu nombre o dejarla an{"\u00f3"}nima.</p>
             <textarea value={peticion} onChange={(e) => setPeticion(e.target.value)} placeholder="Escribe aqui tu peticion de oracion..." rows={3} className="mt-3 w-full resize-none rounded-lg border border-amber-300 bg-white p-2.5 text-sm text-neutral-800 outline-none focus:border-amber-500" />
             <a href={peticion.trim() ? `https://wa.me/573022235321?text=${encodeURIComponent("Hola, quiero que el grupo de intercesion ore por esto:\n\n" + peticion)}` : undefined} onClick={(e) => { if (!peticion.trim()) e.preventDefault(); }} className={`mt-2 block rounded-lg py-2.5 text-center text-sm font-medium ${peticion.trim() ? "bg-amber-600 text-white" : "cursor-not-allowed bg-amber-200 text-amber-500"}`}>Enviar mi peticion de oracion</a>
             <p className="mt-2 text-center text-[11px] text-amber-700">Tu peticion llega directo por WhatsApp. No se guarda en ningun sistema.</p>
           </section>
           <section id="donar">
-            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
-              COMO DONAR
-            </p>
+            <TituloSeccion texto="COMO DONAR" color="text-green-700" barra="bg-green-500" />
             <div className="space-y-2">
               <a
                 href="https://www.globalgiving.org/projects/venezuela-earthquake-relief-fund/"
@@ -209,15 +224,14 @@ export default function AyudaVenezuela() {
           </section>
 
           <section>
-            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
-              BUSCAR A LOS TUYOS
-            </p>
+            <TituloSeccion texto="BUSCAR A LOS TUYOS" color="text-blue-700" barra="bg-blue-500" />
             <div className="space-y-2">
               
               <a
                 href="https://venezuelatebusca.com"
                 className="block rounded-lg bg-neutral-100 p-3.5"
               >
+                <div className="mb-1"><Cinta texto="URGENTE" color="bg-blue-600 text-white" /></div>
                 <p className="text-sm font-medium">Reportar o buscar desaparecidos</p>
                 <span className="mt-0.5 block text-xs text-blue-600">
                   Plataforma Venezuela Te Busca
@@ -231,11 +245,11 @@ export default function AyudaVenezuela() {
           </section>
 
           <section className="mt-4">
-            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">PLATAFORMAS PARA BUSCAR Y AYUDAR</p>
+            <TituloSeccion texto="PLATAFORMAS PARA BUSCAR Y AYUDAR" color="text-blue-700" barra="bg-blue-500" />
             <p className="mb-2.5 text-[11px] text-neutral-500">Iniciativas ciudadanas, no oficiales. Verifica siempre los datos.</p>
             <div className="space-y-2">
               <a href="https://venezuelareporta.org" className="block rounded-lg border border-neutral-200 p-3.5">
-                <p className="text-sm font-medium">Venezuela Reporta</p>
+                <div className="mb-1"><Cinta texto="MAS COMPLETO" color="bg-blue-600 text-white" /></div><p className="text-sm font-medium">Venezuela Reporta</p>
                 <span className="mt-0.5 block text-xs leading-relaxed text-neutral-600">El registro mas completo: busca por nombre o cedula, con fotos. Incluye mapa.</span>
                 <span className="mt-1 block text-xs font-medium text-blue-600">Entrar</span>
               </a>
@@ -257,9 +271,7 @@ export default function AyudaVenezuela() {
             </div>
           </section>
           <section>
-            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
-              COMO VA LA AYUDA INTERNACIONAL
-            </p>
+            <TituloSeccion texto="COMO VA LA AYUDA INTERNACIONAL" color="text-neutral-600" barra="bg-neutral-400" />
             <div className="space-y-2">
               <div className="rounded-lg border border-neutral-200 p-3.5">
                 <p className="text-sm font-medium">Naciones Unidas</p>
@@ -292,9 +304,7 @@ export default function AyudaVenezuela() {
           </section>
 
           <section>
-            <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
-              ACOPIO EN MEDELLIN
-            </p>
+            <TituloSeccion texto="ACOPIO EN MEDELLIN" color="text-orange-700" barra="bg-orange-500" />
             <div className="space-y-2">
               <div className="rounded-lg border border-neutral-200 p-3.5">
                 <p className="text-sm font-medium">Restaurante Tepuy</p>
@@ -347,6 +357,21 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
