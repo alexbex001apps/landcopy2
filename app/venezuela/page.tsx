@@ -55,6 +55,7 @@ export default function AyudaVenezuela() {
   const [mounted, setMounted] = useState(false);
   const [ahora, setAhora] = useState<number>(() => Date.now());
   const [copiado, setCopiado] = useState(false);
+  const [peticion, setPeticion] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -163,6 +164,13 @@ export default function AyudaVenezuela() {
             </p>
           </section>
 
+          <section className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-900">{"\u00bf"}Quieres que oremos por ti?</p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-800">En medio de esta crisis no est{"\u00e1"}s solo. Tenemos un grupo de intercesi{"\u00f3"}n que orar{"\u00e1"} por ti, por tu familia o por quien lo necesite. Escribe tu petici{"\u00f3"}n. Puedes poner tu nombre o dejarla an{"\u00f3"}nima.</p>
+            <textarea value={peticion} onChange={(e) => setPeticion(e.target.value)} placeholder="Escribe aqui tu peticion de oracion..." rows={3} className="mt-3 w-full resize-none rounded-lg border border-amber-300 bg-white p-2.5 text-sm text-neutral-800 outline-none focus:border-amber-500" />
+            <a href={peticion.trim() ? `https://wa.me/573044968052?text=${encodeURIComponent("Hola, quiero que el grupo de intercesion ore por esto:\n\n" + peticion)}` : undefined} onClick={(e) => { if (!peticion.trim()) e.preventDefault(); }} className={`mt-2 block rounded-lg py-2.5 text-center text-sm font-medium ${peticion.trim() ? "bg-amber-600 text-white" : "cursor-not-allowed bg-amber-200 text-amber-500"}`}>Enviar mi peticion de oracion</a>
+            <p className="mt-2 text-center text-[11px] text-amber-700">Tu peticion llega directo por WhatsApp. No se guarda en ningun sistema.</p>
+          </section>
           <section id="donar">
             <p className="mb-2.5 text-xs font-medium tracking-wide text-neutral-500">
               COMO DONAR
@@ -327,6 +335,8 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
 
 
 
