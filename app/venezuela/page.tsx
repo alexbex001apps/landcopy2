@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 //  Formato de fecha: "AAAA-MM-DDTHH:MM:SS-05:00" (hora Colombia)
 // ============================================================
 const ULTIMA_ACTUALIZACION = "2026-06-27T00:00:00-05:00";
-const FALLECIDOS = "920";
+const FALLECIDOS = "+10.000";
 const HERIDOS = "3.360";
 const DESAPARECIDOS = "51.681";
 // ============================================================
@@ -156,14 +156,14 @@ export default function AyudaVenezuela() {
             </div>
 
             <div className="mt-2 flex items-baseline justify-between">
-              <p className="text-sm font-medium">Cifras oficiales</p>
+              <p className="text-sm font-medium">Magnitud de la tragedia</p>
               <span className="text-[11px] text-neutral-400">{etiquetaTiempo}</span>
             </div>
 
             <div className="mt-3 flex gap-3">
               <div className="flex-1">
                 <p className="text-xl font-semibold tabular-nums text-red-800">{FALLECIDOS}</p>
-                <p className="text-[11px] text-neutral-600">fallecidos</p>
+                <p className="text-[11px] text-neutral-600">fallecidos (est. USGS)</p>
               </div>
               <div className="flex-1">
                 <p className="text-xl font-semibold tabular-nums text-red-800">{HERIDOS}</p>
@@ -176,8 +176,8 @@ export default function AyudaVenezuela() {
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
-              Fallecidos y heridos: cifras oficiales del gobierno. Desaparecidos: reportes de la ONU y plataformas ciudadanas, en verificacion.
-              Las cifras siguen subiendo. Confirma en fuentes oficiales. El Servicio Geologico de EE.UU. (USGS) advierte que la cifra real de fallecidos podria superar los 10.000.
+              El USGS (Servicio Geologico de Estados Unidos, autoridad cientifica de EE.UU. en terremotos) estima que la cifra real de fallecidos podria superar los 10.000, segun la magnitud del sismo y la zona afectada. El gobierno de Venezuela reconoce oficialmente 920 fallecidos y 3.360 heridos, cifra que muchos consideran incompleta. Desaparecidos: reportes ciudadanos, en verificacion.
+              Las cifras siguen subiendo. Confirma en fuentes oficiales.
             </p>
           </section>
 
@@ -357,6 +357,10 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
+
+
 
 
 
