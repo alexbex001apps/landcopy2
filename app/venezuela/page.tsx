@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 //  Formato de fecha: "AAAA-MM-DDTHH:MM:SS-05:00" (hora Colombia)
 // ============================================================
 const ULTIMA_ACTUALIZACION = "2026-06-27T00:00:00-05:00";
-const FALLECIDOS = "+10.000";
-const HERIDOS = "3.360";
-const DESAPARECIDOS = "51.681";
+const FALLECIDOS = "1.430";
+const HERIDOS = "+3.200";
+const DESAPARECIDOS = "+50.000";
 // ============================================================
 
 function haceCuanto(ms: number): string {
@@ -163,7 +163,7 @@ export default function AyudaVenezuela() {
             <div className="mt-3 flex gap-3">
               <div className="flex-1">
                 <p className="text-xl font-semibold tabular-nums text-red-800">{FALLECIDOS}</p>
-                <p className="text-[11px] text-neutral-600">fallecidos (est. USGS)</p>
+                <p className="text-[11px] text-neutral-600">fallecidos (oficial)</p>
               </div>
               <div className="flex-1">
                 <p className="text-xl font-semibold tabular-nums text-red-800">{HERIDOS}</p>
@@ -176,7 +176,7 @@ export default function AyudaVenezuela() {
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
-              El USGS (Servicio Geologico de Estados Unidos, autoridad cientifica de EE.UU. en terremotos) estima que la cifra real de fallecidos podria superar los 10.000, segun la magnitud del sismo y la zona afectada. El gobierno de Venezuela reconoce oficialmente 920 fallecidos y 3.360 heridos, cifra que muchos consideran incompleta. Desaparecidos: reportes ciudadanos, en verificacion.
+              El gobierno de Venezuela reconoce oficialmente 1.430 fallecidos y mas de 3.200 heridos al 27 de junio, una cifra que sigue subiendo conforme avanzan los rescates. El USGS (Servicio Geologico de Estados Unidos) emitio alerta roja, su nivel maximo, advirtiendo que el saldo real podria ser mucho mayor: su modelo automatico PAGER proyecta una alta probabilidad de que los fallecidos terminen entre 10.000 y 100.000, aunque es una estimacion, no un conteo confirmado. Desaparecidos: no hay cifra oficial, pero organizaciones de la ONU estiman mas de 50.000.
               Las cifras siguen subiendo. Confirma en fuentes oficiales.
             </p>
           </section>
@@ -369,6 +369,8 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
+
 
 
 
