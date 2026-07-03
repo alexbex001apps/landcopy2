@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 //  EDITA SOLO ESTAS LINEAS CADA 2 HORAS CON CIFRAS VERIFICADAS
 //  Formato de fecha: "AAAA-MM-DDTHH:MM:SS-05:00" (hora Colombia)
 // ============================================================
-const ULTIMA_ACTUALIZACION = "2026-06-28T00:00:00-05:00";
-const FALLECIDOS = "1.450";
-const HERIDOS = "+3.200";
+const ULTIMA_ACTUALIZACION = "2026-07-02T00:00:00-05:00";
+const FALLECIDOS = "2.595";
+const HERIDOS = "+12.400";
 const DESAPARECIDOS = "+50.000";
 // ============================================================
 
@@ -176,7 +176,7 @@ export default function AyudaVenezuela() {
             </div>
 
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
-              El gobierno de Venezuela reconoce oficialmente 1.450 fallecidos y mas de 3.200 heridos al 28 de junio, una cifra que sigue subiendo conforme avanzan los rescates. El USGS (Servicio Geologico de Estados Unidos) emitio alerta roja, su nivel maximo, advirtiendo que el saldo real podria ser mucho mayor: su modelo automatico PAGER proyecta una alta probabilidad de que los fallecidos terminen entre 10.000 y 100.000, aunque es una estimacion, no un conteo confirmado. Desaparecidos: no hay cifra oficial, pero organizaciones de la ONU estiman mas de 50.000.
+              El gobierno de Venezuela reconoce oficialmente 2.595 fallecidos y mas de 12.400 heridos al 2 de julio, una cifra que sigue subiendo conforme avanzan los rescates. El USGS (Servicio Geologico de Estados Unidos) emitio alerta roja, su nivel maximo, advirtiendo que el saldo real podria ser mucho mayor: su modelo automatico PAGER proyecta una alta probabilidad de que los fallecidos terminen entre 10.000 y 100.000, aunque es una estimacion, no un conteo confirmado. Desaparecidos: no hay cifra oficial, pero organizaciones de la ONU estiman mas de 50.000.
               Las cifras siguen subiendo. Confirma en fuentes oficiales.
             </p>
           </section>
@@ -369,6 +369,7 @@ export default function AyudaVenezuela() {
     </main>
   );
 }
+
 
 
 
