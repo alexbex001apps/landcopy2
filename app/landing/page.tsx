@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FONDOS_DISPONIBLES } from "@/app/api/landing/imagen/route";
@@ -45,6 +45,26 @@ const SECCIONES_COMBO = [
   { id: "cta_final", nombre: "CTA final", sub: "Cierre de venta" },
 ];
  
+const AUDIENCIAS_OPCIONES = [
+  { id: "amas_de_casa", label: "Amas de casa" },
+  { id: "motociclistas", label: "Motociclistas" },
+  { id: "ciclistas", label: "Ciclistas" },
+  { id: "abogados", label: "Abogados" },
+  { id: "mecanicos", label: "Mecanicos" },
+  { id: "constructores", label: "Constructores" },
+  { id: "jovenes", label: "Jovenes" },
+  { id: "adultos_mayores", label: "Adultos mayores" },
+  { id: "deportistas", label: "Deportistas" },
+  { id: "padres_de_familia", label: "Padres de familia" },
+  { id: "emprendedores", label: "Emprendedores" },
+  { id: "musicos", label: "Musicos" },
+  { id: "familias", label: "Familias" },
+  { id: "ejecutivos", label: "Ejecutivos" },
+  { id: "medicos", label: "Medicos" },
+  { id: "expertos_belleza", label: "Expertos en belleza" },
+  { id: "ninos", label: "Ninos" },
+];
+
 // Comprime una imagen (data:base64) a JPG liviano (~100-150KB) en el navegador.
 // JPG funciona en TODOS los navegadores. Si algo falla, devuelve la imagen original sin romper.
 function comprimirJPG(dataUrl: string): Promise<string> {
@@ -100,6 +120,8 @@ export default function Landing() {
   const [seccionesParaImagen, setSeccionesParaImagen] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [acentoSeleccionado, setAcentoSeleccionado] = useState<string>("naranja");
+  const [audienciaSeleccionada, setAudienciaSeleccionada] = useState<string | null>(null);
+  const [audienciaOtro, setAudienciaOtro] = useState("");
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [guardandoSeccion, setGuardandoSeccion] = useState(false);
@@ -421,7 +443,7 @@ export default function Landing() {
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, soloTitulos, textoEditado: contenido[seccionId] || "" }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "" }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -670,7 +692,7 @@ ${bloques}
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionActiva, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, imagenPrevia: imagenes[seccionActiva], promptPropio: instruccionImagen }),
+        body: JSON.stringify({ seccion: seccionActiva, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", imagenPrevia: imagenes[seccionActiva], promptPropio: instruccionImagen }),
       });
       const data = await resp.json();
       if (data.imageUrl) {
@@ -821,6 +843,22 @@ ${bloques}
                   </div>
                 ))}
               </div>
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-6">
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Para que publico va dirigida esta landing?</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {AUDIENCIAS_OPCIONES.map(a => (
+                    <button key={a.id} onClick={() => { setAudienciaSeleccionada(a.id); setAudienciaOtro(""); }} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${audienciaSeleccionada === a.id ? "bg-orange-500 border-orange-500 text-white" : "border-[#333] text-zinc-400 hover:border-orange-500/60"}`}>
+                      {a.label}
+                    </button>
+                  ))}
+                  <button onClick={() => setAudienciaSeleccionada("otro")} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${audienciaSeleccionada === "otro" ? "bg-orange-500 border-orange-500 text-white" : "border-[#333] text-zinc-400 hover:border-orange-500/60"}`}>
+                    Otro
+                  </button>
+                </div>
+                {audienciaSeleccionada === "otro" && (
+                  <input value={audienciaOtro} onChange={e => setAudienciaOtro(e.target.value)} placeholder="Ej: pescadores, enfermeras..." className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" />
+                )}
+              </div>
               <button onClick={generarLanding} disabled={seccionesSeleccionadas.length === 0} className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black py-3 rounded-xl text-sm transition-colors">
                 ⚡ Generar {seccionesSeleccionadas.length} sección{seccionesSeleccionadas.length !== 1 ? "es" : ""} seleccionada{seccionesSeleccionadas.length !== 1 ? "s" : ""}
               </button>
@@ -885,6 +923,22 @@ ${bloques}
                     {["Colombia","México","Venezuela","Ecuador","Costa Rica","General"].map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-6">
+                <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-3">Para que publico va dirigida esta landing?</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {AUDIENCIAS_OPCIONES.map(a => (
+                    <button key={a.id} onClick={() => { setAudienciaSeleccionada(a.id); setAudienciaOtro(""); }} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${audienciaSeleccionada === a.id ? "bg-orange-500 border-orange-500 text-white" : "border-[#333] text-zinc-400 hover:border-orange-500/60"}`}>
+                      {a.label}
+                    </button>
+                  ))}
+                  <button onClick={() => setAudienciaSeleccionada("otro")} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${audienciaSeleccionada === "otro" ? "bg-orange-500 border-orange-500 text-white" : "border-[#333] text-zinc-400 hover:border-orange-500/60"}`}>
+                    Otro
+                  </button>
+                </div>
+                {audienciaSeleccionada === "otro" && (
+                  <input value={audienciaOtro} onChange={e => setAudienciaOtro(e.target.value)} placeholder="Ej: pescadores, enfermeras..." className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" />
+                )}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <button onClick={generarLanding} disabled={!fNombre.trim()} className="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-black font-black py-3 rounded-xl text-sm transition-colors">
