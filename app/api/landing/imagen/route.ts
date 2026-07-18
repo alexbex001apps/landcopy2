@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 export const FONDOS_DISPONIBLES = [
   { id: "negro_fuego", nombre: "Negro dramático", categoria: "Universal", color: "#1a0500", prompt: "Dark dramatic black background with orange fire particles, smoke and cinematic lighting." },
@@ -78,7 +78,7 @@ function limpiarEtiquetas(texto: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, headline, imagen_url, fondoId, soloTitulos, textoEditado, promptPropio, imagenPrevia, acentoId } = body;
+    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, headline, imagen_url, fondoId, soloTitulos, textoEditado, promptPropio, imagenPrevia, acentoId, audienciaId, audienciaCustom } = body;
 
     // Colores de acento que el usuario puede elegir para los textos/detalles de la imagen
     const ACENTOS: Record<string, string> = {
@@ -94,6 +94,27 @@ export async function POST(req: NextRequest) {
       blanco: "clean white",
     };
     const acento = ACENTOS[acentoId] || "vibrant orange";
+
+    const AUDIENCIAS: Record<string, string> = {
+      amas_de_casa: "a homemaker, home lifestyle context",
+      motociclistas: "a motorcyclist/biker, motorcycle lifestyle context",
+      ciclistas: "a cyclist, cycling lifestyle context",
+      abogados: "a lawyer, professional legal office context",
+      mecanicos: "a mechanic, auto repair workshop context",
+      constructores: "a construction worker, construction site context",
+      jovenes: "a young person, youthful modern lifestyle context",
+      adultos_mayores: "an elderly person, mature adult lifestyle context",
+      deportistas: "an athlete, sports and fitness context",
+      padres_de_familia: "a parent, family lifestyle context",
+      emprendedores: "an entrepreneur, business and startup context",
+      musicos: "a musician, music and instruments context",
+      familias: "a family group, family lifestyle context",
+      ejecutivos: "a corporate executive, professional office context",
+      medicos: "a doctor, healthcare and clinical context",
+      expertos_belleza: "a beauty expert, beauty salon and skincare context",
+      ninos: "a child, playful children lifestyle context",
+    };
+    const audienciaTexto = (audienciaCustom && audienciaCustom.trim()) ? audienciaCustom.trim() : (AUDIENCIAS[audienciaId] || null);
 
     if (!seccion || !producto) {
       return NextResponse.json({ error: "Sección y producto requeridos" }, { status: 400 });
@@ -117,6 +138,8 @@ export async function POST(req: NextRequest) {
       fondo,
       acento,
     });
+
+    if (audienciaTexto) prompt += ` TARGET AUDIENCE: the person(s) shown in the image should represent ${audienciaTexto}. Adapt clothing, setting and context accordingly, while keeping the product as the main focus.`;
 
     // Si el usuario editó el texto de la sección a mano, ese texto manda.
     if (textoEditado && textoEditado.trim()) {
