@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { resetSplash } from "@/components/Splash";
  
 const LogoCopy = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
@@ -111,6 +112,7 @@ export default function Navbar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    resetSplash();
     window.location.href = "/login";
   }
  
@@ -171,6 +173,7 @@ export default function Navbar() {
                   <button onClick={async () => {
                     const supabase = createClient();
                     await supabase.auth.signOut({ scope: "global" });
+                    resetSplash();
                     window.location.href = "/login";
                   }} className="w-full text-left px-4 py-3 text-sm text-orange-400 hover:bg-zinc-800 transition-colors border-t border-zinc-800">
                     Cerrar todas las sesiones
