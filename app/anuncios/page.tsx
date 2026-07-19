@@ -322,6 +322,26 @@ export default function Anuncios() {
     }
   };
  
+  // Manda el anuncio a Leonel para que lo audite antes de gastarle presupuesto
+  const analizarConLeonel = () => {
+    const temp = TEMPERATURAS.find(t => t.id === temperatura);
+    const partes = [
+      `ANUNCIO A ANALIZAR → Temperatura: ${temp?.nombre || temperatura} (${temp?.desc || ""}) | Formato: ${formatoSeleccionado?.nombre || formatoSeleccionado?.id || "?"}`,
+      frasesSeleccionadas.length ? `Frases en la pieza: ${frasesSeleccionadas.join(" | ")}` : "La pieza no tiene frases seleccionadas.",
+    ];
+    if (productoData) {
+      partes.push(`Producto: ${productoData.nombre || productoData.producto || "?"} | Problema: ${productoData.problema || "?"} | Beneficio: ${productoData.beneficio || "?"} | Precio oferta: ${productoData.precio_oferta || "?"} | País: ${productoData.pais || "?"}`);
+    }
+    if (headlines.length) partes.push(`Headlines disponibles: ${headlines.slice(0, 7).join(" | ")}`);
+
+    // Solo se puede adjuntar la imagen si ya vive en una URL publica.
+    // Recien generada es un data: URL y no viaja: ahi se analiza solo el texto.
+    const imgs = typeof imagenGenerada === "string" && imagenGenerada.startsWith("http") ? [imagenGenerada] : [];
+    if (imgs.length === 0) partes.push("NOTA: la imagen todavía no está publicada, así que no la estás viendo. Analiza el texto, la temperatura y la oferta, y dile al usuario que si quiere que revises la pieza visual, la guarde primero en Biblioteca.");
+
+    (window as any).leonelAnalizar?.("Analiza este anuncio antes de que le meta presupuesto", partes.join("\n"), imgs);
+  };
+
   const guardarEnBiblioteca = async () => {
     if (!imagenGenerada) return;
     setGuardando(true);
@@ -688,6 +708,7 @@ export default function Anuncios() {
                     {guardando ? "⏳ Guardando..." : "💾 Guardar en Biblioteca"}
                   </button>
                 </div>
+                <button onClick={analizarConLeonel} className="w-full bg-yellow-400/10 border border-yellow-400/40 text-yellow-400 text-xs font-bold py-3 rounded-xl hover:bg-yellow-400/20 transition-colors">🔍 Que Leonel analice este anuncio</button>
                 <button onClick={() => { setPantalla(1); setImagenGenerada(null); setFrasesSeleccionadas([]); sessionStorage.removeItem(SS_KEY); sessionStorage.removeItem("anuncios_img_generada"); }} className="w-full border border-[#1a1a1a] text-yellow-400 text-xs font-bold py-2 rounded-xl hover:border-[#333] transition-colors">← Empezar de nuevo</button>
                 <button onClick={() => { setImagenGenerada(null); sessionStorage.removeItem("anuncios_img_generada"); }} className="w-full border border-red-500/30 text-red-400 text-xs font-bold py-2 rounded-xl hover:border-red-500 transition-colors">🗑️ Quitar imagen</button>
                 <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 space-y-3">

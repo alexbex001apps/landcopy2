@@ -52,13 +52,30 @@ export default function LeonelChat() {
     } catch { setCampana(null); }
   }, [open]);
 
+  // Puente para los botones "Que Leonel lo analice" de otras pantallas.
+  // Sin arreglo de dependencias a proposito: se re-registra en cada render para
+  // que la funcion siempre vea el estado fresco del chat.
+  useEffect(() => {
+    (window as any).leonelAnalizar = (pregunta: string, contexto?: string, imagenes?: string[]) => {
+      setOpen(true);
+      enviarMensaje(pregunta, { contexto, imagenes });
+    };
+    return () => { try { delete (window as any).leonelAnalizar; } catch {} };
+  });
+
   const rutaPublica = RUTAS_SIN_CHAT.some((r) => pathname?.startsWith(r));
 
-  async function enviar() {
+  function enviar() {
     const pregunta = input.trim();
+    if (!pregunta) return;
+    setInput("");
+    return enviarMensaje(pregunta);
+  }
+
+  // extra: contexto e imagenes que llegan de un boton "analizar" de otra pantalla
+  async function enviarMensaje(pregunta: string, extra?: { contexto?: string; imagenes?: string[] }) {
     if (!pregunta || cargando) return;
     setMensajes((prev) => [...prev, { role: "user", content: pregunta }]);
-    setInput("");
     setCargando(true);
     setPose("pensando");
 
@@ -71,6 +88,12 @@ export default function LeonelChat() {
       // ===== RECOLECTAR TODO LO QUE LEONEL PUEDE VER =====
       const partes: string[] = [];
       const imagenes: string[] = [];
+
+      // 0. Lo que mando el boton de otra pantalla (tiene prioridad: es lo que el usuario senalo)
+      if (extra?.contexto) partes.push(extra.contexto);
+      if (Array.isArray(extra?.imagenes)) {
+        extra.imagenes.forEach((u) => { if (typeof u === "string" && u.startsWith("http")) imagenes.push(u); });
+      }
 
       // 1. Campaña activa (datos + foto del producto)
       if (campana) {

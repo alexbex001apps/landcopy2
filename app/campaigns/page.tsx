@@ -184,6 +184,13 @@ export default function Campaigns() {
     cargarCampaigns();
   };
  
+  // Manda la campaña (con su foto) a Leonel para que la analice, sin tener que activarla
+  const analizarConLeonel = (c: any) => {
+    const datos = `CAMPAÑA A ANALIZAR → Producto: ${c.nombre || c.producto || "?"} | Problema: ${c.problema || "?"} | Beneficio: ${c.beneficio || "?"} | Precio oferta: ${c.precio_oferta || "?"} | Precio anterior: ${c.precio_anterior || "?"} | País: ${c.pais || "?"} | Tono: ${c.tono || "?"} | Headline: ${c.headline || "?"}`;
+    const imgs = typeof c.imagen_url === "string" && c.imagen_url.startsWith("http") ? [c.imagen_url] : [];
+    (window as any).leonelAnalizar?.(`Analiza esta campaña: ${c.nombre || c.producto || "sin nombre"}`, datos, imgs);
+  };
+
   const abrirNueva = () => { setShowForm(true); setShowArchivo(false); };
   const abrirArchivo = () => { setShowArchivo(true); setShowForm(false); };
  
@@ -411,8 +418,9 @@ export default function Campaigns() {
                       <p className="text-zinc-600 text-[8px]">📅 {formatFechaHora(c.created_at)}</p>
                       {activa && activa.id === c.id && <p className="text-green-400 text-[8px] font-bold mt-1">● Activa ahora</p>}
                     </div>
-                    <div className="border-t border-[#1a1a1a] grid grid-cols-2">
+                    <div className="border-t border-[#1a1a1a] grid grid-cols-3">
                       <button onClick={() => activarCampaign(c)} className="py-2 text-[9px] font-bold text-orange-500 hover:bg-orange-500/10 transition-colors border-r border-[#1a1a1a]">Activar</button>
+                      <button onClick={() => analizarConLeonel(c)} className="py-2 text-[9px] font-bold text-yellow-400 hover:bg-yellow-400/10 transition-colors border-r border-[#1a1a1a]">🔍 Analizar</button>
                       <button onClick={() => eliminarCampaign(c.id)} className="py-2 text-[9px] font-bold text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors">Eliminar</button>
                     </div>
                   </div>
