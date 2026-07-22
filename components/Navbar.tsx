@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { resetSplash } from "@/components/Splash";
+import { limpiarSesionLocal, sincronizarUsuario } from "@/lib/sesion";
  
 const LogoCopy = () => (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
@@ -91,20 +91,31 @@ export default function Navbar() {
 );
   useEffect(() => {
     const supabase = createClient();
+
+    // Lee el perfil del usuario. Se llama desde los DOS caminos (sesion inicial y
+    // cambio de sesion): al entrar recien logueado, getSession() todavia viene vacia
+    // y sin esto el enlace de Admin no aparecia hasta recargar la pagina.
+    const cargarPerfil = (u: any) => {
+      if (!u) { setEsAdmin(false); return; }
+      sincronizarUsuario(u.id);
+      supabase.from("users").select("plan, es_admin").eq("id", u.id).single().then(({ data }) => {
+        setEsAdmin(!!data?.es_admin);
+        if (data && data.plan === "sin_acceso" && pathname !== "/espera") {
+          router.replace("/espera");
+        }
+      });
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       const u = session?.user ?? null;
       setUser(u);
-      if (u) {
-        supabase.from("users").select("plan, es_admin").eq("id", u.id).single().then(({ data }) => {
-          if (data && data.es_admin) setEsAdmin(true);
-          if (data && data.plan === "sin_acceso" && pathname !== "/espera") {
-            router.replace("/espera");
-          }
-        });
-      }
+      cargarPerfil(u);
     });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      cargarPerfil(u);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -112,7 +123,7 @@ export default function Navbar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    resetSplash();
+    limpiarSesionLocal();
     window.location.href = "/login";
   }
  
@@ -173,7 +184,7 @@ export default function Navbar() {
                   <button onClick={async () => {
                     const supabase = createClient();
                     await supabase.auth.signOut({ scope: "global" });
-                    resetSplash();
+                    limpiarSesionLocal();
                     window.location.href = "/login";
                   }} className="w-full text-left px-4 py-3 text-sm text-orange-400 hover:bg-zinc-800 transition-colors border-t border-zinc-800">
                     Cerrar todas las sesiones

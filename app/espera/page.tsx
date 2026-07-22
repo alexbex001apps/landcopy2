@@ -1,12 +1,12 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
-import { resetSplash } from "@/components/Splash";
+import { limpiarSesionLocal } from "@/lib/sesion";
 
 export default function Espera() {
   async function salir() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    resetSplash();
+    limpiarSesionLocal();
     window.location.href = "/login";
   }
 
