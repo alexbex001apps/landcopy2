@@ -116,6 +116,7 @@ export default function Landing() {
   const [generando, setGenerando] = useState(false);
   const [seccionGenerando, setSeccionGenerando] = useState<string | null>(null);
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
+  const [videosSecc, setVideosSecc] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string[]>([]);
   const [seccionesParaImagen, setSeccionesParaImagen] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
@@ -155,6 +156,8 @@ export default function Landing() {
     if (c) setCampaign(JSON.parse(c));
     const savedImagenes = sessionStorage.getItem("landing_imagenes");
     if (savedImagenes) setImagenes(JSON.parse(savedImagenes));
+    const savedVideos = sessionStorage.getItem("landing_videos");
+    if (savedVideos) setVideosSecc(JSON.parse(savedVideos));
     const savedContenido = sessionStorage.getItem("landing_contenido");
     if (savedContenido) { setContenido(JSON.parse(savedContenido)); setPaso(3); }
     const generandoRaw = sessionStorage.getItem("landing_generando");
@@ -521,11 +524,14 @@ export default function Landing() {
       setTimeout(function(){window.location.href='https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text='+msg;},1500);
     }
   </script>` : "";
-    const conContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
+    const conContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id] || videosSecc[s.id]);
     const posBtn = [0, Math.floor(conContenido.length / 2), conContenido.length - 1];
     const bloques = conContenido
       .map((s, i) => {
-        const img = imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
+        // Si la seccion tiene video, se reproduce en loop sin sonido; si no, la imagen
+        const img = videosSecc[s.id]
+          ? `<video class="lc-img" src="${videosSecc[s.id]}" autoplay loop muted playsinline></video>`
+          : imagenes[s.id] ? `<img class="lc-img" src="${imagenes[s.id]}" alt="${s.nombre}">` : "";
         const limpio = (contenido[s.id] || "").replace(/\*\*/g, "").replace(/^\s*(TITULAR|SUBTITULO|SUBTÍTULO|CTA|FRASE|PASO\s*\d+|BENEFICIO\s*\d+|TESTIMONIO\s*\d+|HERO|PROBLEMA|SOLUCION|SOLUCIÓN|CIERRE|GARANTIA|GARANTÍA|CÓMO FUNCIONA|COMO FUNCIONA|OFERTA)\s*:?\s*/gim, "").replace(/\n{2,}/g, "\n").trim();
         const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2").replace(/\s*—\s*([A-ZÁÉÍÓÚÑ][^\n]*)$/gim, '<br><strong style="opacity:0.8">— $1</strong>\n');
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${conPipes.replace(/\n/g, "<br>")}</p></div>` : "";
@@ -1033,6 +1039,13 @@ ${bloques}
                 {secciones.map(s => (
                   <div key={s.id} onClick={() => setSeccionActiva(s.id)} className={`mb-3 p-3 rounded-xl border cursor-pointer transition-all ${seccionActiva === s.id ? "border-orange-500" : "border-[#1a1a1a] hover:border-[#333]"}`}>
                     <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest mb-1">{s.nombre}</p>
+                    {videosSecc[s.id] && (
+                      <div className="mb-2 relative" onClick={(e) => e.stopPropagation()}>
+                        <span className="absolute top-2 left-2 z-10 bg-purple-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full">🎬 VIDEO</span>
+                        <video src={videosSecc[s.id]} autoPlay loop muted playsInline className="w-full rounded-lg max-h-96 object-contain bg-black" />
+                        <button onClick={() => { setVideosSecc(prev => { const n = { ...prev }; delete n[s.id]; sessionStorage.setItem("landing_videos", JSON.stringify(n)); return n; }); }} className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg active:scale-95 transition-all">🗑️ Quitar video</button>
+                      </div>
+                    )}
                     {imagenGenerando.includes(s.id) ? (
                       <div className="w-full h-48 rounded-lg mb-2 overflow-hidden relative">
                         <div className="absolute inset-0 bg-[#1a1a1a]"></div>
