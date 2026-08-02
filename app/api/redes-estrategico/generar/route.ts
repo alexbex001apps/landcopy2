@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 // ─────────────────────────────────────────────────────────────
 // CEREBRO · REDES ESTRATÉGICO (Director de Marketing con IA)
 // Diseña una CAMPAÑA COMPLETA en una sola llamada.

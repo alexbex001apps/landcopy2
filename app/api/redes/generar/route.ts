@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 const TAMANIOS: Record<string, string> = {
   feed45:   "1024x1536",
   feed11:   "1024x1024",

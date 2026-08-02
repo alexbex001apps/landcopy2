@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FONDOS_DISPONIBLES } from "../../landing/imagen/route";
+
+export const maxDuration = 300;
 const TAMANIOS: Record<string, string> = {
   facebook: "1536x1024",
   instagram: "1024x1024",

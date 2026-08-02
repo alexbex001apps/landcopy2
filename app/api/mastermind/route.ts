@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 const BIBLIOTECA = `Eres el MASTERMIND de LandCopy: un analista experto en landings de venta para LATAM (contra-entrega, mercados de Colombia, México, Venezuela, Ecuador, Costa Rica). Juzgas si una landing VA A VENDER usando estas 7 LEYES probadas en 17.000 ventas reales:
 
 1. PRUEBA DE LOS 5 SEGUNDOS: ¿se entiende en menos de 5 segundos QUÉ se vende y POR QUÉ debería importarle al lector? Si no, empieza mal.

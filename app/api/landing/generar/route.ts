@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 300;
  
 const PROMPTS_SECCION: Record<string, (p: any) => string> = {
   hero: (p) => `Eres un experto en copywriting de ventas latinoamericano. Genera el texto del HERO de una landing page para el producto "${p.producto}". País: ${p.pais}. Tono: ${p.tono}. Problema que resuelve: ${p.problema}. Beneficio: ${p.beneficio}. Precio: ${p.precioOferta}. Genera: 1 titular impactante (máximo 8 palabras), 1 subtítulo (máximo 12 palabras), 1 CTA poderoso (máximo 4 palabras). Sé breve y directo. Formato: TITULAR: ...\nSUBTITULO: ...\nCTA: ...`,

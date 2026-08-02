@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 const CONTEXTO_LANDCOPY = `LandCopy es el SISTEMA OPERATIVO DE CAMPAÑAS para los que venden en Latinoamérica. La CAMPAÑA es la fuente de verdad: el vendedor llena los datos de su producto UNA SOLA VEZ y todos los módulos los reutilizan. Nunca repite, nunca pierde lo que crea. LandCopy no compite contra ChatGPT ni Canva — compite contra EL CAOS. El usuario no paga por generar contenido: paga por tomar mejores decisiones y no perder nada. Filosofía: la IA propone, el humano decide.
 
 A QUIÉN SIRVE: LandCopy existe para acompañar y hacer crecer a los que construyen solos: nuevos emprendedores que empiezan, community managers, dueños de negocio, creadores de productos, los que hacen dropshipping, los que escribieron un libro o crean arte, y los que llevan un mensaje y ellos mismos son la marca (autores, pastores, coaches, músicos, conferencistas). A todos les da las herramientas que antes solo tenían las grandes marcas, para que crezcan y profesionalicen lo que hacen sin un equipo enorme ni gran presupuesto. La promesa: que una sola persona, con su celular, opere como una agencia entera.

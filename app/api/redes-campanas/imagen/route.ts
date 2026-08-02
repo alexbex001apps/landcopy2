@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 300;
  
 // ─────────────────────────────────────────────────────────────
 // MOTOR REDES-CAMPAÑAS · Imágenes (fidelidad fuerte + varias fotos)

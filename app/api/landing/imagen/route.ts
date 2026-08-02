@@ -1,5 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 
+// gpt-image-2 puede tardar 30-90s; sin esto Vercel corta a ~60s y la imagen
+// falla en silencio (el spinner se queda girando para siempre).
+export const maxDuration = 300;
+
 export const FONDOS_DISPONIBLES = [
   { id: "negro_fuego", nombre: "Negro dramático", categoria: "Universal", color: "#1a0500", prompt: "Dark dramatic black background with orange fire particles, smoke and cinematic lighting." },
   { id: "blanco_minimal", nombre: "Blanco minimalista", categoria: "Universal", color: "#f5f5f5", prompt: "Clean white minimalist background with soft natural shadows and subtle light gradient." },
