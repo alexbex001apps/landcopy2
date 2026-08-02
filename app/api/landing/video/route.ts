@@ -23,7 +23,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function POST(req: NextRequest) {
   try {
-    const FAL_KEY = process.env.FAL_API_KEY;
+    // Limpia espacios/saltos de linea que se cuelan al pegar la key en Vercel
+    // (un enter invisible rompe la cabecera con "invalid header value").
+    const FAL_KEY = process.env.FAL_API_KEY?.replace(/\s/g, "");
     if (!FAL_KEY) {
       return NextResponse.json({ error: "Falta configurar FAL_API_KEY en el servidor." }, { status: 500 });
     }
