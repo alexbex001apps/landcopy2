@@ -6,11 +6,11 @@ import { createClient } from "@supabase/supabase-js";
 export const maxDuration = 300;
 
 // --- Config del modelo (todo lo ajustable, en un solo lugar) ---
-// Seedance Lite v1.0: mas barato (~$0.18 por clip 5s/720p) y moderacion menos
-// agresiva que la 2.0, que daba falsos positivos ("personas") con fotos de producto.
-const MODELO = "fal-ai/bytedance/seedance/v1/lite/image-to-video";
-const RESOLUCION = "720p";          // 720p en Lite = ~$0.036/seg
-const DURACION_SEG = 5;             // clip corto; ~$0.18 por generacion
+// Seedance v1.5 Pro: mejor calidad que Lite por casi el mismo precio (~$0.26 por
+// clip 5s/720p) y SIN la moderacion agresiva del 2.0 (que rechazaba productos).
+const MODELO = "fal-ai/bytedance/seedance/v1.5/pro/image-to-video";
+const RESOLUCION = "720p";          // 720p en Pro v1.5
+const DURACION_SEG = 5;             // clip corto; ~$0.26 por generacion
 const PROMPT_DEFECTO = "the jacket rotates slowly side to side like a showroom turntable, while its color smoothly transitions from white to solid black and back, holding steady on each color. Keep the exact same jacket shape and design, only the color changes. Camera fixed, clean studio, seamless loop.";
 
 // Cuanto esperamos a que fal termine antes de rendirnos
