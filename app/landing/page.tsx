@@ -1110,6 +1110,13 @@ ${bloques}
                   {imagenes[seccionActiva] && (
                     <button onClick={() => { setImagenes(prev => { const n = {...prev}; delete n[seccionActiva]; sessionStorage.setItem("landing_imagenes", JSON.stringify(n)); return n; }); }} className="w-full bg-[#111] border border-red-500/20 text-red-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">🗑️ Quitar imagen</button>
                   )}
+
+                  {/* Video del producto: pagina aparte (es del producto, no de la seccion) */}
+                  <a href="/landing/video" className="relative block w-full text-center text-white text-[13px] font-black py-3 rounded-lg active:scale-95 transition-transform overflow-hidden shadow-lg" style={{ background: "linear-gradient(90deg,#7c3aed,#a855f7,#7c3aed)", backgroundSize: "200% 100%", animation: "shimmerBtn 2.5s infinite", boxShadow: "0 4px 18px rgba(168,85,247,0.5)" }}>
+                    🎬 Generar VIDEO del producto
+                    <span className="absolute top-1 right-1.5 bg-white/90 text-purple-700 text-[8px] font-black px-1.5 py-0.5 rounded-full">NUEVO</span>
+                  </a>
+
                   <button className="w-full bg-[#111] border border-[#1a1a1a] text-zinc-600 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">👁️ Ocultar</button>
                 </div>
               </div>
