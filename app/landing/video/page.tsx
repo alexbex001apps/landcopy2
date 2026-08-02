@@ -21,6 +21,27 @@ const MOVIMIENTOS = [
   { id: "hombre_toca", emoji: "🤵", label: "Hombre lo sostiene", grupo: "personas", prompt: "a real man holds and shows the product to the camera with natural confident motion, presenting it clearly, keep the product identical, clean look, seamless loop" },
   { id: "mujer_toca", emoji: "💁‍♀️", label: "Mujer lo sostiene", grupo: "personas", prompt: "a real woman holds and shows the product to the camera with natural elegant motion, presenting it clearly, keep the product identical, clean look, seamless loop" },
   { id: "modelo", emoji: "🚶", label: "Modelo lo lleva puesto", grupo: "personas", prompt: "a real person wears or carries the product and moves naturally like a fashion showcase, believable realistic motion, keep the product identical, clean look, seamless loop" },
+  // Escenarios: colocan el producto en un ambiente con movimiento sutil
+  { id: "mesa_giratoria", emoji: "🍽️", label: "Mesa giratoria", grupo: "escenario", prompt: "the product sits on a table slowly rotating like a display turntable, warm indoor lighting, clean background, keep the product identical, seamless loop" },
+  { id: "montana", emoji: "⛰️", label: "En la montaña", grupo: "escenario", prompt: "the product placed on a rock with a scenic mountain landscape behind, gentle wind and slowly drifting clouds, keep the product identical, seamless loop" },
+  { id: "laboratorio", emoji: "🧪", label: "En un laboratorio", grupo: "escenario", prompt: "the product on a clean modern laboratory bench with scientific equipment softly out of focus behind, subtle rising vapor, keep the product identical, seamless loop" },
+  { id: "playa", emoji: "🏖️", label: "En la playa", grupo: "escenario", prompt: "the product on the sand with the ocean and gentle rolling waves behind, soft warm sunlight, keep the product identical, seamless loop" },
+  { id: "nieve", emoji: "❄️", label: "En la nieve", grupo: "escenario", prompt: "the product resting on fresh snow with soft snowflakes gently falling around it, cool blue winter light, keep the product identical, seamless loop" },
+  { id: "ciudad_noche", emoji: "🌃", label: "Ciudad de noche", grupo: "escenario", prompt: "the product with a blurred night city skyline and softly moving neon lights behind, cinematic mood, keep the product identical, seamless loop" },
+  { id: "bosque", emoji: "🌲", label: "En un bosque", grupo: "escenario", prompt: "the product on a mossy log in a green forest with soft sunbeams and floating dust particles, keep the product identical, seamless loop" },
+  { id: "desierto", emoji: "🏜️", label: "En el desierto", grupo: "escenario", prompt: "the product on golden desert dunes with warm light and softly drifting sand, keep the product identical, seamless loop" },
+  { id: "bajo_agua", emoji: "🐠", label: "Bajo el agua", grupo: "escenario", prompt: "the product submerged underwater with rising bubbles and soft rippling caustic light, keep the product identical, seamless loop" },
+  { id: "cocina", emoji: "🍳", label: "En una cocina", grupo: "escenario", prompt: "the product on a clean modern kitchen counter with warm cozy lighting and subtle steam, keep the product identical, seamless loop" },
+  { id: "gimnasio", emoji: "🏋️", label: "En un gimnasio", grupo: "escenario", prompt: "the product in a modern gym with equipment blurred behind and energetic dynamic lighting, keep the product identical, seamless loop" },
+  { id: "oficina", emoji: "💼", label: "En una oficina", grupo: "escenario", prompt: "the product on a sleek professional office desk with soft clean lighting, keep the product identical, seamless loop" },
+  { id: "spa", emoji: "🕯️", label: "En un spa", grupo: "escenario", prompt: "the product on a spa shelf with candles and soft relaxing steam, warm calming light, keep the product identical, seamless loop" },
+  { id: "marmol", emoji: "◽", label: "Sobre mármol", grupo: "escenario", prompt: "the product on a luxury marble surface with elegant reflections and soft moving light, premium look, keep the product identical, seamless loop" },
+  { id: "campo", emoji: "🌾", label: "En el campo", grupo: "escenario", prompt: "the product on green grass in a sunny open field with a gentle breeze, keep the product identical, seamless loop" },
+  { id: "escaparate", emoji: "🛍️", label: "En vitrina", grupo: "escenario", prompt: "the product in a premium store display window with elegant spotlights slowly sweeping across it, keep the product identical, seamless loop" },
+  { id: "flores", emoji: "🌸", label: "Entre flores", grupo: "escenario", prompt: "the product surrounded by fresh flowers gently swaying in soft natural light, keep the product identical, seamless loop" },
+  { id: "pasarela", emoji: "💃", label: "En pasarela", grupo: "escenario", prompt: "the product on a fashion runway with moving spotlights and a glamorous atmosphere, keep the product identical, seamless loop" },
+  { id: "espacio", emoji: "🚀", label: "En el espacio", grupo: "escenario", prompt: "the product floating in outer space with stars and a soft cosmic glow around it, keep the product identical, seamless loop" },
+  { id: "madera", emoji: "🪵", label: "Madera rústica", grupo: "escenario", prompt: "the product on a rustic wooden table with warm natural light and soft shadows, keep the product identical, seamless loop" },
   // Movimientos limpios (siempre funcionan bien)
   { id: "giro", emoji: "🔄", label: "Giro suave", grupo: "movimiento", prompt: "the product rotates slowly and smoothly side to side like a showroom turntable, camera fixed, clean studio background, keep the product identical, seamless loop" },
   { id: "zoom", emoji: "🔍", label: "Zoom lento", grupo: "movimiento", prompt: "slow gentle cinematic zoom in toward the product, subtle and elegant, keep the product identical, seamless loop" },
@@ -206,6 +227,24 @@ export default function VideoProducto() {
             <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">👥 Con personas</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {MOVIMIENTOS.filter((m) => m.grupo === "personas").map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setMovSel(m.id)}
+                  className={`flex flex-col items-center gap-1 py-2.5 rounded-lg border text-[11px] font-bold transition-colors ${
+                    movSel === m.id
+                      ? "bg-purple-500/20 border-purple-500 text-purple-200"
+                      : "bg-[#111] border-[#1a1a1a] text-zinc-400 hover:border-[#333]"
+                  }`}
+                >
+                  <span className="text-lg leading-none">{m.emoji}</span>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">🎬 Escenarios</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+              {MOVIMIENTOS.filter((m) => m.grupo === "escenario").map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setMovSel(m.id)}
