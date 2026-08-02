@@ -82,6 +82,7 @@ export default function VideoProducto() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [movSel, setMovSel] = useState("beneficio");
+  const [promptPropio, setPromptPropio] = useState("");
   const [esCombo, setEsCombo] = useState(false);
   const [seccionSel, setSeccionSel] = useState("hero");
   const [guardadoEn, setGuardadoEn] = useState<string | null>(null);
@@ -149,6 +150,10 @@ export default function VideoProducto() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       let movimiento = MOVIMIENTOS.find((m) => m.id === movSel)?.prompt;
+      // Si el usuario escribio su propia idea, esa manda sobre el efecto elegido
+      if (promptPropio.trim()) {
+        movimiento = promptPropio.trim();
+      } else
       // "Demuestra el beneficio" se arma con el beneficio/problema de la campana
       if (movSel === "beneficio") {
         const b = producto.beneficio?.trim();
@@ -206,7 +211,22 @@ export default function VideoProducto() {
             </div>
 
             {/* Selector de efecto: primero los enfocados en el beneficio, luego movimiento */}
-            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">🎯 Vende el beneficio</p>
+            {/* Idea propia: si se escribe algo, manda sobre los efectos de abajo */}
+            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">✍️ Escribe tu propia idea (opcional)</p>
+            <textarea
+              value={promptPropio}
+              onChange={(e) => setPromptPropio(e.target.value)}
+              rows={2}
+              placeholder="Ej: el producto gira sobre una mesa de madera con luz cálida y hojas cayendo alrededor..."
+              className="w-full bg-[#111] border border-[#1a1a1a] text-[#f0ead6] text-sm px-3 py-2 rounded-lg outline-none resize-none focus:border-purple-500/50 mb-1"
+            />
+            <p className="text-zinc-600 text-[10px] leading-snug mb-4">
+              {promptPropio.trim()
+                ? "✓ Se usará tu idea (los efectos de abajo quedan ignorados). Puedes escribir en español."
+                : "Si escribes aquí, se usa tu idea. Si lo dejas vacío, se usa el efecto que elijas abajo."}
+            </p>
+
+            <p className={`text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2 ${promptPropio.trim() ? "opacity-40" : ""}`}>🎯 Vende el beneficio</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {MOVIMIENTOS.filter((m) => m.grupo === "beneficio").map((m) => (
                 <button
