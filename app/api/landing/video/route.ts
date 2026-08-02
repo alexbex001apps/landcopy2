@@ -21,6 +21,42 @@ const BUCKET = "biblioteca-images"; // el mismo que ya usa toda la app
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Seedance rechaza imagenes con proporcion muy extrema (ej. 1500x595 = 2.5:1).
+// Si la foto se sale de un rango seguro, la acomodamos a cuadrado (con fondo blanco)
+// y subimos esa version. Si ya es segura, se usa tal cual.
+async function prepararImagen(imageUrl: string): Promise<string> {
+  try {
+    const resp = await fetch(imageUrl);
+    if (!resp.ok) return imageUrl;
+    const buf = Buffer.from(await resp.arrayBuffer());
+    const sharp = (await import("sharp")).default;
+    const meta = await sharp(buf).metadata();
+    const w = meta.width || 0;
+    const h = meta.height || 0;
+    if (!w || !h) return imageUrl;
+    const ratio = w / h;
+    if (ratio >= 0.65 && ratio <= 1.55) return imageUrl; // ya es segura para seedance
+
+    const lado = 1080;
+    const salida = await sharp(buf)
+      .resize(lado, lado, { fit: "contain", background: { r: 255, g: 255, b: 255 } })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const nombre = `landing-videos/fit_${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from(BUCKET).upload(nombre, salida, { contentType: "image/jpeg" });
+    if (error) return imageUrl; // si falla la subida, seguimos con la original
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(nombre);
+    return data.publicUrl || imageUrl;
+  } catch {
+    return imageUrl; // ante cualquier error, usar la original (no romper el flujo)
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Limpia espacios/saltos de linea que se cuelan al pegar la key en Vercel
@@ -46,12 +82,15 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
     };
 
+    // Acomoda la foto si su proporcion es muy extrema (seedance la rechazaria)
+    const imagenParaFal = await prepararImagen(imageUrl);
+
     // 1. Encolar la generacion
     const submit = await fetch(`https://queue.fal.run/${MODELO}`, {
       method: "POST",
       headers: headersFal,
       body: JSON.stringify({
-        image_url: imageUrl,
+        image_url: imagenParaFal,
         prompt: motionPrompt?.trim() || PROMPT_DEFECTO,
         resolution: RESOLUCION,
         duration: String(DURACION_SEG),
@@ -91,7 +130,13 @@ export async function POST(req: NextRequest) {
       if (crudo.includes("likenesses of real people") || crudo.includes("content_policy")) {
         throw new Error("Esta imagen tiene personas y no se puede animar (política de fal). Usa una imagen solo del producto, sin gente.");
       }
-      throw new Error(`No se pudo generar el video: ${crudo.slice(0, 200)}`);
+      if (crudo.includes("file_download_error")) {
+        throw new Error("No se pudo leer la imagen. Guárdala de nuevo e intenta otra vez.");
+      }
+      if (crudo.includes("invalid_request")) {
+        throw new Error("La foto tiene un formato que la IA no acepta. Prueba con otra imagen del producto.");
+      }
+      throw new Error("No se pudo generar el video. Intenta de nuevo o con otra imagen.");
     }
 
     // 4. Descargar el mp4 y guardarlo en nuestro Storage (que no dependa de fal a futuro)
