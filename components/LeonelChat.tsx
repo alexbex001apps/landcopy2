@@ -216,12 +216,12 @@ export default function LeonelChat() {
 
       {/* Panel de chat */}
       {open && (
-        <div className="fixed inset-0 z-50 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[560px] sm:w-[360px] bg-[#0a0a0a] sm:rounded-2xl sm:border sm:border-white/10 sm:shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[560px] sm:w-[360px] sm:rounded-2xl sm:border sm:border-orange-500/20 sm:shadow-2xl flex flex-col overflow-hidden" style={{ background: "linear-gradient(180deg,#17130f 0%,#0b0b0c 45%)" }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
-            <div>
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: "linear-gradient(90deg,rgba(255,80,0,0.12),rgba(0,0,0,0))" }}>
+            <div className="flex-1">
               <p className="text-white text-sm font-semibold leading-tight">Leonel</p>
-              <p className="text-white/50 text-xs leading-tight">Tu asistente de LandCopy</p>
+              <p className="text-green-400/80 text-[11px] leading-tight">● En línea · Tu asistente</p>
             </div>
             <button
               onClick={() => { setOpen(false); setPose("brazos_cruzados"); }}
@@ -240,7 +240,7 @@ export default function LeonelChat() {
                   className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-snug whitespace-pre-wrap ${
                     m.role === "user"
                       ? "bg-white/10 text-white rounded-br-sm"
-                      : "bg-black/60 border border-white/10 text-white/90 rounded-bl-sm"
+                      : "bg-orange-500/10 border border-orange-500/25 text-[#f5ede4] rounded-bl-sm"
                   }`}
                 >
                   {m.content}
