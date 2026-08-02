@@ -11,7 +11,11 @@ export const maxDuration = 300;
 const MODELO = "fal-ai/bytedance/seedance/v1/lite/image-to-video";
 const RESOLUCION = "720p";          // 720p en Lite = ~$0.036/seg
 const DURACION_SEG = 5;             // clip corto; ~$0.18 por generacion
-const PROMPT_DEFECTO = "the jacket rotates slowly side to side like a showroom turntable, while its color smoothly transitions from white to solid black and back, holding steady on each color. Keep the exact same jacket shape and design, only the color changes. Camera fixed, clean studio, seamless loop.";
+const PROMPT_DEFECTO = "suave zoom lento sobre el producto, movimiento delicado y elegante, loop perfecto";
+
+// Se agrega a TODOS los prompts: pide realismo y que respete la fisica real
+// (manos y objetos no se atraviesan, sin dedos de mas ni deformaciones).
+const REALISMO = " Highly realistic and physically accurate: obey real-world physics, hands and objects make correct contact and never pass through each other, no morphing, no warping, no extra or fused fingers, keep natural proportions and consistent lighting.";
 
 // Cuanto esperamos a que fal termine antes de rendirnos
 const MAX_INTENTOS = 60;            // 60 intentos
@@ -91,7 +95,7 @@ export async function POST(req: NextRequest) {
       headers: headersFal,
       body: JSON.stringify({
         image_url: imagenParaFal,
-        prompt: motionPrompt?.trim() || PROMPT_DEFECTO,
+        prompt: `${motionPrompt?.trim() || PROMPT_DEFECTO}${REALISMO}`,
         resolution: RESOLUCION,
         duration: String(DURACION_SEG),
       }),
