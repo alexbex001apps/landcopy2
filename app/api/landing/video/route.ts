@@ -11,7 +11,10 @@ export const maxDuration = 300;
 const MODELO = "fal-ai/bytedance/seedance/v1.5/pro/image-to-video";
 const RESOLUCION = "720p";          // 720p en Pro v1.5
 const DURACION_SEG = 5;             // clip corto; ~$0.26 por generacion
-const PROMPT_DEFECTO = "the jacket rotates slowly side to side like a showroom turntable, while its color smoothly transitions from white to solid black and back, holding steady on each color. Keep the exact same jacket shape and design, only the color changes. Camera fixed, clean studio, seamless loop.";
+const PROMPT_DEFECTO = "suave zoom lento sobre el producto, movimiento delicado y elegante, loop perfecto";
+
+// Se agrega a TODOS los prompts: que la IA se cina al producto de la imagen y no lo cambie.
+const FIDELIDAD = " Keep the exact same product shown in the reference image: same shape, size, colors, logos, text and details. Do not redesign, replace, add or remove anything from the product — stay faithful to the reference, only animate the scene and movement.";
 
 // Cuanto esperamos a que fal termine antes de rendirnos
 const MAX_INTENTOS = 60;            // 60 intentos
@@ -91,7 +94,7 @@ export async function POST(req: NextRequest) {
       headers: headersFal,
       body: JSON.stringify({
         image_url: imagenParaFal,
-        prompt: motionPrompt?.trim() || PROMPT_DEFECTO,
+        prompt: `${motionPrompt?.trim() || PROMPT_DEFECTO}${FIDELIDAD}`,
         resolution: RESOLUCION,
         duration: String(DURACION_SEG),
       }),
