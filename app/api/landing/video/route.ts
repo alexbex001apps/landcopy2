@@ -13,8 +13,9 @@ const RESOLUCION = "720p";          // 720p en Pro v1.5
 const DURACION_SEG = 5;             // clip corto; ~$0.26 por generacion
 const PROMPT_DEFECTO = "suave zoom lento sobre el producto, movimiento delicado y elegante, loop perfecto";
 
-// Se agrega a TODOS los prompts: que la IA se cina al producto de la imagen y no lo cambie.
-const FIDELIDAD = " Keep the exact same product shown in the reference image: same shape, size, colors, logos, text and details. Do not redesign, replace, add or remove anything from the product — stay faithful to the reference, only animate the scene and movement.";
+// Se agrega a TODOS los prompts: que la IA respete el producto Y SUS PROPORCIONES,
+// sin estirarlo, ensancharlo ni deformarlo.
+const FIDELIDAD = " CRITICAL: keep the product EXACTLY as in the reference image — same real proportions, dimensions, thickness and scale. Do NOT stretch, squash, widen, elongate, bend, warp or resize the product. Same shape, colors, logos, text and details. Only animate the movement; the product itself must stay rigid and unchanged.";
 
 // Cuanto esperamos a que fal termine antes de rendirnos
 const MAX_INTENTOS = 60;            // 60 intentos
