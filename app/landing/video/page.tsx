@@ -100,6 +100,17 @@ export default function VideoProducto() {
           problema: camp.problema || "",
         });
         setEsCombo(!!camp.es_combo);
+
+        // Recupera el ultimo video generado (si es del mismo producto), para
+        // que al volver de Landing no se pierda ni haya que generarlo de nuevo.
+        try {
+          const ult = sessionStorage.getItem("landing_video_ultimo");
+          if (ult) {
+            const u = JSON.parse(ult);
+            const prodActual = camp.producto || camp.nombre || "Producto";
+            if (u?.url && u?.producto === prodActual) setVideoUrl(u.url);
+          }
+        } catch {}
       }
     } catch {}
   }, []);
@@ -170,7 +181,11 @@ export default function VideoProducto() {
         body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento }),
       });
       const data = await resp.json();
-      if (data.videoUrl) setVideoUrl(data.videoUrl);
+      if (data.videoUrl) {
+        setVideoUrl(data.videoUrl);
+        // Recordar el video para que sobreviva al ir y volver de Landing
+        try { sessionStorage.setItem("landing_video_ultimo", JSON.stringify({ url: data.videoUrl, producto: producto.nombre })); } catch {}
+      }
       else setError(data.error || "No se pudo generar el video.");
     } catch {
       setError("Error de conexión al generar el video.");
