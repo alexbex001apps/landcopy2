@@ -5,12 +5,21 @@ import { createClient } from "@supabase/supabase-js";
 // (En Vercel Pro se permite hasta 300s con Fluid Compute.)
 export const maxDuration = 300;
 
-// --- Config del modelo (todo lo ajustable, en un solo lugar) ---
-// Seedance v1.5 Pro: mejor calidad que Lite por casi el mismo precio (~$0.26 por
-// clip 5s/720p) y SIN la moderacion agresiva del 2.0 (que rechazaba productos).
-const MODELO = "fal-ai/bytedance/seedance/v1.5/pro/image-to-video";
-const RESOLUCION = "720p";          // 720p en Pro v1.5
-const DURACION_SEG = 5;             // clip corto; ~$0.26 por generacion
+// --- Modelos disponibles (el usuario elige por video) ---
+// seedance: mas barato (~$0.26/5s). kling: mejor fidelidad del producto (~$0.35/5s).
+const RESOLUCION = "720p";
+const DURACION_SEG = 5; // default
+
+const MODELOS: Record<string, { endpoint: string; body: (img: string, prompt: string, seg: number) => any }> = {
+  seedance: {
+    endpoint: "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    body: (img, prompt, seg) => ({ image_url: img, prompt, resolution: RESOLUCION, duration: String(seg) }),
+  },
+  kling: {
+    endpoint: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    body: (img, prompt, seg) => ({ image_url: img, prompt, duration: String(seg) }),
+  },
+};
 const PROMPT_DEFECTO = "suave zoom lento sobre el producto, movimiento delicado y elegante, loop perfecto";
 
 // Se agrega a TODOS los prompts: que la IA respete el producto Y SUS PROPORCIONES,
@@ -70,9 +79,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Falta configurar FAL_API_KEY en el servidor." }, { status: 500 });
     }
 
-    const { imageUrl, motionPrompt, userId, seccion, duracion } = await req.json();
+    const { imageUrl, motionPrompt, userId, seccion, duracion, modelo } = await req.json();
     // Solo 5 o 10 segundos; cualquier otra cosa cae al default
     const segundos = duracion === 10 ? 10 : DURACION_SEG;
+    // Modelo elegido (default seedance)
+    const cfg = MODELOS[modelo] || MODELOS.seedance;
 
     // fal necesita una imagen PUBLICA (http). Las imagenes recien generadas son
     // data: URLs y no sirven: hay que guardarlas primero.
@@ -91,16 +102,12 @@ export async function POST(req: NextRequest) {
     // Acomoda la foto si su proporcion es muy extrema (seedance la rechazaria)
     const imagenParaFal = await prepararImagen(imageUrl);
 
-    // 1. Encolar la generacion
-    const submit = await fetch(`https://queue.fal.run/${MODELO}`, {
+    // 1. Encolar la generacion (con el modelo elegido)
+    const promptFinal = `${motionPrompt?.trim() || PROMPT_DEFECTO}${FIDELIDAD}`;
+    const submit = await fetch(`https://queue.fal.run/${cfg.endpoint}`, {
       method: "POST",
       headers: headersFal,
-      body: JSON.stringify({
-        image_url: imagenParaFal,
-        prompt: `${motionPrompt?.trim() || PROMPT_DEFECTO}${FIDELIDAD}`,
-        resolution: RESOLUCION,
-        duration: String(segundos),
-      }),
+      body: JSON.stringify(cfg.body(imagenParaFal, promptFinal, segundos)),
     });
 
     const submitData = await submit.json().catch(() => ({}));
@@ -109,8 +116,8 @@ export async function POST(req: NextRequest) {
     }
 
     const requestId = submitData.request_id;
-    const statusUrl = submitData.status_url || `https://queue.fal.run/${MODELO}/requests/${requestId}/status`;
-    const responseUrl = submitData.response_url || `https://queue.fal.run/${MODELO}/requests/${requestId}`;
+    const statusUrl = submitData.status_url || `https://queue.fal.run/${cfg.endpoint}/requests/${requestId}/status`;
+    const responseUrl = submitData.response_url || `https://queue.fal.run/${cfg.endpoint}/requests/${requestId}`;
     if (!requestId) throw new Error("fal no devolvio request_id");
 
     // 2. Esperar (polling) hasta que termine

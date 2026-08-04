@@ -82,6 +82,7 @@ export default function VideoProducto() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [movSel, setMovSel] = useState("beneficio");
+  const [modelo, setModelo] = useState("seedance");
   const [duracion, setDuracion] = useState(5);
   const [promptPropio, setPromptPropio] = useState("");
   const [esCombo, setEsCombo] = useState(false);
@@ -179,7 +180,7 @@ export default function VideoProducto() {
       const resp = await fetch("/api/landing/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento, duracion }),
+        body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento, duracion, modelo }),
       });
       const data = await resp.json();
       if (data.videoUrl) {
@@ -227,6 +228,28 @@ export default function VideoProducto() {
             </div>
 
             {/* Selector de efecto: primero los enfocados en el beneficio, luego movimiento */}
+            {/* Calidad / modelo */}
+            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">✨ Calidad</p>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {[
+                { id: "seedance", txt: "Estándar", sub: "más barato" },
+                { id: "kling", txt: "Alta fidelidad", sub: "cuesta un poco más" },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setModelo(m.id)}
+                  className={`flex flex-col items-center gap-0.5 py-2.5 rounded-lg border text-[12px] font-bold transition-colors ${
+                    modelo === m.id
+                      ? "bg-purple-500/20 border-purple-500 text-purple-200"
+                      : "bg-[#111] border-[#1a1a1a] text-zinc-400 hover:border-[#333]"
+                  }`}
+                >
+                  {m.txt}
+                  <span className="text-[9px] font-normal opacity-70">{m.sub}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Duracion del clip */}
             <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">⏱️ Duración</p>
             <div className="grid grid-cols-2 gap-2 mb-4">
