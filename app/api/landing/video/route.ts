@@ -70,7 +70,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Falta configurar FAL_API_KEY en el servidor." }, { status: 500 });
     }
 
-    const { imageUrl, motionPrompt, userId, seccion } = await req.json();
+    const { imageUrl, motionPrompt, userId, seccion, duracion } = await req.json();
+    // Solo 5 o 10 segundos; cualquier otra cosa cae al default
+    const segundos = duracion === 10 ? 10 : DURACION_SEG;
 
     // fal necesita una imagen PUBLICA (http). Las imagenes recien generadas son
     // data: URLs y no sirven: hay que guardarlas primero.
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
         image_url: imagenParaFal,
         prompt: `${motionPrompt?.trim() || PROMPT_DEFECTO}${FIDELIDAD}`,
         resolution: RESOLUCION,
-        duration: String(DURACION_SEG),
+        duration: String(segundos),
       }),
     });
 
@@ -165,7 +167,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       videoUrl: urlData.publicUrl,
-      durationSeconds: DURACION_SEG,
+      durationSeconds: segundos,
     });
   } catch (err: any) {
     console.error("Error generando video:", err);

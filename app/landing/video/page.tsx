@@ -82,6 +82,7 @@ export default function VideoProducto() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [movSel, setMovSel] = useState("beneficio");
+  const [duracion, setDuracion] = useState(5);
   const [promptPropio, setPromptPropio] = useState("");
   const [esCombo, setEsCombo] = useState(false);
   const [seccionSel, setSeccionSel] = useState("hero");
@@ -178,7 +179,7 @@ export default function VideoProducto() {
       const resp = await fetch("/api/landing/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento }),
+        body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento, duracion }),
       });
       const data = await resp.json();
       if (data.videoUrl) {
@@ -226,6 +227,24 @@ export default function VideoProducto() {
             </div>
 
             {/* Selector de efecto: primero los enfocados en el beneficio, luego movimiento */}
+            {/* Duracion del clip */}
+            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">⏱️ Duración</p>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {[{ s: 5, txt: "5 segundos" }, { s: 10, txt: "10 segundos" }].map((d) => (
+                <button
+                  key={d.s}
+                  onClick={() => setDuracion(d.s)}
+                  className={`py-2.5 rounded-lg border text-[12px] font-bold transition-colors ${
+                    duracion === d.s
+                      ? "bg-purple-500/20 border-purple-500 text-purple-200"
+                      : "bg-[#111] border-[#1a1a1a] text-zinc-400 hover:border-[#333]"
+                  }`}
+                >
+                  {d.txt}{d.s === 10 ? " (cuesta el doble)" : ""}
+                </button>
+              ))}
+            </div>
+
             {/* Idea propia: si se escribe algo, manda sobre los efectos de abajo */}
             <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest mb-2">✍️ Escribe tu propia idea (opcional)</p>
             <textarea
