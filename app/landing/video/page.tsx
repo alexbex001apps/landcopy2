@@ -177,6 +177,12 @@ export default function VideoProducto() {
           movimiento = MOVIMIENTOS.find((m) => m.id === "giro")?.prompt;
         }
       }
+      // Solo cuando hay persona: pedir contacto fisico correcto (que las manos y el
+      // producto no atraviesen el cuerpo). En videos de producto solo NO se agrega.
+      const esConPersonas = !promptPropio.trim() && MOVIMIENTOS.find((m) => m.id === movSel)?.grupo === "personas";
+      if (esConPersonas) {
+        movimiento = `${movimiento} The hands, fingers and the product touch the body and each other with correct solid contact; nothing passes through, clips into or overlaps the body — everything stays on the surface, physically separate and natural.`;
+      }
       const resp = await fetch("/api/landing/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
