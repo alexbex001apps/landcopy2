@@ -1,6 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { CATEGORIAS_ESTILO, LABEL_CATEGORIA_ESTILO, CategoriaEstilo } from "@/lib/bibliotecaEstilo/categorias";
 
 export const maxDuration = 300;
+
+export type ReferenciaEstiloUsada = { id: string; titulo: string | null; imagenesUrls: string[] };
 
 // ─────────────────────────────────────────────────────────────
 // CEREBRO · REDES ESTRATÉGICO (Director de Marketing con IA)
@@ -9,6 +14,72 @@ export const maxDuration = 300;
 // objetivo psicológico por pieza, y reparte por red.
 // Modelo: gpt-4o · temperatura alta para creatividad.
 // ─────────────────────────────────────────────────────────────
+
+// Trae UNA referencia activa al azar de cada categoria del banco global de
+// Biblioteca de Estilo (una sola, no varias, para que una misma campaña no
+// mezcle el estilo de dos referencias distintas de la misma categoria y
+// pierda cohesion visual entre sus piezas). Se inyectan como PRINCIPIO
+// OBLIGATORIO, exigiendo que cada campo de la ficha (tono, paleta de
+// colores, tipografia, iconos) se refleje en la pieza correspondiente,
+// con prioridad sobre el tono generico de venta.
+async function obtenerBancoDeEstilo(): Promise<{
+  promptTexto: string;
+  referenciasUsadas: Partial<Record<CategoriaEstilo, ReferenciaEstiloUsada>>;
+}> {
+  const vacio = { promptTexto: "", referenciasUsadas: {} };
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase
+      .from("biblioteca_estilo")
+      .select("id, categoria, titulo, texto_plano, imagenes_urls")
+      .eq("activa", true);
+
+    if (!data || data.length === 0) return vacio;
+
+    const bloques: string[] = [];
+    const referenciasUsadas: Partial<Record<CategoriaEstilo, ReferenciaEstiloUsada>> = {};
+    for (const categoria of CATEGORIAS_ESTILO) {
+      const delCategoria = data.filter((r) => r.categoria === categoria && r.texto_plano);
+      if (delCategoria.length === 0) continue;
+      const elegida = delCategoria[Math.floor(Math.random() * delCategoria.length)];
+      bloques.push(`--- Ficha de referencia: ${LABEL_CATEGORIA_ESTILO[categoria]} — "${elegida.titulo || "Sin titulo"}" ---\n${elegida.texto_plano}`);
+      referenciasUsadas[categoria] = {
+        id: elegida.id,
+        titulo: elegida.titulo,
+        imagenesUrls: elegida.imagenes_urls || [],
+      };
+    }
+
+    if (bloques.length === 0) return vacio;
+
+    const categoriasConFicha = Object.keys(referenciasUsadas)
+      .map((c) => LABEL_CATEGORIA_ESTILO[c as CategoriaEstilo])
+      .join(", ");
+    const categoriasSinFicha = CATEGORIAS_ESTILO
+      .filter((c) => !referenciasUsadas[c])
+      .map((c) => LABEL_CATEGORIA_ESTILO[c])
+      .join(", ");
+
+    const promptTexto = `
+
+PRINCIPIO #6 — RESPETA EL BANCO DE ESTILO (OBLIGATORIO, no es una simple inspiracion)
+Estas son fichas de referencias REALES ya validadas por el equipo humano de esta marca. Solo hay ficha para: ${categoriasConFicha}. Cada ficha es EXCLUSIVA de su categoria — usala UNICAMENTE en piezas cuyo tipo sea exactamente esa categoria.${categoriasSinFicha ? ` Para el resto de tipos de pieza (${categoriasSinFicha}, y cualquier otro que no sea ${categoriasConFicha}) NO existe ficha — esas piezas NO deben tomar NADA de las fichas de abajo (ni su tono, ni su paleta de colores, ni su tipografia, ni nada): usa tu criterio normal de Director de Marketing, con el tono/pais/objetivo generales de la campaña.` : ""}
+En una pieza cuyo tipo SI coincide con una ficha, es OBLIGATORIO aplicar sus campos — no son sugerencias sueltas que puedas ignorar:
+- El campo "Tono del copy" de la ficha tiene PRIORIDAD sobre el tono generico de venta/urgencia de los principios anteriores. Si la ficha dice "cercano y conversacional", el copy de esa pieza suena cercano y conversacional — NO publicitario ni agresivo — incluso si el objetivo comercial es vender.
+- El campo "Paleta de colores" DEBE aparecer explicitamente, traducido al ingles, dentro del promptVisual de esa pieza (ej. si la ficha dice "neutros y oscuros con acentos en blanco y burdeos", el promptVisual debe incluir literalmente algo como "dark neutral tones with white and burgundy accents").
+- Los campos "Estilo tipografico" y "Uso de iconos o emojis" tambien deben quedar reflejados en el promptVisual o el copy, segun aplique.
+- "Gancho de apertura" y "Cierre o llamado a la accion" son referencia de ESTILO y ESTRUCTURA (que tipo de gancho es: pregunta, dato curioso, dolor directo, etc.) para el hook/cta de esa pieza — jamas un texto para copiar.
+
+PROHIBIDO TERMINANTE: nunca repitas frases, titulares, hooks, cierres o cualquier wording literal de las fichas. Todo el copy, hook, titulo y texto de laminas que escribas debe ser 100% nuevo, redactado especificamente para ESTA campaña. Las fichas son referencia de ESTILO (tono, estructura, paleta, tipografia) — NUNCA de contenido a repetir palabra por palabra. Si una ficha dice "La ropa incomoda no es la solucion", tu gancho debe ser una frase completamente distinta que transmita el MISMO tipo de gancho (ej. dolor directo), no esas palabras.
+Adapta cada campo al contexto especifico de esta campaña — pero NUNCA los ignores ni los diluyas en algo generico. Aplica la MISMA ficha de forma consistente a TODAS las piezas de esa categoria dentro de esta campaña (ej. todos los carruseles de esta campaña deben compartir la misma paleta de colores y tono) — nunca mezcles el estilo con otra referencia a mitad de campaña.
+
+${bloques.join("\n\n")}`;
+
+    return { promptTexto, referenciasUsadas };
+  } catch {
+    return vacio;
+  }
+}
 
 // Construye el contexto del negocio según el modo (calcado del route actual).
 function contextoPorModo(body: any): string {
@@ -25,11 +96,13 @@ País: ${pais}. Tono: ${tono}.`;
   }
 
   if (modo === "negocio") {
-    const { nNombre, nOfrece, nCiudad } = body;
+    const { nNombre, nOfrece, nCiudad, nDiferenciador, nPublico } = body;
     return `MODO: Negocio local.
 Negocio: ${nNombre}.
 Qué ofrece: ${nOfrece || "no especificado"}.
 Ciudad: ${nCiudad || "no especificada"}.
+Diferenciador frente a la competencia: ${nDiferenciador || "no especificado"}.
+Publico objetivo: ${nPublico || "no especificado"}.
 País: ${pais}. Tono: ${tono}.`;
   }
 
@@ -48,7 +121,7 @@ ${mHistorias ? `HISTORIAS reales para usar cuando aporten: ${mHistorias}` : ""}`
 }
 
 // El system prompt del Director de Marketing (el cerebro aprobado).
-function systemPrompt(): string {
+function systemPrompt(bancoEstilo: string): string {
   return `Eres un Director de Marketing y Social Media Manager de élite, experto en campañas para Latinoamérica. Trabajas con TRES tipos de clientes y adaptas tu estrategia a cada uno:
   • PRODUCTO → quien vende un producto y busca conversiones.
   • NEGOCIO → un local (peluquería, restaurante) que busca presencia y clientes del barrio.
@@ -73,6 +146,7 @@ La campaña completa se publica en TODAS las redes disponibles que te indiquen, 
 
 PRINCIPIO #5 — EQUILIBRIO DE MARCA (no todo es venta)
 Balancea: venta, educación, confianza, autoridad, comunidad, entretenimiento. Una campaña que solo vende, cansa.
+${bancoEstilo}
 
 FORMATOS QUE PUEDES ELEGIR:
 imagen · carrusel · reel · video corto · historia de cliente · testimonio · educativo · comparativo · autoridad · entretenimiento · oferta · detrás de cámaras · mitos y verdades · preguntas frecuentes · caso de éxito
@@ -80,6 +154,7 @@ imagen · carrusel · reel · video corto · historia de cliente · testimonio �
 POR CADA PIEZA entrega: objetivoPsicologico (atención/curiosidad/confianza/autoridad/deseo/conversión/fidelización), tipo, red, titulo, copy (texto completo persuasivo en español latino), cta, promptVisual (en inglés, optimizado para Flux).
 SI es REEL o VIDEO, además: hook (primeros 3 seg), guion (escena por escena), escenas (lista de tomas), textoEnPantalla.
 SI es CARRUSEL, además: laminas (5 a 7, cada una con texto y promptVisual).
+IMPORTANTE con las láminas: el campo "texto" es SOLO la frase que va escrita en esa lámina, tal como la va a leer el cliente. NUNCA la numeres ni la etiquetes: nada de "Lámina 1:", "Lámina 2 -", "Slide 1", "Diapositiva 3" ni similares. Ese texto se imprime tal cual sobre la imagen, así que cualquier etiqueta queda publicada y se ve mal. Si la lámina dice "¿Notaste que tu piel perdió firmeza?", el campo "texto" es exactamente eso y nada más.
 
 TONO: español latinoamericano, cercano y persuasivo. Usa la voz de marca que te den. Respeta país y tono. Escribe como humano experto, no robótico.
 
@@ -108,8 +183,32 @@ FORMATO DE RESPUESTA (CRÍTICO): responde ÚNICAMENTE con un objeto JSON válido
 }`;
 }
 
+// La IA a veces numera las laminas ("Lamina 1 - ...") aunque se le pida que no.
+// Ese prefijo es nomenclatura interna: quedaba impreso sobre la imagen y en el
+// copy que el usuario copia y pega. Se limpia aqui, en el origen.
+const RE_PREFIJO_LAMINA = /^\s*(l[áa]mina|slide|diapositiva|imagen|pieza)\s*(n[°º]?\s*)?\d+\s*[-–—:.)]\s*/i;
+
+function limpiarPrefijosDeLaminas(plan: any) {
+  if (!Array.isArray(plan?.piezas)) return plan;
+  for (const pieza of plan.piezas) {
+    if (!Array.isArray(pieza?.laminas)) continue;
+    for (const lamina of pieza.laminas) {
+      if (typeof lamina?.texto === "string") {
+        lamina.texto = lamina.texto.replace(RE_PREFIJO_LAMINA, "").trim();
+      }
+    }
+  }
+  return plan;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // Genera con gpt-4o: sin sesion, cualquiera podria consumir la cuenta de
+    // OpenAI llamando este endpoint desde fuera de la app.
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+
     const body = await req.json();
     const { modo, dias, objetivo, redes } = body;
 
@@ -119,6 +218,7 @@ export async function POST(req: NextRequest) {
 
     const contexto = contextoPorModo(body);
     const listaRedes = Array.isArray(redes) && redes.length > 0 ? redes.join(", ") : "instagram, facebook, tiktok";
+    const { promptTexto: bancoEstilo, referenciasUsadas } = await obtenerBancoDeEstilo();
 
     const userPrompt = `${contexto}
 
@@ -139,7 +239,7 @@ Diseña la campaña estratégica completa de ${dias} días siguiendo todos tus p
         temperature: 0.9,
         max_tokens: 6000,
         messages: [
-          { role: "system", content: systemPrompt() },
+          { role: "system", content: systemPrompt(bancoEstilo) },
           { role: "user", content: userPrompt },
         ],
       }),
@@ -153,7 +253,7 @@ Diseña la campaña estratégica completa de ${dias} días siguiendo todos tus p
 
     let plan;
     try {
-      plan = JSON.parse(texto);
+      plan = limpiarPrefijosDeLaminas(JSON.parse(texto));
     } catch {
       return NextResponse.json({ error: "La IA no devolvió un JSON válido", crudo: texto.slice(0, 500) }, { status: 502 });
     }
@@ -163,6 +263,7 @@ Diseña la campaña estratégica completa de ${dias} días siguiendo todos tus p
       dias,
       objetivo: objetivo || "más ventas",
       redes: listaRedes,
+      referenciasEstilo: referenciasUsadas,
       ...plan,
     });
   } catch (err: any) {
