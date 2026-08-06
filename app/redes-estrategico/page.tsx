@@ -1,10 +1,29 @@
-"use client";
+﻿"use client";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { categoriaEstiloDeTipo } from "@/lib/bibliotecaEstilo/categorias";
 
 const CLAVE_ESTADO = "redesestrat_estado";
 const CLAVE_GENERANDO = "redesestrat_generando";
 const CLAVE_IMAGENES = "redesestrat_imagenes";
+
+// Todo lo que la app deja guardado en el navegador. Se borra al cerrar sesion
+// y cuando entra un usuario distinto: si no, el siguiente que use ese
+// computador hereda las fotos y la campaña del anterior.
+const CLAVES_LOCALES = [
+  CLAVE_ESTADO,
+  CLAVE_GENERANDO,
+  CLAVE_IMAGENES,
+  "postunico_estado",
+  "socialred_splash_visto",
+];
+
+function limpiarEstadoLocal() {
+  try {
+    CLAVES_LOCALES.forEach((k) => sessionStorage.removeItem(k));
+  } catch {}
+}
 
 type Modo = "producto" | "negocio" | "marca";
 
@@ -14,6 +33,41 @@ const PAISES = ["Colombia", "México", "Venezuela", "Costa Rica", "Ecuador", "Ge
 const TONOS = ["Urgente", "Emocional", "Cercano", "Confianza", "Premium", "Divertido"];
 
 export default function RedesEstrategico() {
+  const router = useRouter();
+  const [verificando, setVerificando] = useState(true);
+  const [haySesion, setHaySesion] = useState(false);
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [esAdminEstilo, setEsAdminEstilo] = useState(false);
+  const [saldo, setSaldo] = useState<number | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      // Sin sesion mostramos la pagina publica, no el formulario de login:
+      // quien llega desde un anuncio necesita entender que es esto primero.
+      setHaySesion(!!user);
+      setUsuarioId(user?.id || null);
+      setVerificando(false);
+      if (user) {
+        fetch("/api/biblioteca-estilo/estado")
+          .then((r) => r.json())
+          .then((d) => setEsAdminEstilo(!!d.esAdmin))
+          .catch(() => {});
+        refrescarSaldo();
+      }
+    });
+  }, []);
+
+  // Cuantas imagenes le quedan. Sin esto el usuario no sabe con cuantas cuenta
+  // y se topa con el muro sin verlo venir.
+  async function refrescarSaldo() {
+    try {
+      const r = await fetch("/api/billing/estado");
+      if (!r.ok) return;
+      const d = await r.json();
+      if (typeof d.saldo === "number") setSaldo(d.saldo);
+    } catch {}
+  }
   const [modo, setModo] = useState<Modo>("producto");
   const [dias, setDias] = useState(7);
   const [objetivo, setObjetivo] = useState("más ventas");
@@ -29,10 +83,34 @@ export default function RedesEstrategico() {
 
   const [pIdentificando, setPIdentificando] = useState(false);
   const [toast, setToast] = useState("");
+  const [sinCreditos, setSinCreditos] = useState(false);
+  const [mostrarOferta, setMostrarOferta] = useState(true);
 
-  function mostrarToast(msg: string) {
+  function mostrarToast(msg: string, ms = 2500) {
     setToast(msg);
-    setTimeout(() => setToast(""), 2500);
+    setTimeout(() => setToast(""), ms);
+  }
+
+  // Lee la respuesta del servidor sin reventar si no devolvio JSON (por ejemplo
+  // una pagina de error de Vercel ante un timeout).
+  async function leerRespuesta(resp: Response): Promise<any> {
+    try {
+      return await resp.json();
+    } catch {
+      return {};
+    }
+  }
+
+  // Muestra el motivo REAL que manda el servidor en vez de esconderlo tras un
+  // mensaje generico. Si lo que pasa es que se acabaron las imagenes, ademas
+  // deja un aviso fijo en pantalla: el toast se va solo y es facil no verlo.
+  function avisarErrorImagen(resp: Response, data: any, accion: "generar" | "editar") {
+    if (resp.status === 402) {
+      setSinCreditos(true);
+      mostrarToast("No tienes imagenes disponibles", 5000);
+      return;
+    }
+    mostrarToast(data?.error || `No se pudo ${accion} la imagen (error ${resp.status})`, 5000);
   }
   async function identificarProducto() {
     if (!pImagen) return;
@@ -82,6 +160,8 @@ export default function RedesEstrategico() {
   const [nNombre, setNNombre] = useState("");
   const [nOfrece, setNOfrece] = useState("");
   const [nCiudad, setNCiudad] = useState("");
+  const [nDiferenciador, setNDiferenciador] = useState("");
+  const [nPublico, setNPublico] = useState("");
   const [nFotos, setNFotos] = useState<string[]>([]);
   const [nIdentificando, setNIdentificando] = useState(false);
   const nFileRef = useRef<HTMLInputElement>(null);
@@ -100,14 +180,23 @@ export default function RedesEstrategico() {
   const mFileRef = useRef<HTMLInputElement>(null);
 
   const [generando, setGenerando] = useState(false);
+  const [campanaId, setCampanaId] = useState<string | null>(null);
   const [plan, setPlan] = useState<any>(null);
   const [error, setError] = useState("");
   const [hidratado, setHidratado] = useState(false);
 
-  // Al abrir: recuperar lo guardado (datos + plan)
+  // Al abrir: recuperar lo guardado (datos + plan). Espera a saber quien entro:
+  // si lo guardado es de otro usuario se descarta, para que nadie herede las
+  // fotos ni la campaña del que uso antes ese computador.
   useEffect(() => {
+    if (!usuarioId) return;
     try {
       const e = JSON.parse(sessionStorage.getItem(CLAVE_ESTADO) || "{}");
+      if (e.userId !== usuarioId) {
+        limpiarEstadoLocal();
+        setHidratado(true);
+        return;
+      }
       if (e.modo) setModo(e.modo);
       if (e.dias) setDias(e.dias);
       if (e.objetivo) setObjetivo(e.objetivo);
@@ -120,11 +209,14 @@ export default function RedesEstrategico() {
       if (e.nNombre) setNNombre(e.nNombre);
       if (e.nOfrece) setNOfrece(e.nOfrece);
       if (e.nCiudad) setNCiudad(e.nCiudad);
+      if (e.nDiferenciador) setNDiferenciador(e.nDiferenciador);
+      if (e.nPublico) setNPublico(e.nPublico);
       if (e.mNombre) setMNombre(e.mNombre);
       if (e.mQueHace) setMQueHace(e.mQueHace);
       if (e.mPromociona) setMPromociona(e.mPromociona);
       if (Array.isArray(e.nFotos)) setNFotos(e.nFotos);
       if (Array.isArray(e.mFotos)) setMFotos(e.mFotos);
+      if (e.campanaId) setCampanaId(e.campanaId);
       if (e.plan) {
         // Limpiar spinners fantasma: apagar generandoImg que NO esté en la caja del vigilante
         let activos: string[] = [];
@@ -180,23 +272,25 @@ export default function RedesEstrategico() {
       }
     } catch {}
     setHidratado(true);
-  }, []);
+  }, [usuarioId]);
 
   // Guardar cada vez que algo cambia (datos + plan)
   useEffect(() => {
-    if (!hidratado) return;
+    if (!hidratado || !usuarioId) return;
     try {
       const estado = {
+        userId: usuarioId, // marca de dueño: sin esto, otro usuario hereda esto
         modo, dias, objetivo, pais, tono,
         pNombre, pImagen, pBeneficio, pProblema,
-        nNombre, nOfrece, nCiudad,
+        nNombre, nOfrece, nCiudad, nDiferenciador, nPublico,
         mNombre, mQueHace, mPromociona,
         nFotos, mFotos,
         plan,
+        campanaId,
       };
       sessionStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
     } catch {}
-  }, [hidratado, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, mNombre, mQueHace, mPromociona,nFotos, mFotos, plan]);
+  }, [hidratado, usuarioId, modo, dias, objetivo, pais, tono, pNombre, pImagen, pBeneficio, pProblema, nNombre, nOfrece, nCiudad, nDiferenciador, nPublico, mNombre, mQueHace, mPromociona,nFotos, mFotos, plan, campanaId]);
 
   // === VIGILANTE: marcar/desmarcar qué se está generando (sobrevive al salir) ===
   function marcarGenerando(id: string) {
@@ -258,7 +352,7 @@ export default function RedesEstrategico() {
   function datosDelModo() {
     const base: any = { modo, dias, objetivo, pais, tono, redes: ["instagram", "facebook", "tiktok"] };
     if (modo === "producto") return { ...base, pNombre, pBeneficio, pProblema };
-    if (modo === "negocio") return { ...base, nNombre, nOfrece, nCiudad };
+    if (modo === "negocio") return { ...base, nNombre, nOfrece, nCiudad, nDiferenciador, nPublico };
     return { ...base, mNombre, mQueHace, mPromociona };
   }
 
@@ -267,6 +361,13 @@ export default function RedesEstrategico() {
     setGenerando(true);
     setPlan(null);
     setError("");
+    // Limpiar la caja/vigilante de imagenes de la campaña anterior: sin esto, imagenes
+    // generadas en una campaña previa se podian "colar" en la campaña nueva por
+    // coincidir la misma posicion (p0, p1, p2_l0...).
+    try {
+      sessionStorage.removeItem(CLAVE_IMAGENES);
+      sessionStorage.removeItem(CLAVE_GENERANDO);
+    } catch {}
     try {
       const resp = await fetch("/api/redes-estrategico/generar", {
         method: "POST",
@@ -275,20 +376,129 @@ export default function RedesEstrategico() {
       });
       const data = await resp.json();
       if (!resp.ok) setError(data.error || "Error al diseñar la campaña");
-      else setPlan(data);
+      else {
+        setPlan(data);
+        guardarEnBiblioteca(data);
+      }
     } catch (e: any) {
       setError(e.message);
     }
     setGenerando(false);
   }
 
+
+  // Cada vez que el plan cambia (imagen nueva, editada o quitada), sincroniza con la Biblioteca
+  useEffect(() => {
+    if (!campanaId || !plan) return;
+    const timeout = setTimeout(async () => {
+      try {
+        const supabase = createClient();
+        await supabase
+          .from("biblioteca_campanas")
+          .update({ plan })
+          .eq("id", campanaId);
+      } catch {}
+    }, 1500);
+    return () => clearTimeout(timeout);
+  }, [plan, campanaId]);
+
+  async function guardarEnBiblioteca(planGenerado: any) {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const nombre = modo === "producto" ? pNombre : modo === "negocio" ? nNombre : mNombre;
+      const beneficioOOfrece = modo === "producto" ? pBeneficio : modo === "negocio" ? nOfrece : mQueHace;
+      const problemaOCiudadOPromociona = modo === "producto" ? pProblema : modo === "negocio" ? nCiudad : mPromociona;
+
+      const { data: fila, error } = await supabase
+        .from("biblioteca_campanas")
+        .insert({
+          user_id: user.id,
+          tipo: modo,
+          pais,
+          tono,
+          dias,
+          objetivo,
+          nombre: nombre || null,
+          beneficio_o_ofrece: beneficioOOfrece || null,
+          problema_o_ciudad_o_promociona: problemaOCiudadOPromociona || null,
+          plan: planGenerado,
+          imagenes: [],
+          metricas: {},
+        })
+        .select("id")
+        .single();
+
+      if (!error && fila) setCampanaId(fila.id);
+    } catch {}
+  }
+
   const modoColor = modo === "producto" ? "#ff5000" : modo === "negocio" ? "#38bdf8" : "#facc15";
+
+  const NOMBRE_MODO: Record<string, string> = {
+    producto: "Un producto",
+    negocio: "Mi negocio local",
+    marca: "Marca personal",
+  };
+
+  // La campaña pertenece al modo con el que se genero: solo se muestra ahi.
+  // Si un plan viejo no trae "modo", se muestra igual (no lo escondemos y
+  // dejamos al usuario pensando que se perdio su campaña).
+  // Los botones de generar deben ofrecer el plan tanto si un intento ya fallo
+  // como si el saldo ya venia en cero al abrir: asi no se pierde el clic.
+  const sinImagenes = sinCreditos || saldo === 0;
+
+  const planEsDeEsteModo = !!plan && (!plan.modo || plan.modo === modo);
+  const planEsDeOtroModo = !!plan && !!plan.modo && plan.modo !== modo;
+
+  // Cuantas imagenes estan generandose ahora mismo en la campaña abierta.
+  function contarImagenesGenerando(): number {
+    if (!plan?.piezas) return 0;
+    let n = 0;
+    for (const p of plan.piezas) {
+      if (p.generandoImg) n++;
+      if (Array.isArray(p.laminas)) {
+        for (const l of p.laminas) if (l.generandoImg) n++;
+      }
+    }
+    return n;
+  }
+
+  // Cierra la campaña del editor para poder empezar otra. NO la borra de la
+  // Biblioteca: ahi sigue guardada con todo lo que se le haya generado.
+  function cancelarCampana() {
+    const enVuelo = contarImagenesGenerando();
+    if (enVuelo > 0) {
+      const ok = confirm(
+        `Hay ${enVuelo} ${enVuelo === 1 ? "imagen generandose" : "imagenes generandose"}. Si cierras la campaña ahora, ${enVuelo === 1 ? "esa imagen se pierde" : "esas imagenes se pierden"} y los creditos ya gastados no se recuperan.\n\n¿Seguro que quieres cerrarla?`
+      );
+      if (!ok) return;
+    }
+    setPlan(null);
+    setCampanaId(null);
+    try {
+      sessionStorage.removeItem(CLAVE_IMAGENES);
+      sessionStorage.removeItem(CLAVE_GENERANDO);
+    } catch {}
+    mostrarToast("Campaña cerrada · sigue guardada en tu Biblioteca");
+  }
 
   function fotosBase(): string[] {
     if (modo === "producto") return pImagen ? [pImagen] : [];
     if (modo === "negocio") return nFotos;
     return mFotos;
-  } 
+  }
+
+  // Fotos reales de la referencia de estilo (Biblioteca de Estilo) que le
+  // toco a esta pieza segun su tipo, para que la IA de imagenes las use como
+  // anclaje visual real (no solo una descripcion en texto).
+  function fotosReferenciaEstilo(tipo: string): string[] {
+    const categoria = categoriaEstiloDeTipo(tipo);
+    const referencia = plan?.referenciasEstilo?.[categoria];
+    return (referencia?.imagenesUrls || []).slice(0, 2);
+  }
 
   async function subirImagen(supabase: any, imagen: string, idx: number): Promise<string | null> {
     if (!imagen) return null;
@@ -319,19 +529,23 @@ export default function RedesEstrategico() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           modo, tono,
+          tipo: pieza.tipo,
           diaNumero: pieza.dia,
           diaTitulo: pieza.promptVisual || pieza.titulo,
           textoImagen: pieza.titulo,
           fotos: fotosBase(),
+          referenciaFotos: fotosReferenciaEstilo(pieza.tipo),
         }),
       });
-      const data = await resp.json();
+      const data = await leerRespuesta(resp);
       if (data.imageUrl) {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i);
         const imagenFinal = urlGuardada || data.imageUrl;
         guardarImagenCaja(idGen, imagenFinal);
         desmarcarGenerando(idGen);
+        setSinCreditos(false);
+        setSaldo((s) => (s !== null && s > 0 ? s - 1 : s));
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           piezas[i] = { ...piezas[i], imagen: imagenFinal, generandoImg: false };
@@ -345,7 +559,7 @@ export default function RedesEstrategico() {
           return { ...prev, piezas };
         });
         desmarcarGenerando(idGen);
-        mostrarToast("No se pudo generar la imagen");
+        avisarErrorImagen(resp, data, "generar");
       }
     } catch {
       desmarcarGenerando(idGen);
@@ -376,19 +590,23 @@ export default function RedesEstrategico() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           modo, tono,
+          tipo: pieza.tipo,
           diaNumero: pieza.dia,
           diaTitulo: lamina.promptVisual || lamina.texto,
           textoImagen: lamina.texto,
           fotos: fotosBase(),
+          referenciaFotos: fotosReferenciaEstilo(pieza.tipo),
         }),
       });
-      const data = await resp.json();
+      const data = await leerRespuesta(resp);
       if (data.imageUrl) {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i * 100 + j);
         const imagenFinal = urlGuardada || data.imageUrl;
         guardarImagenCaja(idGen, imagenFinal);
         desmarcarGenerando(idGen);
+        setSinCreditos(false);
+        setSaldo((s) => (s !== null && s > 0 ? s - 1 : s));
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           const laminas = [...piezas[i].laminas];
@@ -406,7 +624,7 @@ export default function RedesEstrategico() {
           return { ...prev, piezas };
         });
         desmarcarGenerando(idGen);
-        mostrarToast("No se pudo generar la imagen");
+        avisarErrorImagen(resp, data, "generar");
       }
     } catch {
       desmarcarGenerando(idGen);
@@ -558,15 +776,17 @@ export default function RedesEstrategico() {
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ diaNumero: pieza.dia, imagenPrevia: pieza.imagen, instruccion: pieza.instruccionImg }),
+        body: JSON.stringify({ diaNumero: pieza.dia, tipo: pieza.tipo, imagenPrevia: pieza.imagen, instruccion: pieza.instruccionImg }),
       });
-      const data = await resp.json();
+      const data = await leerRespuesta(resp);
       if (data.imageUrl) {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i);
         const imagenFinal = urlGuardada || data.imageUrl;
         guardarImagenCaja(idGen, imagenFinal);
         desmarcarGenerando(idGen);
+        setSinCreditos(false);
+        setSaldo((s) => (s !== null && s > 0 ? s - 1 : s));
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           piezas[i] = { ...piezas[i], imagen: imagenFinal, generandoImg: false, editandoImg: false, instruccionImg: "" };
@@ -580,7 +800,7 @@ export default function RedesEstrategico() {
           piezas[i] = { ...piezas[i], generandoImg: false };
           return { ...prev, piezas };
         });
-        mostrarToast("No se pudo editar");
+        avisarErrorImagen(resp, data, "editar");
       }
     } catch {
       desmarcarGenerando(idGen);
@@ -609,15 +829,17 @@ export default function RedesEstrategico() {
     try {
       const resp = await fetch("/api/redes-campanas/imagen", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ diaNumero: pieza.dia, imagenPrevia: lamina.imagen, instruccion: lamina.instruccionImg }),
+        body: JSON.stringify({ diaNumero: pieza.dia, tipo: pieza.tipo, imagenPrevia: lamina.imagen, instruccion: lamina.instruccionImg }),
       });
-      const data = await resp.json();
+      const data = await leerRespuesta(resp);
       if (data.imageUrl) {
         const supabase = createClient();
         const urlGuardada = await subirImagen(supabase, data.imageUrl, i * 100 + j);
         const imagenFinal = urlGuardada || data.imageUrl;
         guardarImagenCaja(idGen, imagenFinal);
         desmarcarGenerando(idGen);
+        setSinCreditos(false);
+        setSaldo((s) => (s !== null && s > 0 ? s - 1 : s));
         setPlan((prev: any) => {
           const piezas = [...prev.piezas];
           const laminas = [...piezas[i].laminas];
@@ -635,7 +857,7 @@ export default function RedesEstrategico() {
           piezas[i] = { ...piezas[i], laminas };
           return { ...prev, piezas };
         });
-        mostrarToast("No se pudo editar");
+        avisarErrorImagen(resp, data, "editar");
       }
     } catch {
       desmarcarGenerando(idGen);
@@ -661,6 +883,17 @@ export default function RedesEstrategico() {
   const inputCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888]";
   const areaCls = "w-full bg-[#f0ead6] border border-[#d4cdb8] text-[#1a1a1a] rounded-md px-3 py-2 text-xs outline-none placeholder-[#888] resize-none";
   const labelCls = "text-[10px] font-bold tracking-widest uppercase text-[#FFF500] mb-1 block";
+
+  if (verificando) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#050505", display: "flex", alignItems: "center", justifyContent: "center", color: "#7A7772" }}>
+        Cargando...
+      </div>
+    );
+  }
+
+  // En LandCopy el Guardian ya protege la ruta; si no hay sesion, al login.
+  if (!haySesion) { if (typeof window !== "undefined") window.location.href = "/login"; return null; }
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F0E8]">
@@ -698,12 +931,137 @@ export default function RedesEstrategico() {
         </div>
       )}
 
+      {/* Oferta flotante: aparece cuando se acaban las imagenes teniendo una
+          campaña abierta, y acompaña al usuario mientras baja por sus piezas.
+          Va a la izquierda para no chocar con Leonel, que vive a la derecha. */}
+      {sinImagenes && plan && mostrarOferta && (
+        <div className="oferta fixed bottom-5 left-5 right-5 sm:right-auto sm:w-[330px] z-[55] rounded-2xl overflow-hidden border border-[rgba(255,245,0,0.4)] bg-[#12100a]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-16 -left-10 w-56 h-40 opacity-30 blur-[60px]"
+            style={{ background: "radial-gradient(ellipse at center, #FFF500 0%, #ff5000 60%, transparent 78%)" }}
+          />
+          <button
+            onClick={() => setMostrarOferta(false)}
+            className="absolute top-2.5 right-3 text-white/30 hover:text-white text-lg leading-none z-10"
+            aria-label="Cerrar oferta"
+          >
+            ×
+          </button>
+
+          <div className="relative p-5">
+            <div className="text-[10px] font-black tracking-[0.15em] uppercase text-[#FFF500]/70 mb-2">
+              Tu campaña está lista
+            </div>
+            <p className="font-black text-[17px] leading-snug mb-2">
+              Suscríbete y termina de darle imagen a cada pieza
+            </p>
+            <p className="text-white/55 text-[13px] leading-relaxed mb-4">
+              Desde <strong className="text-white">$9 al mes</strong> por 25 imágenes. Cancela
+              cuando quieras.
+            </p>
+            <button
+              onClick={() => router.push("/precios")}
+              className="w-full text-sm font-black text-[#0d0d0d] rounded-xl py-3 hover:brightness-110 transition-all"
+              style={{ background: "linear-gradient(90deg,#FFF500,#ffcc00)" }}
+            >
+              Ver planes →
+            </button>
+          </div>
+
+          <style jsx>{`
+            .oferta {
+              box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 34px rgba(255, 245, 0, 0.14);
+              animation: aparecer 0.45s ease-out both, latir 3.6s ease-in-out 0.45s infinite;
+            }
+            @keyframes aparecer {
+              from {
+                opacity: 0;
+                transform: translateY(22px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+            @keyframes latir {
+              0%,
+              100% {
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 28px rgba(255, 245, 0, 0.11);
+              }
+              50% {
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 56px rgba(255, 245, 0, 0.26);
+              }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .oferta {
+                animation: none;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#FFF500] text-[#0d0d0d] text-sm font-black px-4 py-3 rounded-lg z-50 shadow-lg">{toast}</div>
       )}
 
+      {/* Botones superiores: Biblioteca y Cerrar sesion */}
+      <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+        {saldo !== null && (
+          <button
+            onClick={() => router.push("/precios")}
+            title="Imágenes que te quedan · toca para ver planes"
+            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold border transition-colors ${
+              saldo === 0
+                ? "bg-[rgba(255,80,0,0.12)] border-[rgba(255,80,0,0.4)] text-orange-300 hover:bg-[rgba(255,80,0,0.2)]"
+                : "bg-[rgba(255,245,0,0.08)] border-[rgba(255,245,0,0.25)] text-[#FFF500] hover:bg-[rgba(255,245,0,0.15)]"
+            }`}
+          >
+            <span>🖼</span>
+            <span>{saldo}</span>
+            <span className="hidden sm:inline font-medium opacity-70">
+              {saldo === 1 ? "imagen" : "imágenes"}
+            </span>
+          </button>
+        )}
+        <button
+          onClick={() => router.push("/post")}
+          title="Una sola publicación, para hoy"
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-2 text-xs font-bold text-white/80 transition-colors"
+        >
+          Post de hoy
+        </button>
+        <button
+          onClick={() => router.push("/biblioteca")}
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-2 text-xs font-bold text-white/80 transition-colors"
+        >
+          Biblioteca
+        </button>
+        {esAdminEstilo && (
+          <button
+            onClick={() => router.push("/biblioteca-estilo")}
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-2 text-xs font-bold text-white/80 transition-colors"
+          >
+            Biblioteca de Estilo
+          </button>
+        )}
+        <button
+          onClick={async () => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            limpiarEstadoLocal();
+            window.location.href = "/login";
+          }}
+          className="flex items-center gap-2 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-full px-4 py-2 text-xs font-bold text-white/60 hover:text-red-300 transition-colors"
+        >
+          Cerrar sesion
+        </button>
+      </div>
+
       {/* HEADER */}
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 text-center">
+        <img src="/logo.png" alt="Social Red" className="h-16 md:h-20 w-auto mx-auto mb-4" />
         <div className="inline-flex items-center gap-2 text-white text-[9px] font-bold px-4 py-1.5 rounded-full mb-3 tracking-widest uppercase"
           style={{ background: "linear-gradient(90deg,#ff5000,#a855f7)" }}>
           ★ Powered by IA · Estrategia automática
@@ -823,6 +1181,10 @@ export default function RedesEstrategico() {
                   <input value={nOfrece} onChange={e => setNOfrece(e.target.value)} placeholder="Cortes, color, peinados" className={inputCls} /></div>
                 <div><span className={labelCls}>Ciudad</span>
                   <input value={nCiudad} onChange={e => setNCiudad(e.target.value)} placeholder="Medellín" className={inputCls} /></div>
+                <div><span className={labelCls}>Que te diferencia de la competencia?</span>
+                  <input value={nDiferenciador} onChange={e => setNDiferenciador(e.target.value)} placeholder="Unico que abre domingos, especialistas en..." className={inputCls} /></div>
+                <div><span className={labelCls}>A quien le hablas?</span>
+                  <input value={nPublico} onChange={e => setNPublico(e.target.value)} placeholder="Mujeres 25-45, jovenes universitarios..." className={inputCls} /></div>
               </div>
             </div>
           )}
@@ -928,12 +1290,19 @@ export default function RedesEstrategico() {
 
         {/* BOTÓN GENERAR */}
         <div className="bg-[#0a0a0a] border border-[rgba(255,245,0,0.25)] rounded-2xl p-5">
-          <button onClick={generar} disabled={!listo || generando}
-            className={`w-full rounded-xl py-4 text-base font-black transition-all ${listo && !generando ? "text-[#0d0d0d] cursor-pointer hover:brightness-110" : "text-[#0d0d0d] opacity-40 cursor-not-allowed"}`}
+          <button onClick={generar} disabled={!listo || generando || !!plan}
+            className={`w-full rounded-xl py-4 text-base font-black transition-all ${listo && !generando && !plan ? "text-[#0d0d0d] cursor-pointer hover:brightness-110" : "text-[#0d0d0d] opacity-40 cursor-not-allowed"}`}
             style={{ background: "linear-gradient(90deg,#FFF500,#ffcc00)" }}>
             {generando ? "⚙️ La IA está diseñando tu campaña... (20-40 seg)" : "⚡ Diseñar mi campaña estratégica"}
           </button>
-          {!listo && (
+          {plan && (
+            <p className="text-center text-[11px] text-[#7A7772] mt-2">
+              {planEsDeEsteModo
+                ? "Ya tienes esta campaña abierta. Ciérrala abajo para empezar otra."
+                : `Tienes una campaña abierta en ${NOMBRE_MODO[plan.modo] || plan.modo}. Ciérrala para empezar otra.`}
+            </p>
+          )}
+          {!plan && !listo && (
             <p className="text-center text-[10px] text-[#555] mt-2">
               {modo === "producto" ? "Agrega el nombre del producto para continuar"
               : modo === "negocio" ? "Agrega el nombre del negocio para continuar"
@@ -952,12 +1321,45 @@ export default function RedesEstrategico() {
           </div>
         )}
 
+
+        {/* Aviso: hay una campaña viva, pero en otro modo */}
+        {planEsDeOtroModo && (
+          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-[#7A7772]">
+              Tienes una campaña abierta en <strong className="text-white">{NOMBRE_MODO[plan.modo] || plan.modo}</strong>. Para empezar una aquí, ciérrala primero.
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModo(plan.modo)}
+                className="text-xs font-bold border border-[#333] hover:border-[#555] rounded-full px-4 py-2 text-white"
+              >
+                Ver esa campaña
+              </button>
+              <button
+                onClick={cancelarCampana}
+                className="text-xs font-bold border border-[rgba(255,80,80,0.3)] hover:border-[rgba(255,80,80,0.6)] rounded-full px-4 py-2 text-red-300"
+              >
+                Cerrar campaña
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* PLAN COMPLETO */}
-        {plan && (
+        {planEsDeEsteModo && (
           <>
             {/* Resumen estrategia */}
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">✨ Tu campaña estratégica</span>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500]">✨ Tu campaña estratégica</span>
+                <button
+                  onClick={cancelarCampana}
+                  title="Cierra esta campaña para poder empezar otra. Sigue guardada en tu Biblioteca."
+                  className="shrink-0 text-[11px] font-bold border border-[rgba(255,80,80,0.3)] hover:border-[rgba(255,80,80,0.6)] rounded-full px-3 py-1.5 text-red-300"
+                >
+                  Cancelar esta campaña
+                </button>
+              </div>
               <div className="text-[14px] text-white font-bold mb-2">💎 {plan.promesaPrincipal}</div>
               {Array.isArray(plan.arcoNarrativo) && (
                 <div className="flex flex-wrap gap-1.5 items-center mb-3">
@@ -1034,7 +1436,7 @@ export default function RedesEstrategico() {
                         <button onClick={() => toggleEditarPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar IA</button>
                         <button onClick={() => quitarImgPieza(i)} className="text-[9px] font-bold py-1.5 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                       </div>
-                      <button onClick={() => guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo, copy: [p.titulo, p.copy, p.cta].filter(Boolean).join("\n\n") })} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Biblioteca</button>
+                      <button onClick={() => guardarImgBiblioteca(p.imagen, `Día ${p.dia}`, { dia: p.dia, tema: p.titulo, copy: [p.titulo, p.copy, p.cta].filter(Boolean).join("\n\n") })} className="w-full mt-1 text-[9px] font-bold py-1.5 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar en Galería</button>
                       {p.editandoImg && (
                         <div className="mt-2 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-2">
                           <input value={p.instruccionImg || ""} onChange={e => cambiarInstruccionPieza(i, e.target.value)}
@@ -1048,11 +1450,19 @@ export default function RedesEstrategico() {
                       )}
                     </div>
                   ) : (
-                    <button onClick={() => generarImagenPieza(i)} disabled={modo === "producto" && !pImagen}
-                      className="text-[11px] font-bold py-2.5 px-4 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40 transition-all">
-                      🎨 Generar imagen real
-                      {modo === "producto" && !pImagen && <span className="block text-[8px] text-[#7A7772] font-normal mt-0.5">Sube una foto del producto arriba primero</span>}
-                    </button>
+                    sinImagenes ? (
+                      <button onClick={() => router.push("/precios")}
+                        className="text-[11px] font-black py-2.5 px-4 rounded-lg text-[#0d0d0d]"
+                        style={{ background: "linear-gradient(90deg,#FFF500,#ffcc00)" }}>
+                        Sin imágenes · Ver planes
+                      </button>
+                    ) : (
+                      <button onClick={() => generarImagenPieza(i)} disabled={modo === "producto" && !pImagen}
+                        className="text-[11px] font-bold py-2.5 px-4 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40 transition-all">
+                        🎨 Generar imagen real
+                        {modo === "producto" && !pImagen && <span className="block text-[8px] text-[#7A7772] font-normal mt-0.5">Sube una foto del producto arriba primero</span>}
+                      </button>
+                    )
                   )}
                 </div>
 
@@ -1090,7 +1500,7 @@ export default function RedesEstrategico() {
                                 <button onClick={() => toggleEditarLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.15)] border border-[rgba(168,85,247,0.4)] text-purple-300">🖌️ Editar</button>
                                 <button onClick={() => quitarImgLamina(i, j)} className="text-[8px] font-bold py-1 rounded bg-[rgba(255,80,80,0.1)] border border-[rgba(255,80,80,0.3)] text-red-300">🗑️ Quitar</button>
                               </div>
-                              <button onClick={() => guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto, copy: l.texto })} className="w-full mt-1 text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Guardar</button>
+                              <button onClick={() => guardarImgBiblioteca(l.imagen, `Día ${p.dia} · Lámina ${j + 1}`, { dia: p.dia, lamina: j + 1, tema: l.texto, copy: l.texto })} className="w-full mt-1 text-[8px] font-bold py-1 rounded bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.4)] text-purple-300">📚 Galería</button>
                               {l.editandoImg && (
                                 <div className="mt-1.5 bg-[#0d0d0d] border border-[rgba(168,85,247,0.3)] rounded-lg p-1.5">
                                   <input value={l.instruccionImg || ""} onChange={e => cambiarInstruccionLamina(i, j, e.target.value)}
@@ -1104,10 +1514,18 @@ export default function RedesEstrategico() {
                               )}
                             </div>
                           ) : (
-                            <button onClick={() => generarImagenLamina(i, j)} disabled={modo === "producto" && !pImagen}
-                              className="w-full mt-2 text-[9px] font-bold py-2 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40">
-                              🎨 Generar imagen
-                            </button>
+                            sinImagenes ? (
+                              <button onClick={() => router.push("/precios")}
+                                className="w-full mt-2 text-[9px] font-black py-2 rounded-lg text-[#0d0d0d]"
+                                style={{ background: "linear-gradient(90deg,#FFF500,#ffcc00)" }}>
+                                Sin imágenes · Ver planes
+                              </button>
+                            ) : (
+                              <button onClick={() => generarImagenLamina(i, j)} disabled={modo === "producto" && !pImagen}
+                                className="w-full mt-2 text-[9px] font-bold py-2 rounded-lg bg-[rgba(255,80,0,0.12)] border border-orange-500 text-orange-400 disabled:opacity-40">
+                                🎨 Generar imagen
+                              </button>
+                            )
                           )}
                         </div>
                       ))}
