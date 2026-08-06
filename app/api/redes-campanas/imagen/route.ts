@@ -43,7 +43,7 @@ function construirPrompt(body: any): string {
     escena = `Professional personal brand social media post. Inspirational and authoritative.`;
   }
  
-  return `${escena} ${fidelidad} Theme of the post: "${diaTitulo}". ${climaTexto} MUST include this exact short bold text overlay on the image (do not add any other text, do not write any labels): "${texto}". Tone: ${tono || "professional"}. Latin American audience. Modern, scroll-stopping, high quality. Square 1024x1024.`;
+  return `${escena} ${fidelidad} Theme of the post: "${diaTitulo}". ${climaTexto} Render ON the image EXACTLY this text, spelled perfectly, nothing added and nothing removed: "${texto}". LAYOUT: the first line is the bold headline; each following line is a short benefit shown in its own clean rounded box/pill with a small icon or emoji, arranged as a tidy vertical list — matching the reference style (typography, colors, boxes and icons). Keep all text perfectly legible and correctly spelled; do not invent extra words, labels or numbers. Tone: ${tono || "professional"}. Latin American audience. Modern, scroll-stopping, high quality. Square 1024x1024.`;
 }
  
 // Convierte una imagen (data:base64 o http) a Buffer.
