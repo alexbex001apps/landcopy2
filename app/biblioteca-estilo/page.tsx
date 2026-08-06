@@ -178,10 +178,10 @@ export default function BibliotecaEstilo() {
             <p className="text-white/50 text-sm">Banco global de referencias reales para inspirar a la IA (no plantillas fijas).</p>
           </div>
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/admin")}
             className="text-sm text-white/60 hover:text-white border border-white/10 rounded-full px-4 py-2"
           >
-            Volver
+            ← Admin
           </button>
         </div>
 

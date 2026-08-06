@@ -53,10 +53,20 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-[#050505] px-4 py-6">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-3">
           <span className="text-yellow-400 font-bold text-base">LandCopy</span>
           <span className="bg-[#ff5000] text-white text-[10px] px-2 py-0.5 rounded-md">Admin</span>
         </div>
+
+        {/* Accesos de administracion */}
+        <a href="/biblioteca-estilo" className="flex items-center justify-between bg-[#0d0d0d] border border-purple-500/40 rounded-2xl px-4 py-3 mb-5 hover:border-purple-500 transition-colors">
+          <div>
+            <div className="text-white text-sm font-bold">📚 Biblioteca de Estilo</div>
+            <div className="text-zinc-500 text-xs">Agregar o quitar estilos de referencia (banco global)</div>
+          </div>
+          <span className="text-purple-300 text-lg">→</span>
+        </a>
+
         <h1 className="text-white text-lg font-medium">Planes de usuarios</h1>
         <p className="text-zinc-500 text-xs mb-4">Toca el plan que quieres darle a cada quien</p>
 
