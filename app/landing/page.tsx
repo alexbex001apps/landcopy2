@@ -250,17 +250,26 @@ export default function Landing() {
 
   const [whatsappNum, setWhatsappNum] = useState("");
   const [modoBoton, setModoBoton] = useState("whatsapp");
+  const [pixelId, setPixelId] = useState("");
 
   useEffect(() => {
     const guardado = sessionStorage.getItem("landing_whatsapp");
     if (guardado) setWhatsappNum(guardado);
     const modoG = sessionStorage.getItem("landing_modo_boton");
     if (modoG) setModoBoton(modoG);
+    const px = sessionStorage.getItem("landing_pixel");
+    if (px) setPixelId(px);
   }, []);
 
   const cambiarWhatsapp = (v: string) => {
     setWhatsappNum(v);
     try { sessionStorage.setItem("landing_whatsapp", v); } catch {}
+  };
+
+  const cambiarPixel = (v: string) => {
+    const soloNumeros = v.replace(/[^0-9]/g, "");
+    setPixelId(soloNumeros);
+    try { sessionStorage.setItem("landing_pixel", soloNumeros); } catch {}
   };
 
   const cambiarModo = (m: string) => {
@@ -480,6 +489,11 @@ export default function Landing() {
     const fnt = FUENTES_LANDING.find(f => f.id === fuenteLanding) || FUENTES_LANDING[0];
     const tam = TAMANOS_LANDING.find(t => t.id === tamanoLanding) || TAMANOS_LANDING[1];
     const linkFuente = fnt.id === "sistema" ? "" : `<link href="https://fonts.googleapis.com/css2?family=${fnt.nombre.replace(/ /g, "+")}:wght@400;700&display=swap" rel="stylesheet">`;
+
+    // Meta Pixel del vendedor (cada quien el suyo). Base + PageView al cargar,
+    // y lcLead() dispara "Lead" al tocar Comprar. Vacio si no puso pixel.
+    const px = pixelId.replace(/[^0-9]/g, "");
+    const pixelHTML = px ? `<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${px}');fbq('track','PageView');function lcLead(){try{fbq('track','Lead');}catch(e){}}</script><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${px}&ev=PageView&noscript=1"/></noscript>` : `<script>function lcLead(){}</script>`;
     const formHTML = modoBoton === "formulario" ? `
   <div id="lc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-end;justify-content:center">
     <div style="background:#f0ead6;width:100%;max-width:480px;max-height:94%;overflow-y:auto;border-radius:18px 18px 0 0;box-sizing:border-box">
@@ -536,13 +550,13 @@ export default function Landing() {
         const conPipes = limpio.replace(/^(.+?)\s*\|\s*(.+)$/gim, "<strong>$1</strong><br>$2").replace(/\s*—\s*([A-ZÁÉÍÓÚÑ][^\n]*)$/gim, '<br><strong style="opacity:0.8">— $1</strong>\n');
         const txt = contenido[s.id] ? `<div class="lc-txt"><p>${conPipes.replace(/\n/g, "<br>")}</p></div>` : "";
         const msg = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
-        const btn = (whatsappNum && posBtn.includes(i)) ? (modoBoton === "formulario" ? `<div class="lc-cta"><a class="lc-btn" href="javascript:void(0)" onclick="lcAbrir()">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>`) : "";
+        const btn = (whatsappNum && posBtn.includes(i)) ? (modoBoton === "formulario" ? `<div class="lc-cta"><a class="lc-btn" href="javascript:void(0)" onclick="lcLead();lcAbrir()">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>` : `<div class="lc-cta"><a class="lc-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msg}" onclick="lcLead()">Comprar ahora</a><div class="lc-sello">🚚 PAGO CONTRA ENTREGA</div></div>`) : "";
         return `  <section class="lc-sec">${img}${txt}${btn}</section>`;
       })
       .join("\n");
     const msgMenu = encodeURIComponent(`Hola, quiero comprar ${datosActivos.nombre || datosActivos.producto || "el producto"}`);
-    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? (modoBoton === "formulario" ? `<a class="lc-menu-btn" href="javascript:void(0)" onclick="lcAbrir()">Comprar</a>` : `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}">Comprar</a>`) : ""}</header>`;
-    return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}<div class="lc-landing">${menu}${formHTML}
+    const menu = `  <header class="lc-menu"><span class="lc-marca">${datosActivos.nombre || datosActivos.producto || "Mi producto"}</span>${whatsappNum ? (modoBoton === "formulario" ? `<a class="lc-menu-btn" href="javascript:void(0)" onclick="lcLead();lcAbrir()">Comprar</a>` : `<a class="lc-menu-btn" href="https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}?text=${msgMenu}" onclick="lcLead()">Comprar</a>`) : ""}</header>`;
+    return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${linkFuente}${pixelHTML}<div class="lc-landing">${menu}${formHTML}
   <style>
     .lc-landing{max-width:560px;margin:0 auto;font-family:${fnt.css};color:${col.texto};line-height:1.5;background:${col.hex}}
     .lc-landing *{box-sizing:border-box;margin:0}
@@ -1236,6 +1250,11 @@ ${bloques}
                     <button onClick={() => cambiarModo("formulario")} className={`flex-1 text-[11px] font-bold py-2 rounded-lg transition-all ${modoBoton === "formulario" ? "bg-[#ff5000] text-white" : "bg-transparent text-zinc-500 border border-[#333]"}`}>Formulario</button>
                   </div>
                   <p className="text-zinc-600 text-[9px] mt-1.5">{modoBoton === "whatsapp" ? "El botón Comprar abre WhatsApp al instante." : "El cliente llena sus datos antes de ir a WhatsApp."}</p>
+                </div>
+                <div className="mb-3">
+                  <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider mb-2">📊 Tu Pixel de Meta (opcional)</p>
+                  <input value={pixelId} onChange={e => cambiarPixel(e.target.value)} placeholder="Ej: 1234567890123456" className="w-full bg-[#f0ead6] text-black text-[12px] px-2.5 py-2 rounded-lg outline-none" />
+                  <p className="text-zinc-600 text-[9px] mt-1">Rastrea tus ventas en TU cuenta de anuncios de Facebook. Dispara PageView al abrir y Lead al tocar Comprar. Déjalo vacío si no usas anuncios.</p>
                 </div>
                 <div className="space-y-1.5">
                   <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
