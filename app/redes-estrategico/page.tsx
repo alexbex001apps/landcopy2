@@ -1076,6 +1076,15 @@ export default function RedesEstrategico() {
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20 mt-6 space-y-6">
 
+        {/* Acceso a la biblioteca de productos */}
+        <a href="/productos" className="flex items-center justify-between bg-[#0a0a0a] border border-orange-500/40 rounded-2xl px-4 py-3 hover:border-orange-500 transition-colors">
+          <div>
+            <div className="text-white text-sm font-bold">📦 Mi biblioteca de productos</div>
+            <div className="text-[#7A7772] text-[11px]">Crea tus productos una vez y elígelos al armar campañas</div>
+          </div>
+          <span className="text-orange-400 text-lg">→</span>
+        </a>
+
         {/* PASO 1 — MODO */}
         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5">
           <span className="text-xs font-bold tracking-widest uppercase text-[#FFF500] mb-3 block">1 · ¿Qué vas a promocionar?</span>
