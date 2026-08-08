@@ -81,6 +81,30 @@ export default function RedesEstrategico() {
   const [pProblema, setPProblema] = useState("");
   const pFileRef = useRef<HTMLInputElement>(null);
 
+  // Selector de la biblioteca de productos (Fase 2)
+  const [libProductos, setLibProductos] = useState<any[]>([]);
+  const [pickerAbierto, setPickerAbierto] = useState(false);
+  const [libCargando, setLibCargando] = useState(false);
+
+  async function abrirPicker() {
+    setPickerAbierto(true);
+    setLibCargando(true);
+    try {
+      const r = await fetch("/api/productos").then((x) => x.json());
+      setLibProductos(r.productos || []);
+    } catch {}
+    setLibCargando(false);
+  }
+
+  function elegirDeBiblioteca(p: any) {
+    setPNombre(p.nombre || "");
+    setPBeneficio(p.beneficio || (Array.isArray(p.beneficios) ? p.beneficios.join(", ") : ""));
+    setPProblema(p.problema || "");
+    const primera = Array.isArray(p.imagenes) && p.imagenes[0]?.url ? p.imagenes[0].url : null;
+    if (primera) setPImagen(primera);
+    setPickerAbierto(false);
+  }
+
   const [pIdentificando, setPIdentificando] = useState(false);
   const [toast, setToast] = useState("");
   const [sinCreditos, setSinCreditos] = useState(false);
@@ -931,6 +955,43 @@ export default function RedesEstrategico() {
         </div>
       )}
 
+      {/* Selector de la biblioteca de productos (Fase 2) */}
+      {pickerAbierto && (
+        <div onClick={() => setPickerAbierto(false)} className="fixed inset-0 z-[9998] bg-black/80 flex items-center justify-center p-4">
+          <div onClick={(e) => e.stopPropagation()} className="bg-[#0a0a0a] border border-orange-500/40 rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white text-base font-bold">📦 Elige un producto</p>
+              <button onClick={() => setPickerAbierto(false)} className="text-zinc-500 text-xl leading-none px-2">×</button>
+            </div>
+            {libCargando ? (
+              <p className="text-zinc-500 text-sm py-6 text-center">Cargando...</p>
+            ) : libProductos.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">📦</div>
+                <p className="text-white text-sm font-bold mb-1">No tienes productos aún</p>
+                <p className="text-zinc-500 text-xs mb-4">Créalos en tu biblioteca y aparecerán aquí.</p>
+                <a href="/productos" className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-xl">Ir a mi biblioteca</a>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {libProductos.map((p) => (
+                  <button key={p.id} onClick={() => elegirDeBiblioteca(p)} className="w-full flex items-center gap-3 bg-[#111] border border-[#1a1a1a] hover:border-orange-500 rounded-xl p-2.5 text-left transition-colors">
+                    {p.imagenes?.[0]?.url
+                      ? <img src={p.imagenes[0].url} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                      : <div className="w-12 h-12 bg-[#1a1a1a] rounded-lg flex items-center justify-center flex-shrink-0">📦</div>}
+                    <div className="min-w-0">
+                      <p className="text-white text-sm font-bold truncate">{p.nombre}</p>
+                      <p className="text-zinc-500 text-[11px] truncate">{p.beneficio || p.descripcion || ""}</p>
+                    </div>
+                  </button>
+                ))}
+                <a href="/productos" className="block text-center text-orange-400 text-xs font-bold py-2 hover:text-orange-300">+ Administrar mi biblioteca</a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Oferta flotante: aparece cuando se acaban las imagenes teniendo una
           campaña abierta, y acompaña al usuario mientras baja por sus piezas.
           Va a la izquierda para no chocar con Leonel, que vive a la derecha. */}
@@ -1117,6 +1178,10 @@ export default function RedesEstrategico() {
           </span>
 
           {modo === "producto" && (
+            <div>
+            <button onClick={abrirPicker} className="w-full mb-4 bg-[#0d0d0d] border border-orange-500/50 text-orange-300 text-sm font-bold py-2.5 rounded-xl hover:bg-orange-500/10 transition-colors">
+              📦 Elegir de mi biblioteca de productos
+            </button>
             <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-4">
               <div>
                 <span className={labelCls}>Foto del producto</span>
@@ -1151,6 +1216,7 @@ export default function RedesEstrategico() {
                 <div><span className={labelCls}>Problema que resuelve</span>
                   <input value={pProblema} onChange={e => setPProblema(e.target.value)} placeholder="Ej: Dolor de rodilla al caminar" className={inputCls} /></div>
               </div>
+            </div>
             </div>
           )}
 
