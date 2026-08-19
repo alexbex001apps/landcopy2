@@ -1120,19 +1120,34 @@ export default function RedesEstrategico() {
         </button>
       </div>
 
-      {/* HEADER */}
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 text-center">
-        <img src="/logo.png" alt="Social Red" className="h-16 md:h-20 w-auto mx-auto mb-4" />
-        <div className="inline-flex items-center gap-2 text-white text-[9px] font-bold px-4 py-1.5 rounded-full mb-3 tracking-widest uppercase"
-          style={{ background: "linear-gradient(90deg,#ff5000,#a855f7)" }}>
-          ★ Powered by IA · Estrategia automática
+      {/* HEADER — icono a la izquierda, mismo patron que los demas modulos */}
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 pb-0">
+        <div className="flex flex-col md:flex-row items-center mb-0">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#0d001a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="md:w-[38px] md:h-[38px]">
+                <rect x="5" y="7" width="22" height="20" rx="3" stroke="white" strokeWidth="1.6"/>
+                <path d="M5 12h22" stroke="white" strokeWidth="1.6"/>
+                <path d="M11 4v5M21 4v5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+                <path d="M16 16l1.4 3.1 3.4.3-2.6 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.6-2.2 3.4-.3z" fill="white"/>
+              </svg>
+            </div>
+            <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase leading-tight">Social Planner</p>
+          </div>
+          <div className="flex-1 text-center md:px-5">
+            <div className="inline-flex items-center gap-2 text-white text-[9px] font-bold px-4 py-1.5 rounded-full mb-3 tracking-widest uppercase"
+              style={{ background: "linear-gradient(90deg,#ff5000,#a855f7)" }}>
+              ★ Powered by IA · Estrategia automática
+            </div>
+            <h1 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight">
+              Tu <span className="text-[#FFF500]">Director de Marketing</span> con IA
+            </h1>
+            <p className="text-[13px] text-[#C8C3B7] max-w-[560px] mx-auto">
+              No genera publicaciones sueltas. Diseña una <b className="text-white">campaña completa y coherente</b>: decide formatos, narrativa y objetivos día a día.
+            </p>
+          </div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"160px"}}></div>
         </div>
-        <h1 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight">
-          Tu <span className="text-[#FFF500]">Director de Marketing</span> con IA
-        </h1>
-        <p className="text-[13px] text-[#C8C3B7] max-w-[560px] mx-auto">
-          No genera publicaciones sueltas. Diseña una <b className="text-white">campaña completa y coherente</b>: decide formatos, narrativa y objetivos día a día.
-        </p>
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20 mt-6 space-y-6">

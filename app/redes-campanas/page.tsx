@@ -715,14 +715,26 @@ export default function RedesCampanas() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-16 pb-0">
-        <div className="max-w-[700px] mx-auto text-center mb-6">
-          <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
-            IA GENERATIVA · CAMPAÑAS DE REDES
+        {/* Header — icono a la izquierda, mismo patron que los demas modulos */}
+        <div className="flex flex-col md:flex-row items-center mb-6">
+          <div className="flex items-center justify-center gap-2 flex-shrink-0 mb-3 md:mb-0 md:w-[160px]">
+            <div className="w-[56px] h-[56px] md:w-[72px] md:h-[72px] rounded-full bg-[#1a1400] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="md:w-[38px] md:h-[38px]">
+                <path d="M18 3L7 18h7l-2 11 11-15h-7l2-11z" fill="white" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p className="text-white text-[14px] font-bold tracking-[0.12em] uppercase leading-tight">Red-Express</p>
           </div>
-          <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
-            Lanza campañas completas que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
-          </h1>
-          <p className="text-yellow-400 text-[11px] px-2">Elige el modo y el nivel · la IA arma los días completos para cada red</p>
+          <div className="flex-1 text-center md:px-5">
+            <div className="inline-flex items-center gap-2 bg-orange-500 text-white text-[9px] font-bold px-3 py-1 rounded-full mb-2 tracking-widest">
+              IA GENERATIVA · CAMPAÑAS DE REDES
+            </div>
+            <h1 className="text-lg md:text-xl font-black text-white mb-1 px-2">
+              Lanza campañas completas que <span style={{color:"#cc0000"}}>venden</span> y <span className="text-green-400">viralizan</span>
+            </h1>
+            <p className="text-yellow-400 text-[11px] px-2">Elige el modo y el nivel · la IA arma los días completos para cada red</p>
+          </div>
+          <div className="flex-shrink-0 hidden md:block" style={{width:"160px"}}></div>
         </div>
       </div>
 
