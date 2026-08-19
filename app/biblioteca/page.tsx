@@ -63,6 +63,8 @@ export default function Biblioteca() {
   const [modalMover, setModalMover] = useState<string | null>(null);
   const [modalNotas, setModalNotas] = useState<string | null>(null);
   const [modalEditarCarpeta, setModalEditarCarpeta] = useState<Carpeta | null>(null);
+  // Visor de una landing guardada (sus secciones con texto, imagenes y videos)
+  const [modalLanding, setModalLanding] = useState<BibliotecaItem | null>(null);
   const [editCarpetaNombre, setEditCarpetaNombre] = useState("");
   const [editCarpetaDescripcion, setEditCarpetaDescripcion] = useState("");
   const [editCarpetaResponsable, setEditCarpetaResponsable] = useState("");
@@ -248,11 +250,25 @@ export default function Biblioteca() {
     showToast("Copiado al portapapeles");
   };
  
-  const descargar = (imageUrl: string, nombre: string) => {
-    const a = document.createElement("a");
-    a.href = imageUrl;
-    a.download = `${nombre.replace(/\s+/g, "-")}.png`;
-    a.click();
+  // Descarga real via blob: el atributo download no funciona con archivos de
+  // otro dominio (Supabase Storage), abre el archivo en vez de bajarlo.
+  // La extension sale de la URL, para no ponerle .png a un video.
+  const descargar = async (url: string, nombre: string) => {
+    const ext = url.split("?")[0].match(/\.(mp4|webm|png|jpe?g|webp)$/i)?.[1]?.toLowerCase() || "png";
+    const archivo = `${nombre.replace(/\s+/g, "-")}.${ext}`;
+    try {
+      const blob = await fetch(url).then(r => r.blob());
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = archivo;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(url, "_blank"); // si falla, al menos lo abrimos
+    }
   };
  
   const showToast = (msg: string) => {
@@ -366,6 +382,68 @@ export default function Biblioteca() {
           </div>
         </div>
       )}
+      {/* Visor de landing completa: recorre las secciones guardadas y muestra
+          el texto, la imagen y el video de cada una. Las landings viejas solo
+          traen textos (se guardaban sin imagenes), asi que todo es opcional. */}
+      {modalLanding && (() => {
+        let datos: any = {};
+        try { datos = JSON.parse(modalLanding.contenido || "{}"); } catch {}
+        const textos: Record<string, string> = datos.secciones || {};
+        const imgs: Record<string, string> = datos.imagenes || {};
+        const vids: Record<string, string> = datos.videos || {};
+        const ids: string[] = datos.orden?.length
+          ? datos.orden
+          : Array.from(new Set([...Object.keys(textos), ...Object.keys(imgs), ...Object.keys(vids)]));
+
+        return (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center px-4 py-8 overflow-y-auto" onClick={() => setModalLanding(null)}>
+            <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-2xl p-5 w-full max-w-lg my-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <h2 className="text-white font-bold text-sm">🖥️ {modalLanding.nombre}</h2>
+                <button onClick={() => setModalLanding(null)} className="text-zinc-500 hover:text-white text-lg leading-none flex-shrink-0">✕</button>
+              </div>
+              <p className="text-yellow-400 text-[10px] mb-4">
+                {ids.length} secciones · {Object.keys(imgs).length} imágenes · {Object.keys(vids).length} videos
+              </p>
+
+              {ids.length === 0 ? (
+                <p className="text-zinc-500 text-xs">Esta landing no tiene contenido guardado.</p>
+              ) : (
+                <div className="space-y-4">
+                  {ids.map((id) => (
+                    <div key={id} className="border border-[#1a1a1a] rounded-xl p-3 bg-[#080808]">
+                      <p className="text-orange-400 text-[9px] font-bold uppercase tracking-widest mb-2">{id.replace(/_/g, " ")}</p>
+                      {vids[id] && (
+                        <video src={vids[id]} controls playsInline className="w-full rounded-lg mb-2 bg-black" />
+                      )}
+                      {imgs[id] && !vids[id] && (
+                        <img src={imgs[id]} alt={id} className="w-full rounded-lg mb-2" loading="lazy" />
+                      )}
+                      {textos[id] && (
+                        <p className="text-[#f0ead6] text-[11px] leading-relaxed whitespace-pre-line">{textos[id]}</p>
+                      )}
+                      <div className="flex gap-1.5 mt-2">
+                        {imgs[id] && (
+                          <button onClick={() => descargar(imgs[id], `${modalLanding.nombre}-${id}`)} className="bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold px-2 py-1 rounded-lg">⬇ Imagen</button>
+                        )}
+                        {vids[id] && (
+                          <button onClick={() => descargar(vids[id], `${modalLanding.nombre}-${id}`)} className="bg-[#111] border border-purple-500/30 text-purple-400 text-[9px] font-bold px-2 py-1 rounded-lg">⬇ Video</button>
+                        )}
+                        {textos[id] && (
+                          <button onClick={() => copiar(textos[id], `${modalLanding.id}-${id}`)} className="bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold px-2 py-1 rounded-lg">
+                            {copiado === `${modalLanding.id}-${id}` ? "✓ Copiado" : "📋 Texto"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Modal notas */}
       {modalNotas && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setModalNotas(null)}>
@@ -579,10 +657,13 @@ export default function Biblioteca() {
                   )}
  
                   <div className="flex gap-1.5">
+                    {item.tipo === "landing" && (
+                      <button onClick={() => setModalLanding(item)} className="flex-1 bg-[#111] border border-orange-500/30 text-orange-400 text-[9px] font-bold py-1.5 rounded-lg">👁 Ver todo</button>
+                    )}
                     {item.imagen_url && (
                       <button onClick={() => descargar(item.imagen_url!, item.nombre)} className="flex-1 bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-1.5 rounded-lg">⬇</button>
                     )}
-                    {item.contenido && (
+                    {item.tipo !== "landing" && item.contenido && (
                       <button onClick={() => copiar(item.contenido!, item.id)} className="flex-1 bg-[#111] border border-[#1a1a1a] text-yellow-400 text-[9px] font-bold py-1.5 rounded-lg">
                         {copiado === item.id ? "✓" : "📋"}
                       </button>

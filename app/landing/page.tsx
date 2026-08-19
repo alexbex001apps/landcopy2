@@ -126,6 +126,8 @@ export default function Landing() {
   const [mostrarFondos, setMostrarFondos] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [guardandoSeccion, setGuardandoSeccion] = useState(false);
+  // Guardar la landing completa tarda: sube una imagen por seccion a Storage
+  const [guardandoLanding, setGuardandoLanding] = useState(false);
   const [fNombre, setFNombre] = useState("");
   const [fProducto, setFProducto] = useState("");
   const [fProblema, setFProblema] = useState("");
@@ -655,35 +657,83 @@ ${bloques}
   };
 
   const guardarEnBiblioteca = async () => {
-    const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id]);
+    const seccionesConContenido = secciones.filter(s => contenido[s.id] || imagenes[s.id] || videosSecc[s.id]);
     if (seccionesConContenido.length === 0) return;
+    setGuardandoLanding(true);
     const producto = datosActivos.producto || "Producto";
     const nombre = `${producto} — Landing completa`;
     const { data: { user } } = await supabase.auth.getUser();
-    let heroUrl: string | null = null;
-    if (imagenes["hero"] && imagenes["hero"].startsWith("data:")) {
+
+    // Sube UNA imagen a Storage y devuelve su URL publica.
+    // Las imagenes recien generadas son data: URLs (base64) y viven solo en la
+    // memoria del navegador: si no se suben, al recargar la biblioteca no queda
+    // nada. Las que ya son http se dejan como estan.
+    const subirImagen = async (base64: string, seccionId: string): Promise<string | null> => {
+      if (!base64) return null;
+      if (base64.startsWith("http")) return base64;
+      if (!base64.startsWith("data:")) return null;
       try {
-        const blob = await fetch(imagenes["hero"]).then(r => r.blob());
-        const path = `${user?.id}/${Date.now()}_hero.png`;
+        const blob = await fetch(base64).then(r => r.blob());
+        const path = `${user?.id}/${Date.now()}_${seccionId}.png`;
         await supabase.storage.from("biblioteca-images").upload(path, blob, { contentType: "image/png" });
         const { data: urlData } = supabase.storage.from("biblioteca-images").getPublicUrl(path);
-        heroUrl = urlData.publicUrl;
-      } catch {}
-    } else {
-      heroUrl = imagenes["hero"] || null;
+        return urlData.publicUrl;
+      } catch {
+        return null;
+      }
+    };
+
+    // Guardar TODAS las secciones que tengan algo, no solo el hero.
+    const imagenesGuardadas: Record<string, string> = {};
+    for (const s of seccionesConContenido) {
+      const url = await subirImagen(imagenes[s.id], s.id);
+      if (url) imagenesGuardadas[s.id] = url;
     }
+
+    // Los videos ya viven en Storage (el modulo de video los sube al generarlos),
+    // asi que se guardan sus URLs tal cual.
+    const videosGuardados: Record<string, string> = {};
+    for (const s of seccionesConContenido) {
+      if (videosSecc[s.id]) videosGuardados[s.id] = videosSecc[s.id];
+    }
+
+    // La portada de la tarjeta en Biblioteca: el hero si existe, si no la
+    // primera imagen que haya (una landing puede no tener hero generado).
+    const portada = imagenesGuardadas["hero"] || Object.values(imagenesGuardadas)[0] || null;
+
     await fetch("/api/biblioteca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tipo: "landing", modulo: "landing", nombre, producto,
-        contenido: JSON.stringify({ secciones: contenido }),
-        imagen_url: heroUrl,
-        metadata: { secciones: Object.keys(contenido) },
+        // El contenido guarda la landing entera: textos, imagenes y videos por
+        // seccion, mas el estilo, para poder reconstruirla despues.
+        contenido: JSON.stringify({
+          secciones: contenido,
+          imagenes: imagenesGuardadas,
+          videos: videosGuardados,
+          orden: ordenSecciones.map(s => s.id),
+          color: colorLanding,
+          fuente: fuenteLanding,
+        }),
+        imagen_url: portada,
+        metadata: {
+          secciones: seccionesConContenido.map(s => s.id),
+          totalImagenes: Object.keys(imagenesGuardadas).length,
+          totalVideos: Object.keys(videosGuardados).length,
+        },
       }),
     });
     sessionStorage.removeItem("biblioteca_items");
-    showToast("✓ Landing guardada en Biblioteca");
+    setGuardandoLanding(false);
+    const nImg = Object.keys(imagenesGuardadas).length;
+    const nVid = Object.keys(videosGuardados).length;
+    const detalle = [
+      `${seccionesConContenido.length} secciones`,
+      nImg ? `${nImg} imágenes` : "",
+      nVid ? `${nVid} video${nVid > 1 ? "s" : ""}` : "",
+    ].filter(Boolean).join(" · ");
+    showToast(`✓ Landing guardada (${detalle})`);
   };
  
   useEffect(() => {
@@ -1259,7 +1309,7 @@ ${bloques}
                 <div className="space-y-1.5">
                   <button onClick={() => { navigator.clipboard.writeText(generarHTML()); showToast("✓ HTML copiado — pégalo en Shopify"); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black text-[12px] font-black py-2.5 rounded-lg transition-all active:scale-95">📋 Copiar HTML</button>
                   <button onClick={() => { const html = generarHTML(); const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(datosActivos.producto || "landing").toLowerCase().replace(/\s+/g, "-")}.html`; a.click(); URL.revokeObjectURL(url); showToast("✓ HTML descargado"); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-bold py-2.5 rounded-lg transition-all active:scale-95">⬇ Descargar HTML</button>
-                  <button onClick={() => guardarEnBiblioteca()} className="w-full border border-purple-500/40 text-purple-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform">💾 Guardar en Biblioteca</button>
+                  <button onClick={() => guardarEnBiblioteca()} disabled={guardandoLanding} className="w-full border border-purple-500/40 text-purple-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed">{guardandoLanding ? "⏳ Guardando todo..." : "💾 Guardar en Biblioteca"}</button>
                   <button onClick={publicarLanding} disabled={publicando} className="w-full bg-[#25d366] text-white text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 mt-2">{publicando ? "⟳ Publicando..." : "🔗 Publicar y obtener link"}</button>
                   {linkPublicado && (
                     <div className="mt-2 bg-[#0e0e0e] border border-[#25d366] rounded-lg p-2.5">
