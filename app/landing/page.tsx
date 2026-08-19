@@ -118,6 +118,9 @@ export default function Landing() {
   const [imagenes, setImagenes] = useState<Record<string, string>>({});
   const [videosSecc, setVideosSecc] = useState<Record<string, string>>({});
   const [imagenGenerando, setImagenGenerando] = useState<string[]>([]);
+  // Secciones cuya imagen fallo, con el motivo. Sin esto el spinner se quedaba
+  // girando para siempre y no habia forma de saber si seguia trabajando o murio.
+  const [imagenError, setImagenError] = useState<Record<string, string>>({});
   const [seccionesParaImagen, setSeccionesParaImagen] = useState<string[]>([]);
   const [fondoSeleccionado, setFondoSeleccionado] = useState<string | null>(null);
   const [acentoSeleccionado, setAcentoSeleccionado] = useState<string>("naranja");
@@ -452,6 +455,7 @@ export default function Landing() {
  
   const generarImagen = async (seccionId: string, soloTitulos = false) => {
     setImagenGenerando(prev => prev.includes(seccionId) ? prev : [...prev, seccionId]);
+    setImagenError(prev => { const n = { ...prev }; delete n[seccionId]; return n; });
     marcarGenerando(seccionId);
     try {
       const resp = await fetch("/api/landing/imagen", {
@@ -460,6 +464,10 @@ export default function Landing() {
         body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "" }),
       });
       const data = await resp.json();
+      if (!data.imageUrl) {
+        // El servidor contesto pero sin imagen: mostrar SU mensaje, que viene en espanol.
+        setImagenError(prev => ({ ...prev, [seccionId]: data.error || "No se pudo generar la imagen." }));
+      }
       if (data.imageUrl) {
         let urlFinal = data.imageUrl;
         if (data.imageUrl.startsWith("data:")) {
@@ -481,7 +489,11 @@ export default function Landing() {
         } catch {}
         setImagenes(prev => ({ ...prev, [seccionId]: urlFinal }));
       }
-    } catch {}
+    } catch {
+      // Conexion cortada, pestana recargada a mitad, etc. Antes esto quedaba en
+      // silencio y el spinner giraba para siempre.
+      setImagenError(prev => ({ ...prev, [seccionId]: "Se perdió la conexión mientras se generaba." }));
+    }
     desmarcarGenerando(seccionId);
     setImagenGenerando(prev => prev.filter(x => x !== seccionId));
   };
@@ -1117,7 +1129,19 @@ ${bloques}
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                           <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                           <p className="text-orange-400 text-[9px] font-bold">Creando imagen con IA...</p>
+                          <p className="text-zinc-500 text-[8px]">Puede tardar hasta 1 minuto</p>
                         </div>
+                      </div>
+                    ) : imagenError[s.id] ? (
+                      <div className="w-full rounded-lg mb-2 border border-red-500/30 bg-red-500/5 p-4 text-center">
+                        <p className="text-red-400 text-[10px] font-bold mb-1">✕ No se pudo generar</p>
+                        <p className="text-zinc-400 text-[9px] leading-snug mb-2.5">{imagenError[s.id]}</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); generarImagen(s.id); }}
+                          className="bg-[#111] border border-orange-500/40 text-orange-400 text-[10px] font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-transform"
+                        >
+                          ↻ Reintentar
+                        </button>
                       </div>
                     ) : imagenes[s.id] ? (
                       <div className="mb-2">

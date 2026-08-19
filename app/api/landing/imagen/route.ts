@@ -207,8 +207,23 @@ export async function POST(req: NextRequest) {
       imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
     }
 
+    // Si llegamos aqui sin imagen, avisar en vez de devolver una respuesta
+    // vacia que dejaba el spinner girando en el navegador.
+    if (!imageUrl) {
+      return NextResponse.json({ error: "La IA no devolvió ninguna imagen. Intenta de nuevo." }, { status: 500 });
+    }
+
     return NextResponse.json({ imageUrl, seccion });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    // El mensaje va DIRECTO a la pantalla del usuario: traducir lo que llega
+    // en ingles crudo de OpenAI a algo accionable en espanol.
+    const crudo = String(err?.message || "");
+    console.error("Error generando imagen de landing:", crudo);
+    let mensaje = "No se pudo generar la imagen. Intenta de nuevo.";
+    if (/rate limit|429/i.test(crudo)) mensaje = "La IA está saturada en este momento. Espera unos segundos y reintenta.";
+    else if (/content policy|safety|moderation|rejected/i.test(crudo)) mensaje = "La IA rechazó este contenido. Cambia el texto o la foto de la sección.";
+    else if (/billing|quota|insufficient|credit/i.test(crudo)) mensaje = "Se agotó el saldo de la API de imágenes. Hay que recargarla.";
+    else if (/timeout|ETIMEDOUT|aborted|fetch failed|ECONNRESET/i.test(crudo)) mensaje = "La generación tardó demasiado y se cortó. Reintenta.";
+    return NextResponse.json({ error: mensaje }, { status: 500 });
   }
 }
