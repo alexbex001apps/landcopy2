@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 const protectedRoutes = ["/copy", "/redes", "/landing"];
 const publicRoutes = ["/ayuda-venezuela", "/venezuela"];
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (publicRoutes.some(r => pathname.startsWith(r))) {
     return NextResponse.next({ request });

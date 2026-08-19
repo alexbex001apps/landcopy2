@@ -44,8 +44,8 @@ Tablas: `users`, `campaigns`, `productos`, `biblioteca`, `biblioteca_campanas`, 
 
 ### Tres capas de acceso (las tres tienen que estar de acuerdo)
 
-1. [middleware.ts](middleware.ts) — redirige a `/login` en `/copy`, `/redes`, `/landing` sin sesion; deja pasar `/venezuela` y `/ayuda-venezuela`.
-2. [components/Guardian.tsx](components/Guardian.tsx) — envuelve TODO en [app/layout.tsx](app/layout.tsx). Lista blanca `LIBRES` + `/v/`; en el resto exige sesion y `users.plan` distinto de `sin_acceso`, si no manda a `/espera`. **Una ruta publica nueva hay que agregarla aqui tambien**, o quedara bloqueada aunque el middleware la deje pasar.
+1. [proxy.ts](proxy.ts) (antes `middleware.ts`, renombrado en Next 16) — redirige a `/login` en `/copy`, `/redes`, `/landing` sin sesion; deja pasar `/venezuela` y `/ayuda-venezuela`.
+2. [components/Guardian.tsx](components/Guardian.tsx) — envuelve TODO en [app/layout.tsx](app/layout.tsx). Lista blanca `LIBRES` + `/v/`; en el resto exige sesion y `users.plan` distinto de `sin_acceso`, si no manda a `/espera`. **Una ruta publica nueva hay que agregarla aqui tambien**, o quedara bloqueada aunque el proxy la deje pasar.
 3. Gating de admin: `users.es_admin` para `/admin`; `BIBLIOTECA_ESTILO_ADMINS` (env var, sin tabla de roles) para la Biblioteca de Estilo ([lib/bibliotecaEstilo/admin.ts](lib/bibliotecaEstilo/admin.ts)).
 
 El registro deja `plan: "sin_acceso"` a proposito — el usuario espera activacion manual en `/admin`.
