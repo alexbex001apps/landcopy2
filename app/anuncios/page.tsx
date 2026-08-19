@@ -69,6 +69,9 @@ export default function Anuncios() {
   const [precioOferta, setPrecioOferta] = useState("");
   const [precioAnterior, setPrecioAnterior] = useState("");
   const [headline, setHeadline] = useState("");
+  // Generar 3 opciones de headline aqui mismo, sin depender de venir desde Copy
+  const [generandoHeadlines, setGenerandoHeadlines] = useState(false);
+  const [errorHeadlines, setErrorHeadlines] = useState<string | null>(null);
   const [temperatura, setTemperatura] = useState<"hot" | "warm" | "cold">("hot");
   const [frasesSeleccionadas, setFrasesSeleccionadas] = useState<string[]>([]);
   const [dolorChips, setDolorChips] = useState<string[]>([]);
@@ -192,6 +195,28 @@ export default function Anuncios() {
     headline, temperatura, frasesSeleccionadas, dolorChips, dolorSel,
     promptPropio, formatoSeleccionado, imagenProducto, imagenGenerada, headlines, fondoSeleccionado]);
  
+  // Pide 3 opciones de headline. Antes solo habia sugerencias si venias desde
+  // Copy; entrando directo a Anuncios no habia ninguna.
+  const pedirHeadlines = async () => {
+    if (!nombre.trim()) return;
+    setGenerandoHeadlines(true);
+    setErrorHeadlines(null);
+    try {
+      const resp = await fetch("/api/headlines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ producto: nombre, beneficio: descripcion }),
+      });
+      const data = await resp.json();
+      if (data.headlines?.length) setHeadlines(data.headlines);
+      else setErrorHeadlines(data.error || "No se pudieron generar. Intenta de nuevo.");
+    } catch {
+      setErrorHeadlines("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setGenerandoHeadlines(false);
+    }
+  };
+
   const generarDolor = async () => {
     if (!nombre) return;
     setGenerandoDolor(true);
@@ -496,15 +521,41 @@ export default function Anuncios() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Headline principal *</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Headline principal *</label>
+                    <button
+                      type="button"
+                      onClick={pedirHeadlines}
+                      disabled={!nombre.trim() || generandoHeadlines}
+                      className="text-[9px] font-bold px-2.5 py-1 rounded-lg border border-orange-500/40 text-orange-400 hover:bg-orange-500/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {generandoHeadlines ? "⟳ Pensando..." : "✨ Dame 3 opciones"}
+                    </button>
+                  </div>
+
+                  {errorHeadlines && <p className="text-red-400 text-[10px] mt-1">{errorHeadlines}</p>}
+
                   {headlines.length > 0 && (
-                    <div className="flex gap-1 flex-wrap mt-1 mb-2">
+                    <div className="mt-2 mb-2 space-y-1.5">
                       {headlines.map((h, i) => (
-                        <button key={i} onClick={() => setHeadline(h)} className={`text-[9px] px-2 py-1 rounded-md border transition-all ${headline === h ? "border-orange-500 bg-orange-500/10 text-orange-400" : "border-[#1e1e1e] text-yellow-400"}`}>{h.slice(0, 25)}...</button>
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setHeadline(h)}
+                          className={`w-full text-left text-xs px-3 py-2 rounded-lg border transition-colors whitespace-pre-line line-clamp-3 ${
+                            headline === h
+                              ? "border-orange-500 bg-orange-500/10 text-orange-300"
+                              : "border-[#1e1e1e] bg-[#0d0d0d] text-[#f0ead6] hover:border-orange-500/50"
+                          }`}
+                        >
+                          {h}
+                        </button>
                       ))}
+                      <p className="text-zinc-500 text-[9px]">Toca una para usarla, o escribe la tuya abajo.</p>
                     </div>
                   )}
-                  <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
+
+                  <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full mt-1.5 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
                 </div>
               </div>
  

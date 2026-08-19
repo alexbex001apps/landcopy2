@@ -44,6 +44,10 @@ export default function Campaigns() {
   const [pais, setPais] = useState("Colombia");
   const [tono, setTono] = useState("Urgente");
   const [headline, setHeadline] = useState("");
+  // Sugerencias de headline (3 opciones que da la IA a peticion del usuario)
+  const [headlinesSug, setHeadlinesSug] = useState<string[]>([]);
+  const [generandoHeadlines, setGenerandoHeadlines] = useState(false);
+  const [errorHeadlines, setErrorHeadlines] = useState<string | null>(null);
   const [imagen1, setImagen1] = useState<string | null>(null);
   const [imagen2, setImagen2] = useState<string | null>(null);
   const [imagen3, setImagen3] = useState<string | null>(null);
@@ -97,6 +101,28 @@ export default function Campaigns() {
     setIdentifying(false);
   };
  
+  // Pide 3 opciones de headline a la IA con lo que ya se lleno del formulario.
+  // Es texto: no gasta creditos.
+  const pedirHeadlines = async () => {
+    if (!nombre.trim()) return;
+    setGenerandoHeadlines(true);
+    setErrorHeadlines(null);
+    try {
+      const resp = await fetch("/api/headlines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ producto: nombre, problema, beneficio, pais, tono }),
+      });
+      const data = await resp.json();
+      if (data.headlines?.length) setHeadlinesSug(data.headlines);
+      else setErrorHeadlines(data.error || "No se pudieron generar. Intenta de nuevo.");
+    } catch {
+      setErrorHeadlines("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setGenerandoHeadlines(false);
+    }
+  };
+
   const guardarCampaign = async () => {
     if (!nombre.trim()) return;
     setSaving(true);
@@ -325,8 +351,41 @@ export default function Campaigns() {
               </div>
             </div>
             <div className="mb-4">
-              <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Headline principal</label>
-              <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full mt-1 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-yellow-400 text-[9px] font-bold uppercase tracking-wider">Headline principal</label>
+                <button
+                  type="button"
+                  onClick={pedirHeadlines}
+                  disabled={!nombre.trim() || generandoHeadlines}
+                  className="text-[9px] font-bold px-2.5 py-1 rounded-lg border border-orange-500/40 text-orange-400 hover:bg-orange-500/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {generandoHeadlines ? "⟳ Pensando..." : "✨ Dame 3 opciones"}
+                </button>
+              </div>
+
+              {errorHeadlines && <p className="text-red-400 text-[10px] mt-1">{errorHeadlines}</p>}
+
+              {headlinesSug.length > 0 && (
+                <div className="mt-2 space-y-1.5">
+                  {headlinesSug.map((h, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setHeadline(h)}
+                      className={`w-full text-left text-xs px-3 py-2 rounded-lg border transition-colors ${
+                        headline === h
+                          ? "border-orange-500 bg-orange-500/10 text-orange-300"
+                          : "border-[#1e1e1e] bg-[#0d0d0d] text-[#f0ead6] hover:border-orange-500/50"
+                      }`}
+                    >
+                      {h}
+                    </button>
+                  ))}
+                  <p className="text-zinc-500 text-[9px]">Toca una para usarla, o escribe la tuya abajo.</p>
+                </div>
+              )}
+
+              <input value={headline} onChange={e => setHeadline(e.target.value)} className="w-full mt-1.5 bg-[#f0ead6] text-black text-sm px-3 py-2 rounded-lg outline-none" placeholder="Ej: ¿Tus rodillas ya no aguantan más?" />
             </div>
  
             <div className="flex gap-3">
