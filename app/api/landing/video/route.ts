@@ -26,13 +26,7 @@ const PROMPT_DEFECTO = "suave zoom lento sobre el producto, movimiento delicado 
 // sin estirarlo, ensancharlo ni deformarlo.
 const FIDELIDAD = " CRITICAL: keep the product EXACTLY as in the reference image — same real proportions, dimensions, thickness and scale. Do NOT stretch, squash, widen, elongate, bend, warp or resize the product. Same shape, colors, logos, text and details. Only animate the movement; the product itself must stay rigid and unchanged. If MORE THAN ONE unit of the product appears in the scene, EVERY single unit must be an identical exact copy of the reference product — same model, same design, same colors, same details on all of them; never invent different versions, variations, other models or mismatched units. Do NOT add any logo, brand name, text, letters, symbols or markings that are not already visible in the reference image — no fake logos or invented writing on the product; keep every surface exactly as in the reference.";
 
-// Cuanto esperamos a que fal termine antes de rendirnos
-const MAX_INTENTOS = 60;            // 60 intentos
-const ESPERA_MS = 4000;            // cada 4s  -> hasta ~4 min
-
 const BUCKET = "biblioteca-images"; // el mismo que ya usa toda la app
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Seedance rechaza imagenes con proporcion muy extrema (ej. 1500x595 = 2.5:1).
 // Si la foto se sale de un rango seguro, la acomodamos a cuadrado (con fondo blanco)
@@ -70,6 +64,111 @@ async function prepararImagen(imageUrl: string): Promise<string> {
   }
 }
 
+// Descarga el mp4 ya terminado en fal y lo guarda en nuestro Storage.
+// Se usa desde el GET (reclamar), para que el video no dependa de fal a futuro.
+async function guardarVideoEnStorage(videoUrlFal: string, userId?: string, seccion?: string) {
+  const videoResp = await fetch(videoUrlFal);
+  if (!videoResp.ok) throw new Error("No se pudo descargar el video generado.");
+  const videoBuffer = Buffer.from(await videoResp.arrayBuffer());
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const carpeta = userId || "landing-videos";
+  const nombreArchivo = `${carpeta}/${Date.now()}_${seccion || "video"}.mp4`;
+
+  const { error: upErr } = await supabase.storage
+    .from(BUCKET)
+    .upload(nombreArchivo, videoBuffer, { contentType: "video/mp4", upsert: false });
+  if (upErr) throw new Error(`Error subiendo el video: ${upErr.message}`);
+
+  const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(nombreArchivo);
+  return urlData.publicUrl;
+}
+
+// Traduce el resultado crudo de fal a un mensaje util en espanol.
+function mensajeDeError(resultado: unknown) {
+  const crudo = JSON.stringify(resultado);
+  // Caso comun: fal rechaza imagenes con personas reales (proteccion anti-deepfake)
+  if (crudo.includes("likenesses of real people") || crudo.includes("content_policy")) {
+    return "Esta imagen tiene personas y no se puede animar (política de fal). Usa una imagen solo del producto, sin gente.";
+  }
+  if (crudo.includes("file_download_error")) {
+    return "No se pudo leer la imagen. Guárdala de nuevo e intenta otra vez.";
+  }
+  if (crudo.includes("invalid_request")) {
+    return "La foto tiene un formato que la IA no acepta. Prueba con otra imagen del producto.";
+  }
+  return "No se pudo generar el video. Intenta de nuevo o con otra imagen.";
+}
+
+// GET = RECLAMAR un video ya encargado.
+//
+// El navegador guarda el ticket (requestId + modelo) en localStorage y vuelve a
+// preguntar por el cuando quiera, incluso despues de cambiar de pagina o cerrar
+// la pestana. Aqui NO se espera: se contesta el estado actual y ya.
+//   - pendiente  -> sigue generandose, vuelve a preguntar luego
+//   - listo      -> videoUrl guardado en nuestro Storage
+//   - error      -> mensaje para la UI
+export async function GET(req: NextRequest) {
+  try {
+    const FAL_KEY = process.env.FAL_API_KEY?.replace(/\s/g, "");
+    if (!FAL_KEY) {
+      return NextResponse.json({ error: "Falta configurar FAL_API_KEY en el servidor." }, { status: 500 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const requestId = searchParams.get("requestId");
+    const modelo = searchParams.get("modelo") || "seedance";
+    const userId = searchParams.get("userId") || undefined;
+    const seccion = searchParams.get("seccion") || undefined;
+    if (!requestId) {
+      return NextResponse.json({ error: "Falta el identificador del video." }, { status: 400 });
+    }
+
+    const cfg = MODELOS[modelo] || MODELOS.seedance;
+    const headersFal = { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" };
+
+    // OJO: la URL para consultar el estado NO lleva el path completo del modelo,
+    // solo el app-id (ej. "fal-ai/bytedance", no ".../seedance/v1.5/pro/...").
+    // Armarla con el endpoint completo devuelve 405 y el video parece colgado
+    // para siempre aunque ya este listo. Por eso se usa el appId recortado.
+    const appId = cfg.endpoint.split("/").slice(0, 2).join("/");
+    const base = `https://queue.fal.run/${appId}/requests/${requestId}`;
+
+    const st = await fetch(`${base}/status`, { headers: headersFal }).then((r) => r.json()).catch(() => null);
+    const estado = st?.status;
+
+    if (estado === "FAILED" || estado === "ERROR") {
+      return NextResponse.json({ estado: "error", error: mensajeDeError(st) });
+    }
+    if (estado !== "COMPLETED") {
+      // IN_QUEUE / IN_PROGRESS -> todavia no
+      return NextResponse.json({ estado: "pendiente" });
+    }
+
+    const resultado = await fetch(base, { headers: headersFal }).then((r) => r.json());
+    const videoUrlFal = resultado?.video?.url || resultado?.output?.video?.url;
+    if (!videoUrlFal) {
+      return NextResponse.json({ estado: "error", error: mensajeDeError(resultado) });
+    }
+
+    const videoUrl = await guardarVideoEnStorage(videoUrlFal, userId, seccion);
+    return NextResponse.json({ estado: "listo", videoUrl });
+  } catch (err: any) {
+    console.error("Error reclamando video:", err);
+    return NextResponse.json({ estado: "error", error: err.message || "Error al recuperar el video" }, { status: 500 });
+  }
+}
+
+// POST = ENCARGAR el video.
+//
+// Solo encola en fal y devuelve el requestId enseguida. NO espera a que termine:
+// antes se quedaba hasta 4 min esperando y, si el usuario cambiaba de pagina, el
+// navegador cortaba la llamada y el video se perdia (aunque fal igual lo generaba
+// y lo cobraba). El resultado se recoge despues con el GET de arriba.
 export async function POST(req: NextRequest) {
   try {
     // Limpia espacios/saltos de linea que se cuelan al pegar la key en Vercel
@@ -116,68 +215,17 @@ export async function POST(req: NextRequest) {
     }
 
     const requestId = submitData.request_id;
-    const statusUrl = submitData.status_url || `https://queue.fal.run/${cfg.endpoint}/requests/${requestId}/status`;
-    const responseUrl = submitData.response_url || `https://queue.fal.run/${cfg.endpoint}/requests/${requestId}`;
     if (!requestId) throw new Error("fal no devolvio request_id");
 
-    // 2. Esperar (polling) hasta que termine
-    let completado = false;
-    for (let i = 0; i < MAX_INTENTOS; i++) {
-      await sleep(ESPERA_MS);
-      const st = await fetch(statusUrl, { headers: headersFal }).then((r) => r.json()).catch(() => null);
-      const estado = st?.status;
-      if (estado === "COMPLETED") { completado = true; break; }
-      if (estado === "FAILED" || estado === "ERROR") {
-        throw new Error(`fal reporto fallo: ${JSON.stringify(st).slice(0, 200)}`);
-      }
-      // IN_QUEUE / IN_PROGRESS -> seguir esperando
-    }
-    if (!completado) throw new Error("La generacion tardo demasiado. Intenta de nuevo.");
-
-    // 3. Recoger el resultado
-    const resultado = await fetch(responseUrl, { headers: headersFal }).then((r) => r.json());
-    const videoUrlFal = resultado?.video?.url || resultado?.output?.video?.url;
-    if (!videoUrlFal) {
-      // Caso comun: fal rechaza imagenes con personas reales (proteccion anti-deepfake)
-      const crudo = JSON.stringify(resultado);
-      if (crudo.includes("likenesses of real people") || crudo.includes("content_policy")) {
-        throw new Error("Esta imagen tiene personas y no se puede animar (política de fal). Usa una imagen solo del producto, sin gente.");
-      }
-      if (crudo.includes("file_download_error")) {
-        throw new Error("No se pudo leer la imagen. Guárdala de nuevo e intenta otra vez.");
-      }
-      if (crudo.includes("invalid_request")) {
-        throw new Error("La foto tiene un formato que la IA no acepta. Prueba con otra imagen del producto.");
-      }
-      throw new Error("No se pudo generar el video. Intenta de nuevo o con otra imagen.");
-    }
-
-    // 4. Descargar el mp4 y guardarlo en nuestro Storage (que no dependa de fal a futuro)
-    const videoResp = await fetch(videoUrlFal);
-    if (!videoResp.ok) throw new Error("No se pudo descargar el video generado.");
-    const videoBuffer = Buffer.from(await videoResp.arrayBuffer());
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const carpeta = userId || "landing-videos";
-    const nombreArchivo = `${carpeta}/${Date.now()}_${seccion || "video"}.mp4`;
-
-    const { error: upErr } = await supabase.storage
-      .from(BUCKET)
-      .upload(nombreArchivo, videoBuffer, { contentType: "video/mp4", upsert: false });
-    if (upErr) throw new Error(`Error subiendo el video: ${upErr.message}`);
-
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(nombreArchivo);
-
+    // 2. Devolver el ticket enseguida. El navegador lo guarda y reclama el video
+    //    con el GET cuando quiera; mientras tanto puede irse a otra pagina.
     return NextResponse.json({
-      videoUrl: urlData.publicUrl,
+      requestId,
+      modelo: MODELOS[modelo] ? modelo : "seedance",
       durationSeconds: segundos,
     });
   } catch (err: any) {
-    console.error("Error generando video:", err);
+    console.error("Error encargando video:", err);
     return NextResponse.json({ error: err.message || "Error al generar el video" }, { status: 500 });
   }
 }

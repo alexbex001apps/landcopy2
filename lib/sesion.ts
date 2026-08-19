@@ -10,6 +10,9 @@
 export function limpiarSesionLocal() {
   try { sessionStorage.clear(); } catch {}
   try { localStorage.removeItem("landcopy_guardados"); } catch {}
+  // Ticket del video de landing que quedo generandose: es de ESTE usuario, no
+  // puede quedar para el siguiente que entre en el mismo navegador.
+  try { localStorage.removeItem("landing_video_pendiente"); } catch {}
 }
 
 const CLAVE_UID = "landcopy_uid";

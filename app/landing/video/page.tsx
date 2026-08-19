@@ -75,6 +75,29 @@ const SECCIONES_COMBO = [
   { id: "cta_final", nombre: "CTA final" },
 ];
 
+// --- Ticket del video en curso ---
+//
+// Va en localStorage (NO en sessionStorage ni en el estado de React) porque tiene
+// que sobrevivir a cambiar de pagina y a cerrar la pestana. Guarda el requestId
+// que devolvio fal; con el se reclama el video despues, cuando el usuario vuelva.
+const CLAVE_TICKET = "landing_video_pendiente";
+type Ticket = { requestId: string; modelo: string; producto: string; userId?: string };
+
+function leerTicket(): Ticket | null {
+  try {
+    const raw = localStorage.getItem(CLAVE_TICKET);
+    return raw ? (JSON.parse(raw) as Ticket) : null;
+  } catch {
+    return null;
+  }
+}
+function guardarTicket(t: Ticket) {
+  try { localStorage.setItem(CLAVE_TICKET, JSON.stringify(t)); } catch {}
+}
+function borrarTicket() {
+  try { localStorage.removeItem(CLAVE_TICKET); } catch {}
+}
+
 export default function VideoProducto() {
   const supabase = createClient();
   const [producto, setProducto] = useState<{ nombre: string; imagen_url: string; beneficio: string; problema: string } | null>(null);
@@ -118,6 +141,60 @@ export default function VideoProducto() {
   }, []);
 
   const secciones = esCombo ? SECCIONES_COMBO : SECCIONES_INDIVIDUAL;
+
+  // Le pregunta al servidor por el video encargado, cada 5s, hasta que este listo.
+  // Si el usuario se va de la pagina esto muere, pero no importa: el ticket sigue
+  // en localStorage y al volver se retoma desde donde iba (fal guarda el resultado).
+  const esperarVideo = async () => {
+    const MAX_ESPERA_MS = 10 * 60 * 1000; // 10 min: de sobra para 5s y 10s de video
+    const arranque = Date.now();
+
+    while (Date.now() - arranque < MAX_ESPERA_MS) {
+      await new Promise((r) => setTimeout(r, 5000));
+      const t = leerTicket();
+      if (!t) return; // se cancelo desde otra pestana
+
+      try {
+        const params = new URLSearchParams({ requestId: t.requestId, modelo: t.modelo, seccion: "producto" });
+        if (t.userId) params.set("userId", t.userId);
+        const resp = await fetch(`/api/landing/video?${params.toString()}`);
+        const data = await resp.json();
+
+        if (data.estado === "listo" && data.videoUrl) {
+          setVideoUrl(data.videoUrl);
+          try { sessionStorage.setItem("landing_video_ultimo", JSON.stringify({ url: data.videoUrl, producto: t.producto })); } catch {}
+          borrarTicket();
+          setCargando(false);
+          return;
+        }
+        if (data.estado === "error") {
+          setError(data.error || "No se pudo generar el video.");
+          borrarTicket();
+          setCargando(false);
+          return;
+        }
+        // "pendiente" -> seguir esperando
+      } catch {
+        // Un fallo de red suelto no cancela nada: el ticket sigue vivo y se
+        // reintenta en la siguiente vuelta.
+      }
+    }
+
+    setError("El video está tardando más de lo normal. Vuelve a entrar en un momento para recogerlo.");
+    setCargando(false);
+  };
+
+  // Si al entrar hay un video encargado y sin recoger, retomar la espera.
+  // Esto es lo que permite salir de la pagina (o cerrar la pestana) mientras
+  // se genera: el ticket vive en localStorage, no en esta pantalla.
+  // Va DESPUES de esperarVideo() a proposito: declarada como const, no existe
+  // antes de esta linea.
+  useEffect(() => {
+    if (!leerTicket()) return;
+    setCargando(true);
+    esperarVideo();
+    // Solo al montar: si se re-ejecutara, arrancaria una espera duplicada.
+  }, []);
 
   // Asigna el video a una seccion de la landing (via sessionStorage, que es como
   // la landing comparte su estado). La landing lo lee al volver y lo usa en el export.
@@ -183,21 +260,30 @@ export default function VideoProducto() {
       if (esConPersonas) {
         movimiento = `${movimiento} The hands, fingers and the product touch the body and each other with correct solid contact; nothing passes through, clips into or overlaps the body — everything stays on the surface, physically separate and natural.`;
       }
+      // Encargar: el servidor solo encola en fal y devuelve el ticket enseguida.
       const resp = await fetch("/api/landing/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageUrl: producto.imagen_url, userId: user?.id, seccion: "producto", motionPrompt: movimiento, duracion, modelo }),
       });
       const data = await resp.json();
-      if (data.videoUrl) {
-        setVideoUrl(data.videoUrl);
-        // Recordar el video para que sobreviva al ir y volver de Landing
-        try { sessionStorage.setItem("landing_video_ultimo", JSON.stringify({ url: data.videoUrl, producto: producto.nombre })); } catch {}
+      if (!data.requestId) {
+        setError(data.error || "No se pudo generar el video.");
+        setCargando(false);
+        return;
       }
-      else setError(data.error || "No se pudo generar el video.");
+
+      // Guardar el ticket ANTES de esperar: si el usuario se va de la pagina en
+      // este momento, al volver se retoma solo.
+      guardarTicket({
+        requestId: data.requestId,
+        modelo: data.modelo || modelo,
+        producto: producto.nombre,
+        userId: user?.id,
+      });
+      esperarVideo();
     } catch {
       setError("Error de conexión al generar el video.");
-    } finally {
       setCargando(false);
     }
   };
@@ -364,8 +450,18 @@ export default function VideoProducto() {
             {error && <p className="text-red-400 text-xs leading-snug mb-4 text-center">{error}</p>}
 
             {cargando ? (
-              <div className="w-full bg-[#111] border border-purple-500/30 text-purple-300 text-sm font-bold py-4 rounded-xl text-center">
-                ⟳ Generando video... (hasta 1 minuto, no cierres esta página)
+              <div className="w-full bg-[#111] border border-purple-500/30 rounded-xl py-4 px-3 text-center">
+                <p className="text-purple-300 text-sm font-bold">⟳ Generando video...</p>
+                <p className="text-zinc-400 text-[11px] leading-snug mt-1.5">
+                  Puedes irte a otra página o cerrar la pestaña: el video sigue generándose.
+                  Vuelve aquí cuando quieras y te espera listo.
+                </p>
+                <button
+                  onClick={() => { borrarTicket(); setCargando(false); }}
+                  className="text-zinc-500 hover:text-zinc-300 text-[11px] underline mt-2.5 transition-colors"
+                >
+                  Cancelar la espera
+                </button>
               </div>
             ) : videoUrl ? (
               <div className="space-y-3">
