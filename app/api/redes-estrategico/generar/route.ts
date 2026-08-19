@@ -86,13 +86,34 @@ function contextoPorModo(body: any): string {
   const { modo, pais, tono } = body;
 
   if (modo === "producto") {
-    const { pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior } = body;
+    const {
+      pNombre, pBeneficio, pProblema, pPrecioOferta, pPrecioAnterior,
+      // Detalle rico que viene de la biblioteca de productos (Fase 3). Todo
+      // opcional: si el usuario escribio a mano, estos campos no llegan.
+      pDescripcion, pDetalle, pBeneficios, pPublico, pPrecio, pPromocion, pImagenesDesc,
+    } = body;
+
+    // Cada bloque solo se agrega si tiene contenido, para no llenar el prompt
+    // de "no especificado" que despiste a la IA.
+    const extras: string[] = [];
+    if (pDescripcion) extras.push(`Descripción del producto: ${pDescripcion}`);
+    if (pDetalle) extras.push(`Detalle adicional: ${pDetalle}`);
+    if (Array.isArray(pBeneficios) && pBeneficios.length) {
+      extras.push(`Lista completa de beneficios (usa varios a lo largo de la campaña, uno distinto por pieza cuando aplique):\n- ${pBeneficios.join("\n- ")}`);
+    }
+    if (pPublico) extras.push(`Público objetivo: ${pPublico}`);
+    if (pPrecio && !pPrecioOferta) extras.push(`Precio: ${pPrecio}`);
+    if (pPromocion) extras.push(`PROMOCIÓN VIGENTE (mencionala en las piezas de oferta y cierre): ${pPromocion}`);
+    if (Array.isArray(pImagenesDesc) && pImagenesDesc.length) {
+      extras.push(`Variantes/presentaciones disponibles (cada una es distinta, puedes dedicarles piezas diferentes):\n- ${pImagenesDesc.join("\n- ")}`);
+    }
+
     return `MODO: Producto (venta directa / dropshipping).
 Producto: ${pNombre}.
 Beneficio principal: ${pBeneficio || "no especificado"}.
 Problema que resuelve: ${pProblema || "no especificado"}.
 Precio oferta: ${pPrecioOferta || "no especificado"}. Precio anterior: ${pPrecioAnterior || "no especificado"}.
-País: ${pais}. Tono: ${tono}.`;
+País: ${pais}. Tono: ${tono}.${extras.length ? `\n\nFICHA COMPLETA DEL PRODUCTO (informacion real del vendedor — usala, no inventes datos que la contradigan):\n${extras.join("\n")}` : ""}`;
   }
 
   if (modo === "negocio") {

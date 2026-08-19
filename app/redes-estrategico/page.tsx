@@ -79,6 +79,10 @@ export default function RedesEstrategico() {
   const [pImagen, setPImagen] = useState<string | null>(null);
   const [pBeneficio, setPBeneficio] = useState("");
   const [pProblema, setPProblema] = useState("");
+  // Ficha completa del producto elegido de la biblioteca (Fase 3). No se edita
+  // en pantalla: viaja al motor para que la campaña use TODO lo que el usuario
+  // ya cargo (beneficios, precios, promocion, variantes) y no solo 4 campos.
+  const [pFicha, setPFicha] = useState<any>(null);
   const pFileRef = useRef<HTMLInputElement>(null);
 
   // Selector de la biblioteca de productos (Fase 2)
@@ -102,7 +106,27 @@ export default function RedesEstrategico() {
     setPProblema(p.problema || "");
     const primera = Array.isArray(p.imagenes) && p.imagenes[0]?.url ? p.imagenes[0].url : null;
     if (primera) setPImagen(primera);
+
+    // Guardar el resto de la ficha para mandarla al motor. Antes esto se perdia:
+    // el usuario cargaba beneficios, precios, promocion y varias imagenes con su
+    // descripcion, y la IA nunca los veia.
+    const descripcionesImagenes = Array.isArray(p.imagenes)
+      ? p.imagenes.map((i: any) => i?.descripcion).filter(Boolean)
+      : [];
+    setPFicha({
+      descripcion: p.descripcion || "",
+      detalle: p.detalle || "",
+      beneficios: Array.isArray(p.beneficios) ? p.beneficios.filter(Boolean) : [],
+      publico: p.publico_objetivo || "",
+      precio: p.precio || "",
+      precioOferta: p.precio_oferta || "",
+      precioAnterior: p.precio_anterior || "",
+      promocion: p.promocion || "",
+      imagenesDesc: descripcionesImagenes,
+      nombre: p.nombre || "",
+    });
     setPickerAbierto(false);
+    mostrarToast("✓ Producto cargado con toda su ficha");
   }
 
   const [pIdentificando, setPIdentificando] = useState(false);
@@ -375,7 +399,24 @@ export default function RedesEstrategico() {
 
   function datosDelModo() {
     const base: any = { modo, dias, objetivo, pais, tono, redes: ["instagram", "facebook", "tiktok"] };
-    if (modo === "producto") return { ...base, pNombre, pBeneficio, pProblema };
+    if (modo === "producto") {
+      const datos: any = { ...base, pNombre, pBeneficio, pProblema };
+      // Adjuntar la ficha completa SOLO si el producto salio de la biblioteca y
+      // sigue siendo el mismo que hay en pantalla (el usuario pudo cambiar el
+      // nombre a mano despues de elegirlo, y ahi la ficha ya no corresponde).
+      if (pFicha && pFicha.nombre === pNombre) {
+        datos.pDescripcion = pFicha.descripcion || "";
+        datos.pDetalle = pFicha.detalle || "";
+        datos.pBeneficios = pFicha.beneficios || [];
+        datos.pPublico = pFicha.publico || "";
+        datos.pPrecio = pFicha.precio || "";
+        datos.pPrecioOferta = pFicha.precioOferta || "";
+        datos.pPrecioAnterior = pFicha.precioAnterior || "";
+        datos.pPromocion = pFicha.promocion || "";
+        datos.pImagenesDesc = pFicha.imagenesDesc || [];
+      }
+      return datos;
+    }
     if (modo === "negocio") return { ...base, nNombre, nOfrece, nCiudad, nDiferenciador, nPublico };
     return { ...base, mNombre, mQueHace, mPromociona };
   }
@@ -1194,9 +1235,31 @@ export default function RedesEstrategico() {
 
           {modo === "producto" && (
             <div>
-            <button onClick={abrirPicker} className="w-full mb-4 bg-[#0d0d0d] border border-orange-500/50 text-orange-300 text-sm font-bold py-2.5 rounded-xl hover:bg-orange-500/10 transition-colors">
+            <button onClick={abrirPicker} className="w-full mb-2 bg-[#0d0d0d] border border-orange-500/50 text-orange-300 text-sm font-bold py-2.5 rounded-xl hover:bg-orange-500/10 transition-colors">
               📦 Elegir de mi biblioteca de productos
             </button>
+
+            {/* Aviso de que la campaña va a usar TODA la ficha, no solo lo que
+                se ve en el formulario. Sin esto el usuario no sabe que su
+                trabajo cargado en la biblioteca si se esta aprovechando. */}
+            {pFicha && pFicha.nombre === pNombre && (() => {
+              const usados = [
+                pFicha.beneficios?.length ? `${pFicha.beneficios.length} beneficios` : "",
+                pFicha.promocion ? "promoción" : "",
+                (pFicha.precioOferta || pFicha.precio) ? "precios" : "",
+                pFicha.publico ? "público" : "",
+                pFicha.imagenesDesc?.length ? `${pFicha.imagenesDesc.length} variantes` : "",
+              ].filter(Boolean);
+              if (!usados.length) return null;
+              return (
+                <div className="mb-4 bg-green-500/5 border border-green-500/25 rounded-xl px-3 py-2">
+                  <p className="text-green-400 text-[11px] font-bold">✓ Ficha completa cargada</p>
+                  <p className="text-zinc-400 text-[10px] leading-snug mt-0.5">
+                    La campaña va a usar además: {usados.join(" · ")}.
+                  </p>
+                </div>
+              );
+            })()}
             <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-4">
               <div>
                 <span className={labelCls}>Foto del producto</span>
