@@ -1,8 +1,42 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 // gpt-image-2 puede tardar 30-90s; sin esto Vercel corta a ~60s y la imagen
 // falla en silencio (el spinner se queda girando para siempre).
 export const maxDuration = 300;
+
+const BUCKET = "biblioteca-images";
+
+// Sube la imagen a Storage DESDE EL SERVIDOR, apenas OpenAI la devuelve.
+//
+// Antes la imagen viajaba OpenAI -> navegador -> Storage: si el usuario se iba
+// de la pagina a mitad de camino, el navegador cortaba la peticion y la imagen
+// se perdia aunque OpenAI ya la hubiera generado (y cobrado). Guardandola aqui
+// queda a salvo pase lo que pase del lado del usuario.
+//
+// La API de imagenes de OpenAI es sincrona (no hay cola con id que reclamar
+// despues, como si tiene fal.ai para los videos), asi que esto es lo mas cerca
+// que se puede estar de no perder trabajo ya pagado.
+async function guardarEnStorage(b64: string, userId?: string, seccion?: string): Promise<string | null> {
+  try {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const buffer = Buffer.from(b64, "base64");
+    const carpeta = userId || "landing-imagenes";
+    const nombre = `${carpeta}/${Date.now()}_${seccion || "seccion"}.png`;
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(nombre, buffer, { contentType: "image/png", upsert: false });
+    if (error) return null;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(nombre);
+    return data.publicUrl || null;
+  } catch {
+    return null; // si falla la subida seguimos con el base64: no romper el flujo
+  }
+}
 
 export const FONDOS_DISPONIBLES = [
   { id: "negro_fuego", nombre: "Negro dramático", categoria: "Universal", color: "#1a0500", prompt: "Dark dramatic black background with orange fire particles, smoke and cinematic lighting." },
@@ -82,7 +116,7 @@ function limpiarEtiquetas(texto: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, headline, imagen_url, fondoId, soloTitulos, textoEditado, promptPropio, imagenPrevia, acentoId, audienciaId, audienciaCustom } = body;
+    const { seccion, producto, problema, beneficio, precioOferta, precioAnterior, headline, imagen_url, fondoId, soloTitulos, textoEditado, promptPropio, imagenPrevia, acentoId, audienciaId, audienciaCustom, userId } = body;
 
     // Colores de acento que el usuario puede elegir para los textos/detalles de la imagen
     const ACENTOS: Record<string, string> = {
@@ -191,7 +225,14 @@ export async function POST(req: NextRequest) {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error?.message || "Error generando imagen");
       const b64 = data.data?.[0]?.b64_json;
-      imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
+      // Guardar en Storage desde aqui: si el usuario se fue de la pagina, la
+      // imagen igual queda a salvo. Si la subida falla, se devuelve el base64.
+      if (b64) {
+        const guardada = await guardarEnStorage(b64, userId, seccion);
+        imageUrl = guardada || `data:image/png;base64,${b64}`;
+      } else {
+        imageUrl = "";
+      }
     } else {
       const resp = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
@@ -204,7 +245,14 @@ export async function POST(req: NextRequest) {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error?.message || "Error generando imagen");
       const b64 = data.data?.[0]?.b64_json;
-      imageUrl = b64 ? `data:image/png;base64,${b64}` : "";
+      // Guardar en Storage desde aqui: si el usuario se fue de la pagina, la
+      // imagen igual queda a salvo. Si la subida falla, se devuelve el base64.
+      if (b64) {
+        const guardada = await guardarEnStorage(b64, userId, seccion);
+        imageUrl = guardada || `data:image/png;base64,${b64}`;
+      } else {
+        imageUrl = "";
+      }
     }
 
     // Si llegamos aqui sin imagen, avisar en vez de devolver una respuesta

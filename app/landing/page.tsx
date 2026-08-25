@@ -339,10 +339,24 @@ export default function Landing() {
     );
   };
  
+  // Cuantas imagenes se generan al mismo tiempo. Disparar 8 a la vez ahogaba al
+  // navegador (limita las conexiones simultaneas por dominio) y las peticiones
+  // que quedaban esperando se cortaban: el spinner giraba para siempre. De a 2
+  // tardan un poco mas en total, pero llegan.
+  const IMAGENES_EN_PARALELO = 2;
+
+  // Genera una lista de secciones en tandas, esperando a que cada tanda termine.
+  const generarEnTandas = async (lista: string[]) => {
+    for (let i = 0; i < lista.length; i += IMAGENES_EN_PARALELO) {
+      const tanda = lista.slice(i, i + IMAGENES_EN_PARALELO);
+      await Promise.all(tanda.map(id => generarImagen(id)));
+    }
+  };
+
   const generarImagenesSeleccionadas = () => {
     const lista = [...seccionesParaImagen];
     setSeccionesParaImagen([]);
-    lista.forEach(id => { generarImagen(id); });
+    generarEnTandas(lista);
   };
  
   const handleImagen = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2 | 3) => {
@@ -458,10 +472,16 @@ export default function Landing() {
     setImagenError(prev => { const n = { ...prev }; delete n[seccionId]; return n; });
     marcarGenerando(seccionId);
     try {
+      // El userId va al servidor para que guarde la imagen en la carpeta del
+      // usuario apenas OpenAI la devuelve, sin depender de que este navegador
+      // siga conectado.
+      let uid: string | undefined;
+      try { uid = (await supabase.auth.getUser()).data.user?.id; } catch {}
+
       const resp = await fetch("/api/landing/imagen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "" }),
+        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "", userId: uid }),
       });
       const data = await resp.json();
       if (!data.imageUrl) {
@@ -1084,7 +1104,7 @@ ${bloques}
               <div className="mt-3 space-y-1.5">
                 <div className="bg-green-500/5 border border-green-500/30 rounded-lg p-2">
                   <p className="text-green-400 text-[8px] font-bold uppercase tracking-widest mb-2 text-center">⚡ Todas de una vez</p>
-                  <button onClick={() => { const todas = secciones.filter(s => contenido[s.id]).map(s => s.id); setSeccionesParaImagen([]); todas.forEach(id => generarImagen(id)); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-black py-2.5 rounded-lg active:scale-95 transition-transform mb-1.5">
+                  <button onClick={() => { const todas = secciones.filter(s => contenido[s.id]).map(s => s.id); setSeccionesParaImagen([]); generarEnTandas(todas); }} className="w-full bg-green-500 hover:bg-green-600 text-black text-[12px] font-black py-2.5 rounded-lg active:scale-95 transition-transform mb-1.5">
                     ⚡ Generar TODAS las imágenes
                   </button>
                   <button onClick={generarImagenesSeleccionadas} disabled={seccionesParaImagen.length === 0} className="w-full bg-[#0d1a0a] border border-green-500/40 text-green-400 text-[12px] font-bold py-2.5 rounded-lg active:scale-95 transition-transform mb-1.5">
