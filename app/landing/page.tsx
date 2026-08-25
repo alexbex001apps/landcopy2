@@ -341,16 +341,25 @@ export default function Landing() {
  
   // Cuantas imagenes se generan al mismo tiempo. Disparar 8 a la vez ahogaba al
   // navegador (limita las conexiones simultaneas por dominio) y las peticiones
-  // que quedaban esperando se cortaban: el spinner giraba para siempre. De a 2
-  // tardan un poco mas en total, pero llegan.
+  // que quedaban esperando se cortaban: el spinner giraba para siempre.
   const IMAGENES_EN_PARALELO = 2;
 
-  // Genera una lista de secciones en tandas, esperando a que cada tanda termine.
+  // Genera una lista de secciones con una COLA de 2 obreros: en cuanto uno
+  // termina una imagen agarra la siguiente, sin esperar al otro. Con tandas
+  // fijas, una imagen lenta (55s) dejaba a su compañera esperando de brazos
+  // cruzados y con 8 secciones eso se hacia eterno.
   const generarEnTandas = async (lista: string[]) => {
-    for (let i = 0; i < lista.length; i += IMAGENES_EN_PARALELO) {
-      const tanda = lista.slice(i, i + IMAGENES_EN_PARALELO);
-      await Promise.all(tanda.map(id => generarImagen(id)));
-    }
+    const cola = [...lista];
+    const obrero = async () => {
+      while (cola.length > 0) {
+        const id = cola.shift();
+        if (!id) break;
+        await generarImagen(id);
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(IMAGENES_EN_PARALELO, cola.length) }, obrero)
+    );
   };
 
   const generarImagenesSeleccionadas = () => {
@@ -478,11 +487,24 @@ export default function Landing() {
       let uid: string | undefined;
       try { uid = (await supabase.auth.getUser()).data.user?.id; } catch {}
 
-      const resp = await fetch("/api/landing/imagen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "", userId: uid }),
-      });
+      // Tope de espera: sin esto, una peticion que se queda a medias (red que
+      // se cae, servidor que no contesta) deja el spinner girando para siempre
+      // porque fetch espera indefinidamente. 3 min es de sobra: la generacion
+      // mas lenta observada fue de 56s.
+      const control = new AbortController();
+      const alarma = setTimeout(() => control.abort(), 180000);
+
+      let resp: Response;
+      try {
+        resp = await fetch("/api/landing/imagen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ seccion: seccionId, ...datosActivos, fondoId: fondoSeleccionado, acentoId: acentoSeleccionado, audienciaId: audienciaSeleccionada === "otro" ? null : audienciaSeleccionada, audienciaCustom: audienciaSeleccionada === "otro" ? audienciaOtro : "", soloTitulos, textoEditado: contenido[seccionId] || "", userId: uid }),
+          signal: control.signal,
+        });
+      } finally {
+        clearTimeout(alarma);
+      }
       const data = await resp.json();
       if (!data.imageUrl) {
         // El servidor contesto pero sin imagen: mostrar SU mensaje, que viene en espanol.
@@ -509,10 +531,16 @@ export default function Landing() {
         } catch {}
         setImagenes(prev => ({ ...prev, [seccionId]: urlFinal }));
       }
-    } catch {
-      // Conexion cortada, pestana recargada a mitad, etc. Antes esto quedaba en
-      // silencio y el spinner giraba para siempre.
-      setImagenError(prev => ({ ...prev, [seccionId]: "Se perdió la conexión mientras se generaba." }));
+    } catch (e: any) {
+      // Conexion cortada, pestana recargada a mitad, tope de espera agotado.
+      // Antes esto quedaba en silencio y el spinner giraba para siempre.
+      const porTiempo = e?.name === "AbortError";
+      setImagenError(prev => ({
+        ...prev,
+        [seccionId]: porTiempo
+          ? "Tardó demasiado y se canceló. Reintenta esta sección."
+          : "Se perdió la conexión mientras se generaba.",
+      }));
     }
     desmarcarGenerando(seccionId);
     setImagenGenerando(prev => prev.filter(x => x !== seccionId));
